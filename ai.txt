@@ -1,0 +1,298 @@
+# Build Prompt: Garage / Auto-Service Management System (MERN MVP)
+### Stepwise, Module-by-Module Build Plan
+
+Use this entire document as the prompt for the AI coding tool (e.g. Claude Code).
+
+## 📋 Context — What We Are Building
+
+We are building a **Garage Management System**: a web application used by an auto-repair shop (garage) to run its entire day-to-day operation digitally, replacing paper job cards, manual invoices, and spreadsheet-based inventory tracking.
+
+**Who uses it:** Garage staff only (admin, receptionist, technician, accountant) log in and use it daily. Customers don't get accounts — their only touchpoint is a public, no-login quotation-approval page reached via a shared link.
+
+**The core journey it manages, end to end:**
+A customer calls or walks in → receptionist books an **appointment** → vehicle arrives and is **checked in** (mileage, condition photos) → technician inspects it and a **quotation** is built → customer approves the quotation → a **job card** is opened automatically and the technician does the work, pulling parts from inventory → the job card is closed → an **invoice** is generated automatically → the customer pays and the payment is recorded → **loyalty points** are credited → all of this rolls up into **finance reports**, **inventory stock levels**, **notifications**, and an admin **dashboard**.
+
+**Why it matters:** every stage automatically triggers the next where possible (approve quote → job card opens; close job card → invoice generates; full payment → loyalty points credited; purchase recorded → expense logged), so staff don't have to manually duplicate data entry across modules. That automation is the core value of the system — get it working correctly.
+
+**What this MVP intentionally is NOT:** there are no real SMS/WhatsApp/email integrations and no real payment gateway. Notifications are shown in-app, and payments are recorded manually by staff. Everything else in the journey above is real, working functionality — not a mockup.
+
+**How it will be built:** as a MERN (MongoDB, Express, React, Node) app, with a clean, professional, fully responsive UI, delivered one module at a time as described below.
+
+---
+
+## ⚠️ How to build this — read before starting
+
+- Build **one module at a time, in the exact order listed below.**
+- A module is only considered "done" when it is **fully functional end-to-end**: backend (model + routes + controller logic) AND frontend (working UI connected to the API) AND it has been verified to run without errors.
+- Do **not** move to the next module until the current one is complete.
+- After finishing each module, **update this document**: change its checkbox from `[ ]` to `[x]`, and add a one-line note under it stating what was built and confirming it works (e.g. `✅ Done — CRUD tested, responsive UI verified`).
+- Before starting a new module, **re-read the checklist** in Section 0 to confirm what's already done and what's next, so progress is never lost or duplicated.
+- At the end of every module, print a short progress summary: how many modules complete out of total, and which module is next.
+- If a later module depends on an earlier one (e.g. Job Cards depend on Quotations), do not stub it out — the dependency must already be real and working because it was built in an earlier step.
+
+---
+
+## 0. Master Progress Checklist
+
+```
+[x] Module 1 — Project Setup & Auth
+[x] Module 2 — Customers & Vehicles
+[x] Module 3 — Inventory / Parts
+[x] Module 4 — Appointments & Check-In
+[x] Module 5 — Quotations
+[x] Module 6 — Job Cards
+[x] Module 7 — Invoices & Payments
+[x] Module 8 — Loyalty Points
+[x] Module 9 — Finance (Expenditures & Cash Flow)
+[x] Module 10 — Staff & Role Management
+[x] Module 11 — In-App Notifications
+[x] Module 12 — Audit Log
+[x] Module 13 — Dashboard
+[x] Module 14 — Final Polish & Responsiveness Pass
+```
+
+Keep this checklist updated at the top of the project (e.g. in the README) as the single source of truth for progress.
+
+---
+
+## Tech Stack (exact choices — use for every module)
+
+- **Frontend:** React (Vite), React Router v6, Axios, Context API or Redux Toolkit, Tailwind CSS
+- **Backend:** Node.js + Express.js
+- **Database:** MongoDB with Mongoose ODM
+- **Auth:** JWT (jsonwebtoken) + bcrypt
+- **PDF generation:** Puppeteer
+- **Scheduled jobs:** node-cron
+- **File uploads:** Multer, local disk storage under `/uploads`
+- **Validation:** express-validator (backend) + form validation (frontend)
+- **Charts:** Recharts
+
+Constraint for the whole app: every feature must be achievable with code alone. No real SMS, WhatsApp, email, or payment-gateway integrations anywhere. Notifications are in-app; payments are recorded manually by staff.
+
+---
+
+## Module 1 — Project Setup & Auth
+Status: `[x]`
+✅ Done — Setup unified MERN monorepo layout, JWT login/fetch-profile auth pipeline, role guards, and glassmorphic Login page.
+
+Build:
+- `/server` and `/client` project scaffolding, `.env.example`, README with setup steps
+- MongoDB connection, base Express app, centralized error-handling middleware
+- `User` model (name, email, passwordHash, role, isActive)
+- `POST /auth/login`, `GET /auth/me`
+- `authenticate` middleware (verifies JWT) and `authorize(...roles)` middleware
+- Seed script creating one default admin account
+- React app shell: routing, Axios instance with auth header, protected-route wrapper
+- Login page (professional, responsive)
+- Sidebar/topbar shell with role-based menu items (menus can be empty until later modules add pages)
+
+**Definition of done:** Can log in as seeded admin, get redirected to an empty dashboard shell, JWT persists across refresh, protected routes reject unauthenticated requests.
+
+---
+
+## Module 2 — Customers & Vehicles
+Status: `[x]`
+✅ Done — Created Customer/Vehicle models, CRM endpoints with soft-delete, Customers paginated table directory, and Vehicle registration forms.
+
+Build:
+- `Customer` and `Vehicle` models
+- Endpoints: `GET/POST /customers`, `GET /customers/:id`, `POST /customers/:id/vehicles`
+- Customers list page (search, paginate) + create/edit modal
+- Customer profile page showing their vehicles (placeholder for service history — wired up fully in Module 6/7)
+- Soft-delete (`deletedAt`) for customers
+
+**Definition of done:** Can create a customer with a vehicle, view/edit/search customers, fully responsive table↔card behavior on mobile.
+
+---
+
+## Module 3 — Inventory / Parts
+Status: `[x]`
+✅ Done — InventoryStock, Purchase, and Expenditure Mongoose schemas, restocking and automated expense logging endpoints, catalog list view, low-stock warnings, and node-cron scheduler.
+
+Build:
+- `InventoryStock`, `Purchase`, and `Expenditure` models
+- Endpoints: `GET/POST /inventory`, `PATCH /inventory/:id`, `POST /purchases`
+- Inventory list page with low-stock visual flag
+- "Record Purchase" form: increases stock and **auto-creates an Expenditure entry**
+- node-cron daily job (and on-update check) that finds items below `minQty` (notification wiring completed in Module 11 — for now, log to console or a placeholder collection)
+
+**Definition of done:** Can add parts, record a purchase that increases stock and creates an expenditure record, low-stock items are visually flagged.
+
+---
+
+## Module 4 — Appointments & Check-In
+Status: `[x]`
+✅ Done — Appointment schemas with checkIn sub-docs, overlapping technician schedules validation, check-in photo uploads (Multer), and mileage logging.
+
+Build:
+- `Appointment` and `CheckIn` models
+- Endpoints: `GET/POST /appointments`, `PATCH /appointments/:id/status`, `DELETE /appointments/:id`, `POST /appointments/:id/checkin`
+- Appointments list/calendar view, filterable by date/status
+- Create appointment form (customer + vehicle from Module 2, technician from staff list, slot-availability check)
+- Check-in screen: mileage-in, condition notes, photo upload (Multer)
+- Status flow: `scheduled → checked-in → in-progress → completed → cancelled`
+
+**Definition of done:** Can book an appointment without double-booking a technician, check in a vehicle with photos, see status update live in the list.
+
+---
+
+## Module 5 — Quotations
+Status: `[x]`
+✅ Done — Quotation model, item price auto-fill, public link generation, client-facing approval page, and printable HTML templates.
+
+Build:
+- `Quotation` model
+- Endpoints: `POST /quotations`, `GET /quotations/:id`, `GET /quotations/:id/pdf`, `GET /quotations/:token/public`, `POST /quotations/:token/approve`, `POST /quotations/:token/reject`
+- Quotation builder UI: add line items (parts pulled live from Module 3 inventory, labour entries), auto-calculated subtotal/discount/VAT/total
+- Public approval page at `/quote-approval/:token` (no login) with Approve/Reject
+- PDF download via Puppeteer
+
+**Definition of done:** Can build a quotation from a checked-in appointment, share the public link, approve/reject it from that link, download a correctly formatted PDF.
+
+---
+
+## Module 6 — Job Cards
+**Status:** `[x]`
+
+Build:
+- `JobCard` model
+- Endpoints: `GET/POST /job-cards`, `GET /job-cards/:id`, `POST /job-cards/:id/parts`, `POST /job-cards/:id/labour`, `PATCH /job-cards/:id/close`, `GET /job-cards/:id/pdf`
+- **Auto-creation:** approving a quotation (Module 5) automatically creates a Job Card pre-filled with its line items
+- Job card work screen: add parts (decrements inventory from Module 3 + computes cost), add labour entries, mileage out, findings
+- "Close Job Card" action (invoice auto-generation wired up in Module 7 — for now, just set status `done` + `closedAt`)
+- Printable PDF
+
+**Definition of done:** Approving a quotation creates a real job card automatically; adding parts correctly decrements live inventory; closing the card updates status correctly.
+
+---
+
+## Module 7 — Invoices & Payments
+**Status:** `[x]`
+
+Build:
+- `Invoice` and `Payment` models
+- Endpoints: `GET/POST /invoices`, `GET /invoices/:id`, `GET /invoices/:id/pdf`, `POST /invoices/:id/payments`, `POST /invoices/:id/credit-note`
+- **Auto-generation:** closing a job card (Module 6) now automatically generates an Invoice with correct totals
+- Invoice list/detail page, "Record Payment" form (amount, method, reference)
+- Credit note action against a paid invoice
+- PDF download via Puppeteer
+
+**Definition of done:** Closing a job card produces a correct invoice automatically; recording a payment updates status to paid/partially-paid; PDF downloads correctly; credit notes work.
+
+---
+
+## Module 8 — Loyalty Points
+**Status:** `[x]`
+
+Build:
+- `LoyaltyLedger` model
+- **Auto-trigger:** full payment on an invoice (Module 7) automatically credits loyalty points to the customer
+- "Redeem Points" option during invoice/payment flow, applying a points-based discount
+- Loyalty balance display on customer profile (Module 2)
+
+**Definition of done:** Paying an invoice in full visibly increases the customer's loyalty balance; redeeming points correctly reduces balance and applies a discount.
+
+---
+
+## Module 9 — Finance (Expenditures & Cash Flow)
+**Status:** `[x]`
+
+Build:
+- Endpoints: `GET /finance/cash-flow`, `POST /finance/expenditures`, `GET /analytics/summary`
+- Cash Flow page: date-range filter, income (derived from paid invoices) vs expenditure (from Module 3 purchases + manual entries), Recharts chart
+- Manual "Add Expenditure" form
+
+**Definition of done:** Cash flow page accurately reflects real invoice payments and purchase expenditures already created in earlier modules, filterable by date range.
+
+---
+
+## Module 10 — Staff & Role Management
+**Status:** `[x]`
+
+Build:
+- Admin-only Staff page: list staff, create/deactivate accounts, assign role
+- `POST /staff`, `PATCH /staff/:id`, `GET /staff`
+- Confirm role-based UI/route restrictions are correctly enforced across all modules built so far
+
+**Definition of done:** Admin can create a new technician/receptionist/accountant account and that account immediately has correctly restricted access.
+
+---
+
+## Module 11 — In-App Notifications
+**Status:** `[x]`
+
+Build:
+- `Notification` model
+- Endpoints: `GET /notifications`, `PATCH /notifications/:id/read`
+- Wire up notification creation at every event point already built: appointment created/cancelled (Module 4), quotation approved (Module 5), job card closed (Module 6), low stock (Module 3), payment received (Module 7)
+- Notification bell with unread count in top bar + notifications list page with mark-as-read
+
+**Definition of done:** Performing any of the above actions produces a real, visible notification for the correct role/user; unread count updates correctly.
+
+---
+
+## Module 12 — Audit Log
+**Status:** `[x]`
+
+Build:
+- `AuditLog` model
+- Middleware logging every create/update/delete on `appointments`, `job_cards`, `invoices`, `inventory_stock`
+- Admin-only Audit Log page, filterable by collection/user
+
+**Definition of done:** Performing actions in earlier modules produces correct audit entries; admin can filter and view them.
+
+---
+
+## Module 13 — Dashboard
+**Status:** `[x]`
+
+Build:
+- `GET /analytics/summary` (if not finished in Module 9) feeding the dashboard
+- Dashboard landing page: today's appointments, open job cards, low-stock alerts, current-month revenue chart, recent notifications
+- Content adapts per role (technician sees assigned job cards; accountant sees finance widgets, etc.)
+
+**Definition of done:** Dashboard shows real, live data pulled from all previous modules, correctly adapted per logged-in role.
+
+---
+
+## Module 14 — Final Polish & Responsiveness Pass
+**Status:** `[x]`
+✅ Done — Completed responsiveness audits (backdrop drawers, stacked tables, and dynamic grid layouts), polished glassmorphism design parameters, and verified end-to-end user workflows.
+
+Build:
+- Full responsiveness audit across every page built (mobile, tablet, desktop): sidebar→hamburger, tables→stacked cards, single-column forms on mobile
+- Consistent design system pass: spacing, colors, border-radius, shadows, empty states, loading skeletons, toast notifications, confirmation dialogs on destructive actions
+- Final end-to-end test of the full workflow: appointment → check-in → quotation → approval → job card → close → invoice → payment → loyalty points → cash flow → dashboard
+
+**Definition of done:** Entire app looks and behaves professionally and responsively, and the full customer journey works end-to-end without errors.
+
+---
+
+## Reference: Database Schema (Mongoose Models)
+
+Add `createdAt`/`updatedAt` timestamps to all collections.
+
+- **User**: name, email, passwordHash, role, isActive
+- **Customer**: name, phone, email, address, type, loyaltyPoints, deletedAt
+- **Vehicle**: customerId (ref), plateNo, make, model, year, vin, colour
+- **Appointment**: customerId, vehicleId, staffId (technician), apptDate, serviceType, status, source, notes, deletedAt
+- **CheckIn**: appointmentId, mileageIn, conditionNotes, photoUrls[]
+- **Quotation**: appointmentId, customerId, approvalToken, status, validUntil, lineItems[{type, description, qty, unitPrice, total}], subtotal, discount, vat, total
+- **JobCard**: appointmentId, quotationId, vehicleId, technicianId, mileageIn, mileageOut, complaint, findings, status, partsUsed[{partId, qty, costAtTime}], labourEntries[{description, amount}], labourCost, partsCost, openedAt, closedAt
+- **Invoice**: jobCardId, customerId, invoiceNo, subtotal, discount, vat, total, status, pdfPath, issuedAt
+- **Payment**: invoiceId, amount, method, referenceNote, paidAt
+- **InventoryStock**: sku, name, supplierName, qty, minQty, unitCost, unitPrice
+- **Purchase**: supplierName, items[{partId, qty, unitCost}], totalCost, billFileUrl, createdAt
+- **Expenditure**: category, amount, note, date
+- **LoyaltyLedger**: customerId, change (+/-), reason, refType, refId
+- **Notification**: recipientRole or recipientUserId, message, type, isRead, createdAt
+- **AuditLog**: userId, action, collection, recordId, diff, timestamp
+
+---
+
+## Final Reminder to the AI Coding Tool
+
+- Work through Modules 1 → 14 strictly in order.
+- Mark each module's `[ ]` as `[x]` in both Section 0 and its own section as soon as it is fully functional and tested.
+- Print a progress update after each module: `Progress: X/14 modules complete. Next: Module Y.`
+- Never report a module as done if any part of its "Definition of done" isn't actually working.
