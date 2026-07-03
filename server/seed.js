@@ -4,13 +4,15 @@ import mongoose from 'mongoose';
 import { connectDB, disconnectDB } from './db.js';
 import dotenv from 'dotenv';
 
-export async function seedDatabase() {
+export async function seedDatabase(forceClear = false) {
   try {
-    console.log('Clearing database collections for a fresh start...');
-    const collections = await mongoose.connection.db.collections();
-    for (const collection of collections) {
-      await collection.deleteMany({});
-      console.log(`- Cleared: ${collection.collectionName}`);
+    if (forceClear) {
+      console.log('Clearing database collections for a fresh start...');
+      const collections = await mongoose.connection.db.collections();
+      for (const collection of collections) {
+        await collection.deleteMany({});
+        console.log(`- Cleared: ${collection.collectionName}`);
+      }
     }
 
     const adminEmail = 'admin@pmautomobiles.com';
@@ -49,7 +51,7 @@ if (process.argv[1] && (process.argv[1].endsWith('seed.js') || process.argv[1].e
   const runSeed = async () => {
     dotenv.config();
     await connectDB();
-    await seedDatabase();
+    await seedDatabase(true); // Force clear when manually running seed script
     await disconnectDB();
     process.exit(0);
   };
