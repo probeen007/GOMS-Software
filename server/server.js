@@ -99,8 +99,10 @@ if (process.env.NODE_ENV === 'production') {
   });
 }
 
-// Start Server
-const startServer = async () => {
+// Start Server if not imported (e.g. on Vercel)
+const isVercel = process.env.VERCEL === '1' || process.env.VERCEL === 'true' || !!process.env.NOW_REGION;
+
+export const startServer = async () => {
   try {
     // 1. Connect to Database
     await connectDB();
@@ -113,15 +115,22 @@ const startServer = async () => {
     await checkLowStock();
 
     // 4. Listen
-    app.listen(PORT, () => {
-      console.log(`Server is running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
-    });
+    if (!isVercel) {
+      app.listen(PORT, () => {
+        console.log(`Server is running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
+      });
+    } else {
+      console.log('Running in serverless/Vercel environment. DB connected, skipping app.listen.');
+    }
   } catch (error) {
     console.error('Server startup failed:', error.message);
-    process.exit(1);
+    if (!isVercel) process.exit(1);
   }
 };
 
-startServer();
-// Trigger server reload to start listening on port 5000
+if (!isVercel) {
+  startServer();
+}
+
+export default app;
 
