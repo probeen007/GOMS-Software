@@ -15,7 +15,8 @@ import {
   History,
   X,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Globe
 } from 'lucide-react';
 
 export default function Sidebar({ isOpen, onClose }) {
@@ -121,11 +122,11 @@ export default function Sidebar({ isOpen, onClose }) {
       <div className={`flex items-center ${isCollapsed ? 'justify-center py-5 px-2' : 'justify-between px-6 py-5'} border-b border-slate-100 bg-slate-50/50 transition-all duration-300`}>
         {!isCollapsed && (
           <h1 className="font-extrabold text-lg text-slate-900 tracking-tight transition-all duration-300">
-            DriveSync
+            PM Auto Mobiles
           </h1>
         )}
         {isCollapsed && (
-          <span className="font-black text-lg text-blue-650 tracking-wider">DS</span>
+          <span className="font-black text-lg text-blue-650 tracking-wider">PM</span>
         )}
         <button
           onClick={toggleCollapse}
@@ -179,6 +180,23 @@ export default function Sidebar({ isOpen, onClose }) {
             </NavLink>
           );
         })}
+        
+        {/* Public Landing Page Link */}
+        <a
+          href="/landing.html"
+          onClick={() => {
+            if (window.innerWidth < 1024) onClose();
+          }}
+          className={`flex items-center ${isCollapsed ? 'justify-center p-3' : 'px-3.5 py-3 gap-3.5'} rounded-xl transition-all duration-300 group text-sm font-bold border border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-50`}
+          title={isCollapsed ? 'Public Website' : ''}
+        >
+          <Globe className={`w-5.5 h-5.5 shrink-0 transition-transform duration-200 group-hover:scale-105 text-slate-400 group-hover:text-slate-700`} />
+          {!isCollapsed && (
+            <span className="transition-opacity duration-300 opacity-100 whitespace-nowrap overflow-hidden text-ellipsis">
+              Public Website
+            </span>
+          )}
+        </a>
       </nav>
 
       {/* User Footer Card */}

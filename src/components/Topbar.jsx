@@ -34,7 +34,7 @@ export default function Topbar({ onToggleSidebar }) {
     if (path.startsWith('/tasks')) return 'To-Do List';
     if (path.startsWith('/notifications')) return 'All Notifications';
     if (path.startsWith('/audit-logs')) return 'Audit Logs';
-    return 'DriveSync Portal';
+    return 'PM Auto Mobiles Portal';
   };
 
   const fetchNotifications = async () => {
@@ -253,6 +253,16 @@ export default function Topbar({ onToggleSidebar }) {
             </div>
           )}
         </div>
+
+        {/* Public Website / Landing Page Link */}
+        <a
+          href="/landing.html"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-800 hover:bg-slate-50 border border-transparent hover:border-slate-100 transition-all duration-200"
+          title="Go to Public Website"
+        >
+          <ExternalLink className="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-600" />
+          <span>Public Website</span>
+        </a>
 
         <div className="h-4 w-px bg-slate-200"></div>
 

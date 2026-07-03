@@ -757,7 +757,7 @@ export default function Staff() {
                 <input
                   type="email"
                   required
-                  placeholder="e.g. ramesh@drivesync.com"
+                  placeholder="e.g. ramesh@pmautomobiles.com"
                   value={newStaff.email}
                   onChange={(e) => setNewStaff({ ...newStaff, email: e.target.value })}
                   className="glass-input block w-full rounded-xl py-2.5 px-3.5 text-slate-200 text-sm font-semibold"
@@ -893,7 +893,7 @@ export default function Staff() {
                 <input
                   type="email"
                   required
-                  placeholder="e.g. ramesh@drivesync.com"
+                  placeholder="e.g. ramesh@pmautomobiles.com"
                   value={editStaff.email}
                   onChange={(e) => setEditStaff({ ...editStaff, email: e.target.value })}
                   className="glass-input block w-full rounded-xl py-2.5 px-3.5 text-slate-200 text-sm font-semibold"

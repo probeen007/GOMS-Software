@@ -390,7 +390,7 @@ router.get('/:id/pdf', authenticate, authorize('admin', 'receptionist', 'technic
 
         <div class="header">
           <div>
-            <div class="logo">DRIVESYNC WORKSHOP</div>
+            <div class="logo">PM AUTOMOBILES</div>
             <div style="font-size: 12px; color: #666;">Kathmandu, Nepal | Job Worksheet</div>
           </div>
           <div class="title">
@@ -465,8 +465,8 @@ router.get('/:id/pdf', authenticate, authorize('admin', 'receptionist', 'technic
         </table>
 
         <div class="footer">
-          <p>DriveSync Automotive Services System. Customer copy on vehicle release.</p>
-          <p>&copy; ${new Date().getFullYear()} DriveSync. All rights reserved.</p>
+          <p>PM Automobiles Auto-Services System. Customer copy on vehicle release.</p>
+          <p>&copy; ${new Date().getFullYear()} PM Auto Mobiles. All rights reserved.</p>
         </div>
       </body>
       </html>

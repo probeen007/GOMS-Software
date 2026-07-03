@@ -36,6 +36,49 @@ router.get('/', authenticate, authorize('admin', 'receptionist', 'accountant'), 
   }
 });
 
+// @route   GET /api/invoices/service-reminders
+// @desc    Get all invoices with upcoming service reminders
+// @access  Private (admin, receptionist)
+router.get('/service-reminders', authenticate, authorize('admin', 'receptionist'), async (req, res) => {
+  try {
+    const invoices = await Invoice.find({ nextServiceDate: { $ne: null } })
+      .populate('customerId', 'name phone email')
+      .populate('vehicleId', 'plateNo make model')
+      .sort({ nextServiceDate: 1 });
+
+    res.json(invoices);
+  } catch (err) {
+    console.error('Fetch reminders error:', err.message);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// @route   POST /api/invoices/:id/service-reminder-sent
+// @desc    Mark a service reminder as sent
+// @access  Private (admin, receptionist)
+router.post('/:id/service-reminder-sent', authenticate, authorize('admin', 'receptionist'), async (req, res) => {
+  try {
+    const invoice = await Invoice.findById(req.params.id);
+    if (!invoice) {
+      return res.status(404).json({ message: 'Invoice not found' });
+    }
+    invoice.reminderSent = true;
+    await invoice.save();
+
+    await logAction({
+      req,
+      action: 'service_reminder_sent',
+      module: 'invoices',
+      details: `Service reminder sent to ${req.body.customerName || 'client'} for vehicle ${req.body.plateNo || 'vehicle'}`
+    });
+
+    res.json({ success: true, invoice });
+  } catch (err) {
+    console.error('Mark reminder sent error:', err.message);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 // @route   GET /api/invoices/:id
 // @desc    Get detailed invoice and its payments
 // @access  Private (admin, receptionist, accountant)
@@ -392,7 +435,7 @@ router.get('/:id/pdf', authenticate, authorize('admin', 'receptionist', 'account
 
         <div class="header">
           <div>
-            <div class="logo">DRIVESYNC AUTOMOTIVE</div>
+            <div class="logo">PM AUTOMOBILES</div>
             <div style="font-size: 12px; color: #666;">Kathmandu, Nepal | Phone: +977-1-4444444</div>
           </div>
           <div class="title">
@@ -504,7 +547,7 @@ router.get('/:id/pdf', authenticate, authorize('admin', 'receptionist', 'account
 
         <div class="footer">
           <p>This is a computer-generated tax invoice. No signature required.</p>
-          <p>&copy; ${new Date().getFullYear()} DriveSync. All rights reserved.</p>
+          <p>&copy; ${new Date().getFullYear()} PM Auto Mobiles. All rights reserved.</p>
         </div>
       </body>
       </html>

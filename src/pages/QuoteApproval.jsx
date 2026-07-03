@@ -115,7 +115,7 @@ export default function QuoteApproval() {
         {/* Brand Banner */}
         <div className="p-6 bg-slate-50/50 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight uppercase">DRIVESYNC AUTOMOTIVE</h1>
+            <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight uppercase">PM AUTOMOBILES</h1>
             <p className="text-xs text-slate-500 font-bold tracking-wider mt-1">Kathmandu, Nepal | Estimate Invoice Approval</p>
           </div>
           <div className="text-left sm:text-right">
@@ -127,6 +127,13 @@ export default function QuoteApproval() {
         </div>
 
         {/* Status Banners */}
+        {quotation.status === 'draft' && (
+          <div className="p-4 bg-rose-50 border-b border-rose-100 flex items-center gap-3 text-rose-800">
+            <AlertTriangle className="w-5 h-5 shrink-0 text-rose-600" />
+            <span className="text-sm font-bold">This estimate is currently in draft. It must be sent & published by the workshop before you can approve/decline it.</span>
+          </div>
+        )}
+
         {quotation.status === 'approved' && (
           <div className="p-4 bg-emerald-50 border-b border-emerald-100 flex items-center gap-3 text-emerald-700">
             <CheckCircle className="w-5 h-5 shrink-0" />

@@ -17,7 +17,8 @@ import {
   Printer,
   Check,
   XCircle,
-  Tag
+  Tag,
+  Send
 } from 'lucide-react';
 
 export default function Quotations() {
@@ -28,6 +29,7 @@ export default function Quotations() {
   const [quotations, setQuotations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedQuote, setSelectedQuote] = useState(null);
+  const [actionLoading, setActionLoading] = useState(false);
 
   // Modal: Create Quotation State
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -71,6 +73,61 @@ export default function Quotations() {
       setInventoryList(response.data);
     } catch (err) {
       console.error(err);
+    }
+  };
+
+  const handleSendQuotation = async () => {
+    if (!selectedQuote) return;
+    setActionLoading(true);
+    try {
+      const response = await axios.patch(`/api/quotations/${selectedQuote._id}`, {
+        status: 'sent'
+      });
+      setSelectedQuote(response.data);
+      // Also update in the main list
+      setQuotations(prev => prev.map(q => q._id === response.data._id ? response.data : q));
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleApproveQuotation = async () => {
+    if (!selectedQuote) return;
+    if (!window.confirm('Are you sure you want to approve this quotation? This will automatically open a Job Card.')) return;
+    setActionLoading(true);
+    try {
+      const response = await axios.patch(`/api/quotations/${selectedQuote._id}`, {
+        status: 'approved'
+      });
+      setSelectedQuote(response.data);
+      setQuotations(prev => prev.map(q => q._id === response.data._id ? response.data : q));
+    } catch (err) {
+      console.error(err);
+      alert(err.response?.data?.message || 'Failed to approve quotation');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleDeclineQuotation = async () => {
+    if (!selectedQuote) return;
+    const reason = window.prompt('Please specify the reason for declining this estimate:');
+    if (reason === null) return; // cancelled prompt
+    setActionLoading(true);
+    try {
+      const response = await axios.patch(`/api/quotations/${selectedQuote._id}`, {
+        status: 'rejected',
+        rejectionReason: reason || 'Declined by staff'
+      });
+      setSelectedQuote(response.data);
+      setQuotations(prev => prev.map(q => q._id === response.data._id ? response.data : q));
+    } catch (err) {
+      console.error(err);
+      alert(err.response?.data?.message || 'Failed to decline quotation');
+    } finally {
+      setActionLoading(false);
     }
   };
 
@@ -203,15 +260,15 @@ export default function Quotations() {
   const getStatusStyle = (status) => {
     switch (status) {
       case 'draft':
-        return 'bg-slate-800 text-slate-400 border-slate-700';
+        return 'bg-slate-100 text-slate-700 border-slate-200';
       case 'sent':
-        return 'bg-blue-500/10 text-blue-400 border-blue-500/20';
+        return 'bg-blue-50 text-blue-700 border-blue-200';
       case 'approved':
-        return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
+        return 'bg-emerald-50 text-emerald-700 border-emerald-200';
       case 'rejected':
-        return 'bg-rose-500/10 text-rose-455 border-rose-500/20';
+        return 'bg-rose-50 text-rose-700 border-rose-200';
       default:
-        return 'bg-slate-800 text-slate-400';
+        return 'bg-slate-100 text-slate-700 border-slate-200';
     }
   };
 
@@ -221,8 +278,8 @@ export default function Quotations() {
       <div className="lg:col-span-2 space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-extrabold text-white tracking-tight">Repair Estimates & Quotations</h1>
-            <p className="text-slate-350 text-sm mt-1.5 font-medium">
+            <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Repair Estimates & Quotations</h1>
+            <p className="text-slate-500 text-sm mt-1.5 font-medium">
               Draft customer cost estimates, review client approvals, and print invoices.
             </p>
           </div>
@@ -230,7 +287,7 @@ export default function Quotations() {
           {isAuthorized && (
             <button
               onClick={() => setIsModalOpen(true)}
-              className="flex items-center justify-center gap-2.5 px-5 h-11 rounded-xl text-sm font-bold text-white bg-primary-600 hover:bg-primary-500 transition-all shadow-lg shadow-primary-500/10 hover:scale-[1.02] glow-effect shrink-0 cursor-pointer"
+              className="flex items-center justify-center gap-2.5 px-5 h-11 rounded-xl text-sm font-bold text-white bg-blue-600 hover:bg-blue-500 transition-all shadow-lg shadow-blue-500/10 hover:scale-[1.02] cursor-pointer"
             >
               <Plus className="w-5 h-5" />
               <span>Create Quotation</span>
@@ -239,16 +296,16 @@ export default function Quotations() {
         </div>
 
         {loading ? (
-          <div className="flex flex-col items-center justify-center min-h-[40vh] bg-slate-900/15 rounded-3xl border border-slate-800/65 py-12">
-            <Loader2 className="w-8 h-8 text-primary-500 animate-spin" />
-            <p className="text-slate-400 text-sm mt-3 font-medium">Fetching quotations log...</p>
+          <div className="flex flex-col items-center justify-center min-h-[40vh] bg-white border border-slate-200 rounded-3xl py-12">
+            <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
+            <p className="text-slate-500 text-sm mt-3 font-medium">Fetching quotations log...</p>
           </div>
         ) : quotations.length === 0 ? (
-          <div className="flex flex-col items-center justify-center min-h-[40vh] bg-slate-900/20 rounded-3xl border border-slate-800/80 p-8 text-center">
-            <div className="w-12 h-12 rounded-xl bg-slate-800/50 flex items-center justify-center border border-slate-700/30 mb-4">
-              <FileText className="w-6 h-6 text-slate-500" />
+          <div className="flex flex-col items-center justify-center min-h-[40vh] bg-white border border-slate-200 rounded-3xl p-8 text-center">
+            <div className="w-12 h-12 rounded-xl bg-slate-50 flex items-center justify-center border border-slate-100 mb-4">
+              <FileText className="w-6 h-6 text-slate-400" />
             </div>
-            <h3 className="text-base font-bold text-white">No estimates recorded</h3>
+            <h3 className="text-base font-bold text-slate-700">No estimates recorded</h3>
             <p className="text-slate-500 text-xs mt-1 max-w-sm">
               Click create quotation above to configure repair estimates.
             </p>
@@ -259,29 +316,33 @@ export default function Quotations() {
               <div
                 key={quote._id}
                 onClick={() => setSelectedQuote(quote)}
-                className={`p-5 rounded-3xl border transition-all cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative overflow-hidden ${selectedQuote?._id === quote._id ? 'bg-primary-950/20 border-primary-500/40' : 'bg-slate-900/40 border-slate-800/80 hover:border-slate-700/60'}`}
+                className={`p-5 rounded-3xl border transition-all cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative overflow-hidden ${
+                  selectedQuote?._id === quote._id 
+                    ? 'bg-blue-50/60 border-blue-400 shadow-sm shadow-blue-50' 
+                    : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50/50 shadow-sm'
+                }`}
               >
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-xs font-mono font-bold text-slate-400 bg-slate-800/60 px-2 py-0.5 rounded">REF: {quote._id.slice(-6).toUpperCase()}</span>
+                    <span className="text-xs font-mono font-bold text-slate-655 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded">REF: {quote._id.slice(-6).toUpperCase()}</span>
                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded text-xs font-extrabold uppercase tracking-wider border ${getStatusStyle(quote.status)}`}>
                       {quote.status}
                     </span>
                   </div>
 
-                  <h3 className="text-base font-extrabold text-white">{quote.customerId?.name || 'Deleted Client'}</h3>
+                  <h3 className="text-base font-extrabold text-slate-900">{quote.customerId?.name || 'Deleted Client'}</h3>
 
-                  <div className="flex flex-wrap items-center gap-3 text-xs text-slate-400 font-medium">
-                    <span>Plate: <strong className="text-slate-300">{quote.vehicleId?.plateNo || 'Unknown'}</strong></span>
-                    <span className="text-slate-600">•</span>
-                    <span>Make: <strong className="text-slate-300">{quote.vehicleId?.make} {quote.vehicleId?.model}</strong></span>
+                  <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500 font-semibold">
+                    <span>Plate: <strong className="text-slate-750 font-bold">{quote.vehicleId?.plateNo || 'Unknown'}</strong></span>
+                    <span className="text-slate-300">•</span>
+                    <span>Make: <strong className="text-slate-750 font-bold">{quote.vehicleId?.make} {quote.vehicleId?.model}</strong></span>
                   </div>
                 </div>
 
                 <div className="text-right shrink-0">
                   <span className="text-xs text-slate-400 uppercase tracking-widest font-extrabold block">Estimated Cost</span>
-                  <p className="text-lg font-black text-primary-400 font-mono mt-0.5">Rs. {quote.total.toFixed(2)}</p>
-                  <p className="text-xs text-slate-500 mt-0.5 font-medium">{new Date(quote.createdAt).toLocaleDateString()}</p>
+                  <p className="text-lg font-black text-blue-600 font-mono mt-0.5">Rs. {quote.total.toFixed(2)}</p>
+                  <p className="text-xs text-slate-405 mt-0.5 font-semibold">{new Date(quote.createdAt).toLocaleDateString()}</p>
                 </div>
               </div>
             ))}
@@ -291,79 +352,113 @@ export default function Quotations() {
 
       {/* Right Column: Selection Details Panel */}
       <div className="space-y-6">
-        <h2 className="text-xl font-extrabold text-white tracking-tight">Estimate Detailed View</h2>
+        <h2 className="text-xl font-extrabold text-slate-900 tracking-tight">Estimate Detailed View</h2>
         {selectedQuote ? (
-          <div className="p-6 rounded-3xl bg-slate-900/40 border border-slate-800/80 space-y-6 shadow-xl relative overflow-hidden">
+          <div className="p-6 rounded-3xl bg-white border border-slate-200 space-y-6 shadow-sm relative overflow-hidden">
             {/* Header info */}
-            <div className="space-y-2 pb-4 border-b border-slate-800">
+            <div className="space-y-2 pb-4 border-b border-slate-150">
               <div className="flex justify-between items-start gap-2">
-                <span className="text-xs font-mono text-primary-400 font-bold bg-primary-950/45 px-2.5 py-0.5 border border-primary-500/25 rounded">
+                <span className="text-xs font-mono text-slate-600 font-bold bg-slate-100 px-2.5 py-0.5 border border-slate-200 rounded">
                   REF: {selectedQuote._id}
                 </span>
                 <span className={`text-xs font-black uppercase tracking-widest px-2.5 py-0.5 rounded border ${getStatusStyle(selectedQuote.status)}`}>
                   {selectedQuote.status}
                 </span>
               </div>
-              <h3 className="text-lg font-extrabold text-white mt-2">{selectedQuote.customerId?.name}</h3>
-              <p className="text-sm text-slate-400 font-medium">Phone: {selectedQuote.customerId?.phone}</p>
+              <h3 className="text-lg font-extrabold text-slate-900 mt-2">{selectedQuote.customerId?.name}</h3>
+              <p className="text-sm text-slate-505 font-semibold">Phone: {selectedQuote.customerId?.phone}</p>
             </div>
 
             {/* Vehicle spec summary */}
-            <div className="grid grid-cols-2 gap-3 bg-slate-900/50 p-4 rounded-2xl border border-slate-850">
+            <div className="grid grid-cols-2 gap-3 bg-slate-50 p-4 rounded-2xl border border-slate-200/60">
               <div>
                 <span className="text-xs text-slate-400 uppercase font-extrabold block mb-1 tracking-widest">Vehicle</span>
-                <span className="font-bold text-sm text-slate-200">{selectedQuote.vehicleId?.make} {selectedQuote.vehicleId?.model}</span>
+                <span className="font-bold text-sm text-slate-800">{selectedQuote.vehicleId?.make} {selectedQuote.vehicleId?.model}</span>
               </div>
               <div>
                 <span className="text-xs text-slate-400 uppercase font-extrabold block mb-1 tracking-widest">Plate Number</span>
-                <span className="font-mono text-sm text-slate-200 font-bold uppercase">{selectedQuote.vehicleId?.plateNo}</span>
+                <span className="font-mono text-sm text-slate-800 font-bold uppercase">{selectedQuote.vehicleId?.plateNo}</span>
               </div>
             </div>
 
             {/* Line Items Table */}
             <div className="space-y-2.5">
               <span className="text-xs font-extrabold text-slate-400 uppercase tracking-widest block">Line Items</span>
-              <div className="space-y-2 divide-y divide-slate-850 max-h-[220px] overflow-y-auto pr-1">
+              <div className="space-y-2 divide-y divide-slate-150 max-h-[220px] overflow-y-auto pr-1">
                 {selectedQuote.items.map((item, idx) => (
                   <div key={idx} className="flex justify-between items-center pt-3">
                     <div>
-                      <p className="font-bold text-sm text-white leading-snug">{item.name}</p>
-                      <span className="text-xs text-slate-500 uppercase tracking-wide font-medium">{item.type} ({item.qty} x Rs. {item.unitPrice})</span>
+                      <p className="font-bold text-sm text-slate-800 leading-snug">{item.name}</p>
+                      <span className="text-xs text-slate-450 uppercase tracking-wide font-medium">{item.type} ({item.qty} x Rs. {item.unitPrice})</span>
                     </div>
-                    <span className="font-mono text-sm text-slate-200 font-bold">Rs. {item.total.toFixed(2)}</span>
+                    <span className="font-mono text-sm text-slate-850 font-bold">Rs. {item.total.toFixed(2)}</span>
                   </div>
                 ))}
               </div>
             </div>
 
             {/* Maths footer summary */}
-            <div className="space-y-2.5 border-t border-slate-800 pt-4 text-sm font-semibold text-slate-400">
+            <div className="space-y-2.5 border-t border-slate-150 pt-4 text-sm font-semibold text-slate-550">
               <div className="flex justify-between">
                 <span>Subtotal:</span>
-                <span className="font-mono text-slate-200 font-bold">Rs. {selectedQuote.subtotal.toFixed(2)}</span>
+                <span className="font-mono text-slate-850 font-bold">Rs. {selectedQuote.subtotal.toFixed(2)}</span>
               </div>
               <div className="flex justify-between">
                 <span>Discount Applied:</span>
-                <span className="font-mono text-rose-400">-Rs. {selectedQuote.discount.toFixed(2)}</span>
+                <span className="font-mono text-rose-650 font-bold">-Rs. {selectedQuote.discount.toFixed(2)}</span>
               </div>
               <div className="flex justify-between">
                 <span>VAT (13%):</span>
-                <span className="font-mono">Rs. {selectedQuote.vat.toFixed(2)}</span>
+                <span className="font-mono text-slate-850 font-bold">Rs. {selectedQuote.vat.toFixed(2)}</span>
               </div>
-              <div className="flex justify-between text-base font-extrabold text-white border-t border-slate-850 pt-3 mt-1">
-                <span className="text-primary-400">Total Estimate:</span>
-                <span className="font-mono text-primary-400">Rs. {selectedQuote.total.toFixed(2)}</span>
+              <div className="flex justify-between text-base font-extrabold border-t border-slate-150 pt-3 mt-1">
+                <span className="text-blue-600">Total Estimate:</span>
+                <span className="font-mono text-blue-600">Rs. {selectedQuote.total.toFixed(2)}</span>
               </div>
             </div>
 
             {/* Rejection notice */}
             {selectedQuote.status === 'rejected' && selectedQuote.rejectionReason && (
-              <div className="p-3.5 bg-rose-500/10 border border-rose-500/20 rounded-2xl flex items-start gap-2.5">
-                <XCircle className="w-4.5 h-4.5 text-rose-455 shrink-0 mt-0.5" />
+              <div className="p-3.5 bg-rose-50 border border-rose-200 rounded-2xl flex items-start gap-2.5">
+                <XCircle className="w-4.5 h-4.5 text-rose-600 shrink-0 mt-0.5" />
                 <div>
-                  <span className="text-xs font-extrabold text-rose-400 uppercase tracking-widest block mb-0.5">Client Decline Reason</span>
-                  <p className="text-sm text-rose-300 italic mt-0.5">&quot;{selectedQuote.rejectionReason}&quot;</p>
+                  <span className="text-xs font-extrabold text-rose-700 uppercase tracking-widest block mb-0.5">Client Decline Reason</span>
+                  <p className="text-sm text-rose-655 italic mt-0.5">&quot;{selectedQuote.rejectionReason}&quot;</p>
                 </div>
+              </div>
+            )}
+
+            {/* Send & Publish to Customer if Status is Draft */}
+            {selectedQuote.status === 'draft' && isAuthorized && (
+              <button
+                onClick={handleSendQuotation}
+                disabled={actionLoading}
+                className="flex items-center justify-center gap-2.5 w-full h-11 rounded-xl text-sm font-bold text-white bg-blue-600 hover:bg-blue-500 transition-all hover:scale-[1.02] cursor-pointer shadow-lg shadow-blue-500/10 mb-1"
+              >
+                {actionLoading ? <Loader2 className="w-4.5 h-4.5 animate-spin" /> : <Send className="w-4.5 h-4.5" />}
+                <span>Send & Publish to Customer</span>
+              </button>
+            )}
+
+            {/* Direct Approval/Decline Actions for Staff */}
+            {(selectedQuote.status === 'draft' || selectedQuote.status === 'sent') && isAuthorized && (
+              <div className="grid grid-cols-2 gap-3 mb-2">
+                <button
+                  onClick={handleApproveQuotation}
+                  disabled={actionLoading}
+                  className="flex items-center justify-center gap-1.5 h-11 rounded-xl text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 transition-all hover:scale-[1.02] cursor-pointer shadow-lg shadow-emerald-500/10"
+                >
+                  <Check className="w-4 h-4" />
+                  <span>Approve</span>
+                </button>
+                <button
+                  onClick={handleDeclineQuotation}
+                  disabled={actionLoading}
+                  className="flex items-center justify-center gap-1.5 h-11 rounded-xl text-sm font-bold text-rose-600 bg-rose-50 hover:bg-rose-100 border border-rose-200 transition-all hover:scale-[1.02] cursor-pointer"
+                >
+                  <XCircle className="w-4 h-4" />
+                  <span>Decline</span>
+                </button>
               </div>
             )}
 
@@ -373,17 +468,17 @@ export default function Quotations() {
                 href={`/quote-approval/${selectedQuote.approvalToken}`}
                 target="_blank"
                 rel="noreferrer"
-                className="flex items-center justify-center gap-2.5 w-full h-11 rounded-xl text-sm font-bold text-primary-400 bg-primary-500/10 hover:bg-primary-500/20 border border-primary-500/20 transition-all hover:scale-[1.02] cursor-pointer"
+                className="flex items-center justify-center gap-2.5 w-full h-11 rounded-xl text-sm font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 border border-blue-200 transition-all hover:scale-[1.02] cursor-pointer"
               >
                 <ExternalLink className="w-4.5 h-4.5" />
                 <span>Open Public Approval Link</span>
               </a>
 
               <a
-                href={`/api/quotations/${selectedQuote._id}/pdf`}
+                href={`/api/quotations/${selectedQuote._id}/pdf?token=${localStorage.getItem('token')}`}
                 target="_blank"
                 rel="noreferrer"
-                className="flex items-center justify-center gap-2.5 w-full h-11 rounded-xl text-sm font-bold text-slate-300 bg-slate-900 hover:bg-slate-850 border border-slate-800 hover:border-slate-750 transition-all hover:scale-[1.02] cursor-pointer"
+                className="flex items-center justify-center gap-2.5 w-full h-11 rounded-xl text-sm font-bold text-slate-700 bg-slate-50 hover:bg-slate-100 border border-slate-200 transition-all hover:scale-[1.02] cursor-pointer"
               >
                 <Printer className="w-4.5 h-4.5" />
                 <span>Export Print PDF Invoice</span>
@@ -391,8 +486,8 @@ export default function Quotations() {
             </div>
           </div>
         ) : (
-          <div className="p-6 rounded-3xl bg-slate-900/10 border border-slate-850 py-16 text-center">
-            <p className="text-slate-400 text-sm font-medium">Select a quotation from the directory to review detailed line-items, tax calculations, and export links.</p>
+          <div className="p-6 rounded-3xl bg-slate-50 border border-slate-200 py-16 text-center">
+            <p className="text-slate-500 text-sm font-medium">Select a quotation from the directory to review detailed line-items, tax calculations, and export links.</p>
           </div>
         )}
       </div>

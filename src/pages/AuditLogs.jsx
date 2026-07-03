@@ -129,7 +129,7 @@ export default function AuditLogs() {
                 <Search className="absolute left-3.5 top-3.5 w-4 h-4 text-slate-500" />
                 <input
                   type="text"
-                  placeholder="e.g. admin@drivesync.com"
+                  placeholder="e.g. admin@pmautomobiles.com"
                   value={userEmail}
                   onChange={(e) => setUserEmail(e.target.value)}
                   className="w-full pl-10 pr-4 h-11 rounded-xl text-sm font-semibold text-slate-205 bg-slate-950 border border-slate-800 focus:outline-none focus:border-primary-555 transition-colors"

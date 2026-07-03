@@ -20,6 +20,10 @@ export default function ProtectedRoute({ children, allowedRoles }) {
   }
 
   if (!isAuthenticated) {
+    if (location.pathname === '/') {
+      window.location.replace('/landing.html');
+      return null;
+    }
     // Redirect to login but save the current location they tried to go to
     return <Navigate to="/login" state={{ from: location }} replace />;
   }

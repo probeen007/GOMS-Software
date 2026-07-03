@@ -54,10 +54,14 @@ export default function Dashboard() {
   const fetchDashboardData = async (filterVal = timeFilter) => {
     try {
       setLoading(true);
-      const summaryRes = await axios.get('/api/analytics/summary', {
-        params: { filter: filterVal }
-      });
-      setMetrics(summaryRes.data.metrics);
+      
+      // Fetch summary statistics if authorized (role is admin, receptionist, or accountant)
+      if (user.role === 'admin' || user.role === 'receptionist' || user.role === 'accountant') {
+        const summaryRes = await axios.get('/api/analytics/summary', {
+          params: { filter: filterVal }
+        });
+        setMetrics(summaryRes.data.metrics);
+      }
 
       if (user.role === 'admin' || user.role === 'accountant') {
         const cashFlowRes = await axios.get('/api/finance/cash-flow');
@@ -118,6 +122,33 @@ export default function Dashboard() {
     }
   };
 
+  const getHeaderInfo = () => {
+    switch (user?.role) {
+      case 'technician':
+        return {
+          title: 'Technician Workspace',
+          subtitle: 'Review your assigned active job cards, checklist tasks, and notifications'
+        };
+      case 'receptionist':
+        return {
+          title: 'Receptionist Center',
+          subtitle: 'Manage client check-ins, bookings, and customer directory'
+        };
+      case 'accountant':
+        return {
+          title: 'Finance Dashboard',
+          subtitle: 'Track shop cash flow, track client invoice dues, and analyze expenditures'
+        };
+      case 'admin':
+      default:
+        return {
+          title: 'Administrator Panel',
+          subtitle: 'Live operational stats and workshop KPI metrics'
+        };
+    }
+  };
+  const headerInfo = getHeaderInfo();
+
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[70vh]">
@@ -133,10 +164,10 @@ export default function Dashboard() {
       <div className="flex flex-col md:flex-row md:items-center justify-between pb-5 border-b border-slate-200 gap-4">
         <div>
           <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">
-            Dashboard Overview
+            {headerInfo.title}
           </h1>
           <p className="text-xs font-bold text-slate-500 mt-1 uppercase tracking-wider">
-            Live operational stats and workshop KPI metrics
+            {headerInfo.subtitle}
           </p>
         </div>
 
@@ -166,131 +197,135 @@ export default function Dashboard() {
       </div>
 
       {/* 1.5 FINANCIAL SUMMARY LEDGER RIBBON */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm divide-y lg:divide-y-0 lg:divide-x divide-slate-100">
-        <div className="space-y-1.5 lg:first:pl-0 lg:pl-5">
-          <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">Total Inflow (Income)</span>
-          <span className="text-xl font-extrabold text-emerald-600 tracking-tight block">
-            Rs. {metrics?.totalIncome?.toLocaleString(undefined, { minimumFractionDigits: 2 }) || '0.00'}
-          </span>
+      {(user.role === 'admin' || user.role === 'accountant') && (
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm divide-y lg:divide-y-0 lg:divide-x divide-slate-100">
+          <div className="space-y-1.5 lg:first:pl-0 lg:pl-5">
+            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">Total Inflow (Income)</span>
+            <span className="text-xl font-extrabold text-emerald-600 tracking-tight block">
+              Rs. {metrics?.totalIncome?.toLocaleString(undefined, { minimumFractionDigits: 2 }) || '0.00'}
+            </span>
+          </div>
+          <div className="space-y-1.5 pt-4 lg:pt-0 lg:pl-5">
+            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">Total Outflow (Expense)</span>
+            <span className="text-xl font-extrabold text-rose-600 tracking-tight block">
+              Rs. {metrics?.totalExpenditures?.toLocaleString(undefined, { minimumFractionDigits: 2 }) || '0.00'}
+            </span>
+          </div>
+          <div className="space-y-1.5 pt-4 lg:pt-0 lg:pl-5">
+            <span className="text-xs font-bold text-slate-550 uppercase tracking-wider block">Net Revenue (Profit)</span>
+            <span className={`text-xl font-extrabold tracking-tight block ${metrics?.netProfit >= 0 ? 'text-emerald-700' : 'text-rose-600'}`}>
+              Rs. {metrics?.netProfit?.toLocaleString(undefined, { minimumFractionDigits: 2 }) || '0.00'}
+            </span>
+          </div>
+          <div className="space-y-1.5 pt-4 lg:pt-0 lg:pl-5">
+            <span className="text-xs font-bold text-slate-550 uppercase tracking-wider block">Outstanding Dues</span>
+            <span className="text-xl font-extrabold text-blue-600 tracking-tight block">
+              Rs. {metrics?.totalOutstanding?.toLocaleString(undefined, { minimumFractionDigits: 2 }) || '0.00'}
+            </span>
+          </div>
         </div>
-        <div className="space-y-1.5 pt-4 lg:pt-0 lg:pl-5">
-          <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">Total Outflow (Expense)</span>
-          <span className="text-xl font-extrabold text-rose-600 tracking-tight block">
-            Rs. {metrics?.totalExpenditures?.toLocaleString(undefined, { minimumFractionDigits: 2 }) || '0.00'}
-          </span>
-        </div>
-        <div className="space-y-1.5 pt-4 lg:pt-0 lg:pl-5">
-          <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">Net Revenue (Profit)</span>
-          <span className={`text-xl font-extrabold tracking-tight block ${metrics?.netProfit >= 0 ? 'text-emerald-700' : 'text-rose-600'}`}>
-            Rs. {metrics?.netProfit?.toLocaleString(undefined, { minimumFractionDigits: 2 }) || '0.00'}
-          </span>
-        </div>
-        <div className="space-y-1.5 pt-4 lg:pt-0 lg:pl-5">
-          <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">Outstanding Dues</span>
-          <span className="text-xl font-extrabold text-blue-600 tracking-tight block">
-            Rs. {metrics?.totalOutstanding?.toLocaleString(undefined, { minimumFractionDigits: 2 }) || '0.00'}
-          </span>
-        </div>
-      </div>
+      )}
 
       {/* 2. KPI METRICS GRIDS */}
-      <div className="grid grid-cols-2 lg:grid-cols-6 gap-4">
-        {/* Card 1: Vehicles Serviced */}
-        <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between group hover:-translate-y-0.5 transition-all duration-300">
-          <div className="flex items-center gap-2.5">
-            <div className="p-2.5 rounded-xl bg-sky-50 text-sky-600 border border-sky-100/50 group-hover:bg-sky-100 transition-colors">
-              <Car className="w-5.5 h-5.5" />
+      {(user.role === 'admin' || user.role === 'receptionist' || user.role === 'accountant') && (
+        <div className="grid grid-cols-2 lg:grid-cols-6 gap-4">
+          {/* Card 1: Vehicles Serviced */}
+          <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between group hover:-translate-y-0.5 transition-all duration-300">
+            <div className="flex items-center gap-2.5">
+              <div className="p-2.5 rounded-xl bg-sky-50 text-sky-600 border border-sky-100/50 group-hover:bg-sky-100 transition-colors">
+                <Car className="w-5.5 h-5.5" />
+              </div>
+              <span className="text-xs font-extrabold text-slate-500 uppercase tracking-wider">Serviced</span>
             </div>
-            <span className="text-xs font-extrabold text-slate-500 uppercase tracking-wider">Serviced</span>
+            <div className="mt-4">
+              <h3 className="text-3xl font-black text-slate-900 tracking-tight">
+                {metrics?.vehiclesServiced || 0}
+              </h3>
+              <p className="text-xs text-slate-400 font-semibold mt-0.5">Vehicles serviced</p>
+            </div>
           </div>
-          <div className="mt-4">
-            <h3 className="text-3xl font-black text-slate-900 tracking-tight">
-              {metrics?.vehiclesServiced || 0}
-            </h3>
-            <p className="text-xs text-slate-400 font-semibold mt-0.5">Vehicles serviced</p>
-          </div>
-        </div>
 
-        {/* Card 2: Total Customers */}
-        <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between group hover:-translate-y-0.5 transition-all duration-300">
-          <div className="flex items-center gap-2.5">
-            <div className="p-2.5 rounded-xl bg-violet-50 text-violet-600 border border-violet-100/50 group-hover:bg-violet-100 transition-colors">
-              <Users className="w-5.5 h-5.5" />
+          {/* Card 2: Total Customers */}
+          <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between group hover:-translate-y-0.5 transition-all duration-300">
+            <div className="flex items-center gap-2.5">
+              <div className="p-2.5 rounded-xl bg-violet-50 text-violet-600 border border-violet-100/50 group-hover:bg-violet-100 transition-colors">
+                <Users className="w-5.5 h-5.5" />
+              </div>
+              <span className="text-xs font-extrabold text-slate-500 uppercase tracking-wider">Customers</span>
             </div>
-            <span className="text-xs font-extrabold text-slate-500 uppercase tracking-wider">Customers</span>
+            <div className="mt-4">
+              <h3 className="text-3xl font-black text-slate-900 tracking-tight">
+                {metrics?.totalCustomers || 0}
+              </h3>
+              <p className="text-xs text-slate-400 font-semibold mt-0.5">Client directory</p>
+            </div>
           </div>
-          <div className="mt-4">
-            <h3 className="text-3xl font-black text-slate-900 tracking-tight">
-              {metrics?.totalCustomers || 0}
-            </h3>
-            <p className="text-xs text-slate-400 font-semibold mt-0.5">Client directory</p>
-          </div>
-        </div>
 
-        {/* Card 3: Pending Services */}
-        <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between group hover:-translate-y-0.5 transition-all duration-300">
-          <div className="flex items-center gap-2.5">
-            <div className="p-2.5 rounded-xl bg-amber-50 text-amber-600 border border-amber-100/50 group-hover:bg-amber-100 transition-colors">
-              <Wrench className="w-5.5 h-5.5" />
+          {/* Card 3: Pending Services */}
+          <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between group hover:-translate-y-0.5 transition-all duration-300">
+            <div className="flex items-center gap-2.5">
+              <div className="p-2.5 rounded-xl bg-amber-50 text-amber-600 border border-amber-100/50 group-hover:bg-amber-100 transition-colors">
+                <Wrench className="w-5.5 h-5.5" />
+              </div>
+              <span className="text-xs font-extrabold text-slate-500 uppercase tracking-wider">Pending</span>
             </div>
-            <span className="text-xs font-extrabold text-slate-500 uppercase tracking-wider">Pending</span>
+            <div className="mt-4">
+              <h3 className="text-3xl font-black text-slate-900 tracking-tight">
+                {metrics?.pendingServices || 0}
+              </h3>
+              <p className="text-xs text-slate-400 font-semibold mt-0.5">Jobs in progress</p>
+            </div>
           </div>
-          <div className="mt-4">
-            <h3 className="text-3xl font-black text-slate-900 tracking-tight">
-              {metrics?.pendingServices || 0}
-            </h3>
-            <p className="text-xs text-slate-400 font-semibold mt-0.5">Jobs in progress</p>
-          </div>
-        </div>
 
-        {/* Card 4: Upcoming Service Reminders */}
-        <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between group hover:-translate-y-0.5 transition-all duration-300">
-          <div className="flex items-center gap-2.5">
-            <div className="p-2.5 rounded-xl bg-pink-50 text-pink-650 border border-pink-100/50 group-hover:bg-pink-100 transition-colors">
-              <Bell className="w-5.5 h-5.5" />
+          {/* Card 4: Upcoming Service Reminders */}
+          <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between group hover:-translate-y-0.5 transition-all duration-300">
+            <div className="flex items-center gap-2.5">
+              <div className="p-2.5 rounded-xl bg-pink-50 text-pink-655 border border-pink-100/50 group-hover:bg-pink-100 transition-colors">
+                <Bell className="w-5.5 h-5.5" />
+              </div>
+              <span className="text-xs font-extrabold text-slate-500 uppercase tracking-wider">Reminders</span>
             </div>
-            <span className="text-xs font-extrabold text-slate-500 uppercase tracking-wider">Reminders</span>
+            <div className="mt-4">
+              <h3 className="text-3xl font-black text-slate-900 tracking-tight">
+                {metrics?.upcomingServiceReminders || 0}
+              </h3>
+              <p className="text-xs text-slate-400 font-semibold mt-0.5">Next service due</p>
+            </div>
           </div>
-          <div className="mt-4">
-            <h3 className="text-3xl font-black text-slate-900 tracking-tight">
-              {metrics?.upcomingServiceReminders || 0}
-            </h3>
-            <p className="text-xs text-slate-400 font-semibold mt-0.5">Next service due</p>
-          </div>
-        </div>
 
-        {/* Card 5: Staff Present Today */}
-        <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between group hover:-translate-y-0.5 transition-all duration-300">
-          <div className="flex items-center gap-2.5">
-            <div className="p-2.5 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-100/50 group-hover:bg-emerald-100 transition-colors">
-              <UserCheck className="w-5.5 h-5.5" />
+          {/* Card 5: Staff Present Today */}
+          <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between group hover:-translate-y-0.5 transition-all duration-300">
+            <div className="flex items-center gap-2.5">
+              <div className="p-2.5 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-100/50 group-hover:bg-emerald-100 transition-colors">
+                <UserCheck className="w-5.5 h-5.5" />
+              </div>
+              <span className="text-xs font-extrabold text-slate-500 uppercase tracking-wider">Attendance</span>
             </div>
-            <span className="text-xs font-extrabold text-slate-500 uppercase tracking-wider">Attendance</span>
+            <div className="mt-4">
+              <h3 className="text-3xl font-black text-slate-900 tracking-tight">
+                {metrics?.staffPresentToday || 0}
+              </h3>
+              <p className="text-xs text-slate-400 font-semibold mt-0.5">Staff present</p>
+            </div>
           </div>
-          <div className="mt-4">
-            <h3 className="text-3xl font-black text-slate-900 tracking-tight">
-              {metrics?.staffPresentToday || 0}
-            </h3>
-            <p className="text-xs text-slate-400 font-semibold mt-0.5">Staff present</p>
-          </div>
-        </div>
 
-        {/* Card 6: Completed Services */}
-        <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between group hover:-translate-y-0.5 transition-all duration-300">
-          <div className="flex items-center gap-2.5">
-            <div className="p-2.5 rounded-xl bg-teal-50 text-teal-600 border border-teal-100/50 group-hover:bg-teal-100 transition-colors">
-              <CheckCircle2 className="w-5.5 h-5.5" />
+          {/* Card 6: Completed Services */}
+          <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between group hover:-translate-y-0.5 transition-all duration-300">
+            <div className="flex items-center gap-2.5">
+              <div className="p-2.5 rounded-xl bg-teal-50 text-teal-600 border border-teal-100/50 group-hover:bg-teal-100 transition-colors">
+                <CheckCircle2 className="w-5.5 h-5.5" />
+              </div>
+              <span className="text-xs font-extrabold text-slate-500 uppercase tracking-wider">Completed</span>
             </div>
-            <span className="text-xs font-extrabold text-slate-500 uppercase tracking-wider">Completed</span>
-          </div>
-          <div className="mt-4">
-            <h3 className="text-3xl font-black text-slate-900 tracking-tight">
-              {metrics?.completedServices || 0}
-            </h3>
-            <p className="text-xs text-slate-400 font-semibold mt-0.5">Finished services</p>
+            <div className="mt-4">
+              <h3 className="text-3xl font-black text-slate-900 tracking-tight">
+                {metrics?.completedServices || 0}
+              </h3>
+              <p className="text-xs text-slate-400 font-semibold mt-0.5">Finished services</p>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* 3. DYNAMIC ROLE-SPECIFIC WORKSPACES */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

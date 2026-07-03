@@ -8,12 +8,22 @@ const JWT_SECRET = process.env.JWT_SECRET || 'super_secret_drive_sync_token_key_
 
 export async function authenticate(req, res, next) {
   try {
+    let token = null;
+
+    // Extract from Authorization Header
     const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.split(' ')[1];
+    }
+    // Fallback: Extract from token query parameter
+    else if (req.query.token) {
+      token = req.query.token;
+    }
+
+    if (!token) {
       return res.status(401).json({ message: 'Authorization token required' });
     }
 
-    const token = authHeader.split(' ')[1];
     const decoded = jwt.verify(token, JWT_SECRET);
 
     const user = await User.findById(decoded.id);

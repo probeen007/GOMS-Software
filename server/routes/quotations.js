@@ -113,6 +113,10 @@ router.post('/public/:token/approve', async (req, res) => {
       return res.status(404).json({ message: 'Quotation not found' });
     }
 
+    if (quotation.status === 'draft') {
+      return res.status(400).json({ message: 'This estimate is currently in draft. It must be sent & published by the workshop before you can approve/decline it.' });
+    }
+
     if (quotation.status === 'approved') {
       return res.status(400).json({ message: 'Quotation is already approved' });
     }
@@ -149,6 +153,10 @@ router.post('/public/:token/reject', async (req, res) => {
     const quotation = await Quotation.findOne({ approvalToken: req.params.token });
     if (!quotation) {
       return res.status(404).json({ message: 'Quotation not found' });
+    }
+
+    if (quotation.status === 'draft') {
+      return res.status(400).json({ message: 'This estimate is currently in draft. It must be sent & published by the workshop before you can approve/decline it.' });
     }
 
     if (quotation.status === 'rejected') {
@@ -402,7 +410,11 @@ router.patch(
         });
       }
 
-      res.json(quotation);
+      const populated = await Quotation.findById(quotation._id)
+        .populate('customerId', 'name phone email address')
+        .populate('vehicleId', 'plateNo make model year colour');
+
+      res.json(populated);
     } catch (err) {
       console.error('Update quotation error:', err.message);
       res.status(500).json({ message: 'Server error' });
@@ -456,7 +468,7 @@ router.get('/:id/pdf', authenticate, authorize('admin', 'receptionist', 'account
 
         <div class="header">
           <div>
-            <div class="logo">DRIVESYNC AUTOMOTIVE</div>
+            <div class="logo">PM AUTOMOBILES</div>
             <div style="font-size: 12px; color: #666;">Kathmandu, Nepal | Phone: +977-1-4444444</div>
           </div>
           <div class="title">
@@ -525,8 +537,8 @@ router.get('/:id/pdf', authenticate, authorize('admin', 'receptionist', 'account
         </div>
 
         <div class="footer">
-          <p>Thank you for choosing DriveSync Automotive. This is a repair estimate valid for 30 days from date of issuance.</p>
-          <p>&copy; ${new Date().getFullYear()} DriveSync. All rights reserved.</p>
+          <p>Thank you for choosing PM Automobiles. This is a repair estimate valid for 30 days from date of issuance.</p>
+          <p>&copy; ${new Date().getFullYear()} PM Auto Mobiles. All rights reserved.</p>
         </div>
       </body>
       </html>

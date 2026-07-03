@@ -22,6 +22,21 @@ router.get('/', authenticate, authorize('admin'), async (req, res) => {
   }
 });
 
+// @route   GET /api/staff/active-list
+// @desc    Get non-sensitive information of active staff members
+// @access  Private (all authenticated users)
+router.get('/active-list', authenticate, async (req, res) => {
+  try {
+    const staff = await User.find({ isActive: true })
+      .select('name role isActive')
+      .sort({ name: 1 });
+    res.json(staff);
+  } catch (err) {
+    console.error('Fetch active staff list error:', err.message);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 // @route   POST /api/staff
 // @desc    Create a new staff account
 // @access  Private (admin)

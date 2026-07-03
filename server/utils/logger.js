@@ -42,7 +42,7 @@ export const logAction = async ({
       // Fallback for customer public interactions (like quote approval)
       finalUserId = '000000000000000000000000'; // System placeholder ID
       finalUserName = 'Customer (Public Portal)';
-      finalUserEmail = 'public-client@drivesync.com';
+      finalUserEmail = 'public-client@pmautomobiles.com';
     }
 
     const log = new AuditLog({

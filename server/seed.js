@@ -2,10 +2,18 @@ import bcrypt from 'bcryptjs';
 import User from './models/User.js';
 import mongoose from 'mongoose';
 import { connectDB, disconnectDB } from './db.js';
+import dotenv from 'dotenv';
 
 export async function seedDatabase() {
   try {
-    const adminEmail = 'admin@drivesync.com';
+    console.log('Clearing database collections for a fresh start...');
+    const collections = await mongoose.connection.db.collections();
+    for (const collection of collections) {
+      await collection.deleteMany({});
+      console.log(`- Cleared: ${collection.collectionName}`);
+    }
+
+    const adminEmail = 'admin@pmautomobiles.com';
     const adminExists = await User.findOne({ email: adminEmail });
 
     if (adminExists) {
@@ -46,7 +54,5 @@ if (process.argv[1] && (process.argv[1].endsWith('seed.js') || process.argv[1].e
     process.exit(0);
   };
   
-  import('dotenv').then(dotenv => {
-    runSeed();
-  });
+  runSeed();
 }

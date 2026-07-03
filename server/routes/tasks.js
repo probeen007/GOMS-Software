@@ -1,17 +1,21 @@
 import express from 'express';
 import { body, validationResult } from 'express-validator';
 import Task from '../models/Task.js';
-import { authenticate } from '../middleware/auth.js';
+import { authenticate, authorize } from '../middleware/auth.js';
 import { logAction } from '../utils/logger.js';
 
 const router = express.Router();
 
 // @route   GET /api/tasks
-// @desc    Get all tasks
+// @desc    Get all tasks (filtered by assignment for technicians)
 // @access  Private
 router.get('/', authenticate, async (req, res) => {
   try {
-    const tasks = await Task.find()
+    let query = {};
+    if (req.user.role === 'technician') {
+      query.assignedTo = req.user.id;
+    }
+    const tasks = await Task.find(query)
       .populate('assignedTo', 'name email role')
       .sort({ dueDate: 1 });
     res.json(tasks);
@@ -23,10 +27,11 @@ router.get('/', authenticate, async (req, res) => {
 
 // @route   POST /api/tasks
 // @desc    Create a new task
-// @access  Private (admin, accountant, receptionist)
+// @access  Private (admin, receptionist, accountant)
 router.post(
   '/',
   authenticate,
+  authorize('admin', 'receptionist', 'accountant'),
   [
     body('title').notEmpty().withMessage('Title is required').trim(),
     body('assignedTo').notEmpty().withMessage('Staff assignment is required'),
@@ -56,6 +61,9 @@ router.post(
       // Write to audit log
       await logAction({
         req,
+        userId: req.user._id,
+        userName: req.user.name,
+        userEmail: req.user.email,
         action: 'task_created',
         module: 'tasks',
         details: `Created task: "${task.title}" with priority ${task.priority.toUpperCase()}, assigned to user ${task.assignedTo}`
@@ -96,6 +104,26 @@ router.patch(
         return res.status(404).json({ message: 'Task not found' });
       }
 
+      // Technicians can only toggle status of their assigned tasks
+      if (req.user.role === 'technician') {
+        if (task.assignedTo.toString() !== req.user.id) {
+          return res.status(403).json({ message: 'Forbidden: You cannot modify tasks assigned to other staff.' });
+        }
+        
+        // Technicians can only change status
+        const allowedKeys = ['status'];
+        const requestedKeys = Object.keys(req.body).filter(k => req.body[k] !== undefined);
+        const disallowed = requestedKeys.filter(k => !allowedKeys.includes(k));
+        if (disallowed.length > 0) {
+          return res.status(403).json({ message: 'Forbidden: Technicians are only permitted to update task status.' });
+        }
+      } else {
+        // Only admin, receptionist, accountant can edit details
+        if (!['admin', 'receptionist', 'accountant'].includes(req.user.role)) {
+          return res.status(403).json({ message: 'Forbidden: Role not authorized to modify task details.' });
+        }
+      }
+
       const updates = req.body;
       Object.keys(updates).forEach((key) => {
         if (updates[key] !== undefined) {
@@ -124,8 +152,8 @@ router.patch(
 
 // @route   DELETE /api/tasks/:id
 // @desc    Delete a task
-// @access  Private
-router.delete('/:id', authenticate, async (req, res) => {
+// @access  Private (admin, receptionist, accountant)
+router.delete('/:id', authenticate, authorize('admin', 'receptionist', 'accountant'), async (req, res) => {
   try {
     const task = await Task.findById(req.params.id);
     if (!task) {

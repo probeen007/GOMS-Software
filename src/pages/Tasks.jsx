@@ -53,8 +53,8 @@ export default function Tasks() {
 
   const fetchStaff = async () => {
     try {
-      const res = await axios.get('/api/staff');
-      setStaffList(res.data.filter((s) => s.isActive));
+      const res = await axios.get('/api/staff/active-list');
+      setStaffList(res.data);
     } catch (err) {
       console.error('Error fetching staff list:', err);
     }

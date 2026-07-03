@@ -87,6 +87,15 @@ export default function Invoices() {
   }, [statusFilter]);
 
   // Handle Payment Submit
+  // Helper to construct WhatsApp link for Nepal phone numbers
+  const getWhatsAppLink = (phone, message) => {
+    let cleanPhone = phone.replace(/\D/g, ''); // Remove non-digits
+    if (cleanPhone.length === 10 && cleanPhone.startsWith('9')) {
+      cleanPhone = '977' + cleanPhone; // Prepend Nepal country code
+    }
+    return `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
+  };
+
   const handleRecordPayment = async (e) => {
     e.preventDefault();
     if (!payAmount || parseFloat(payAmount) <= 0) {
@@ -106,6 +115,24 @@ export default function Invoices() {
         sendWhatsApp
       });
       
+      if (sendWhatsApp && selectedInvoiceData?.invoice) {
+        const customer = selectedInvoiceData.invoice.customerId;
+        const invoiceNo = selectedInvoiceData.invoice.invoiceNo;
+        const vehicle = selectedInvoiceData.invoice.vehicleId;
+        const vehicleStr = vehicle ? `${vehicle.make} ${vehicle.model} (${vehicle.plateNo})` : '';
+        
+        let message = `Hi ${customer?.name || 'Customer'}, we have received your payment of Rs. ${parseFloat(payAmount).toFixed(2)} (${payMethod}) for Invoice #${invoiceNo}.`;
+        if (nextServiceDate) {
+          const dateStr = new Date(nextServiceDate).toLocaleDateString([], { month: 'long', day: 'numeric', year: 'numeric' });
+          message += ` Your next service for ${vehicleStr} is scheduled on ${dateStr}. Thank you!`;
+        } else {
+          message += ` Thank you for your business!`;
+        }
+        
+        const link = getWhatsAppLink(customer?.phone || '', message);
+        window.open(link, '_blank');
+      }
+
       setIsPaymentModalOpen(false);
       setPayAmount('');
       setPayReference('');
@@ -471,7 +498,7 @@ export default function Invoices() {
             {/* Print Invoice layout */}
             <div className="pt-2">
               <a
-                href={`/api/invoices/${selectedInvoiceData.invoice._id}/pdf`}
+                href={`/api/invoices/${selectedInvoiceData.invoice._id}/pdf?token=${localStorage.getItem('token')}`}
                 target="_blank"
                 rel="noreferrer"
                 className="flex items-center justify-center gap-2 w-full h-11 rounded-xl text-sm font-bold text-slate-300 hover:text-white bg-slate-900 hover:bg-slate-850 border border-slate-800 hover:border-slate-750 transition-all hover:scale-[1.02]"

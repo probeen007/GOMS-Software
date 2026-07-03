@@ -491,7 +491,7 @@ export default function JobCards() {
             {/* Print Action Sheet */}
             <div className="pt-2">
               <a
-                href={`/api/job-cards/${selectedCard._id}/pdf`}
+                href={`/api/job-cards/${selectedCard._id}/pdf?token=${localStorage.getItem('token')}`}
                 target="_blank"
                 rel="noreferrer"
                 className="flex items-center justify-center gap-2.5 w-full h-11 rounded-xl text-sm font-bold text-slate-300 bg-slate-900 hover:bg-slate-850 border border-slate-800 hover:border-slate-750 transition-all hover:scale-[1.02] cursor-pointer"

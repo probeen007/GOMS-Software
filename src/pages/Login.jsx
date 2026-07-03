@@ -44,7 +44,7 @@ export default function Login() {
       <div className="w-full max-w-[460px] z-10 space-y-7 animate-fade-in-up">
         {/* Brand Header */}
         <div className="text-center space-y-1">
-          <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">DriveSync</h2>
+          <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">PM Auto Mobiles</h2>
           <p className="text-xs text-slate-500 font-semibold uppercase tracking-wider">
             Auto-Service Operations Management Portal
           </p>
@@ -78,7 +78,7 @@ export default function Login() {
                   id="email"
                   type="email"
                   required
-                  placeholder="admin@drivesync.com"
+                  placeholder="admin@pmautomobiles.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="pr-4 block w-full rounded-xl text-slate-800 border border-slate-200 focus:ring-2 focus:ring-blue-100 focus:border-blue-500 outline-none placeholder-slate-400 bg-white transition-all"
@@ -134,7 +134,7 @@ export default function Login() {
           <div className="mt-6.5 pt-6 border-t border-slate-100 text-center">
             <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Demo Credentials</span>
             <div className="mt-3 text-xs text-slate-600 bg-slate-50 p-3 rounded-2xl border border-slate-200 inline-block font-mono leading-relaxed">
-              <span className="text-blue-600 font-bold">ID:</span> admin@drivesync.com <br />
+              <span className="text-blue-600 font-bold">ID:</span> admin@pmautomobiles.com <br />
               <span className="text-blue-600 font-bold">PW:</span> admin123
             </div>
           </div>

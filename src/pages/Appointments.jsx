@@ -17,7 +17,9 @@ import {
   Camera,
   Layers,
   TrendingUp,
-  Image as ImageIcon
+  Image as ImageIcon,
+  MessageSquare,
+  Send
 } from 'lucide-react';
 
 export default function Appointments() {
@@ -31,6 +33,11 @@ export default function Appointments() {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
+
+  // Service Reminders tab states
+  const [activeTab, setActiveTab] = useState('appointments');
+  const [reminders, setReminders] = useState([]);
+  const [remindersLoading, setRemindersLoading] = useState(false);
 
   // Booking Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -81,6 +88,55 @@ export default function Appointments() {
   useEffect(() => {
     fetchAppointments();
   }, [startDate, endDate, statusFilter]);
+
+  // Fetch Service Reminders
+  const fetchReminders = async () => {
+    setRemindersLoading(true);
+    try {
+      const response = await axios.get('/api/invoices/service-reminders');
+      setReminders(response.data);
+    } catch (error) {
+      console.error('Error fetching service reminders:', error);
+    } finally {
+      setRemindersLoading(false);
+    }
+  };
+
+  const handleMarkReminderSent = async (invoiceId, customerName, plateNo) => {
+    try {
+      await axios.post(`/api/invoices/${invoiceId}/service-reminder-sent`, {
+        customerName,
+        plateNo
+      });
+      fetchReminders();
+    } catch (error) {
+      console.error('Error marking reminder sent:', error);
+    }
+  };
+
+  // Helper to construct WhatsApp link for Nepal phone numbers
+  const getWhatsAppLink = (phone, message) => {
+    let cleanPhone = phone.replace(/\D/g, ''); // Remove non-digits
+    if (cleanPhone.length === 10 && cleanPhone.startsWith('9')) {
+      cleanPhone = '977' + cleanPhone; // Prepend Nepal country code
+    }
+    return `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
+  };
+
+  // Pre-filled formatted reminder message
+  const getMessageTemplate = (rem) => {
+    const clientName = rem.customerId?.name || 'Customer';
+    const vehicle = `${rem.vehicleId?.make || ''} ${rem.vehicleId?.model || ''} (${rem.vehicleId?.plateNo || ''})`;
+    const dateStr = new Date(rem.nextServiceDate).toLocaleDateString([], { month: 'long', day: 'numeric', year: 'numeric' });
+    return `Hi ${clientName}, this is a reminder from PM Automobiles. Your vehicle ${vehicle} is due for its next periodic service on ${dateStr}. Please book an appointment or visit us. Thank you!`;
+  };
+
+  // Fetch reminders on mount for count badges, and on tab changes
+  useEffect(() => {
+    if (isReceptionistOrAdmin) {
+      fetchReminders();
+    }
+  }, [activeTab]);
 
   // Load Technicians on Modal Open
   const loadTechnicians = async () => {
@@ -236,17 +292,17 @@ export default function Appointments() {
   const getStatusStyle = (status) => {
     switch (status) {
       case 'scheduled':
-        return 'bg-blue-500/10 text-blue-400 border-blue-500/20';
+        return 'bg-blue-50 text-blue-700 border-blue-200';
       case 'checked-in':
-        return 'bg-violet-500/10 text-violet-400 border-violet-500/20';
+        return 'bg-violet-50 text-violet-700 border-violet-200';
       case 'in-progress':
-        return 'bg-amber-500/10 text-amber-400 border-amber-500/20';
+        return 'bg-amber-50 text-amber-700 border-amber-200';
       case 'completed':
-        return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
+        return 'bg-emerald-50 text-emerald-700 border-emerald-200';
       case 'cancelled':
-        return 'bg-rose-500/10 text-rose-455 border-rose-500/20';
+        return 'bg-rose-50 text-rose-700 border-rose-200';
       default:
-        return 'bg-slate-800 text-slate-400';
+        return 'bg-slate-100 text-slate-600 border-slate-200';
     }
   };
 
@@ -272,237 +328,404 @@ export default function Appointments() {
         )}
       </div>
 
-      {/* Date and status filter widgets */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 p-5 bg-slate-900/40 border border-slate-800 rounded-3xl shadow-md">
-        <div className="space-y-1.5 flex flex-col justify-between">
-          <label className="text-xs font-extrabold text-slate-300 uppercase tracking-widest flex items-center gap-1.5 mb-0.5">
-            <Calendar className="w-4 h-4 text-primary-400" />
-            Start Date
-          </label>
-          <input
-            type="date"
-            value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
-            className="glass-input block w-full rounded-xl h-11 px-3.5 text-slate-205 text-sm focus:outline-none"
-          />
-        </div>
-
-        <div className="space-y-1.5 flex flex-col justify-between">
-          <label className="text-xs font-extrabold text-slate-300 uppercase tracking-widest flex items-center gap-1.5 mb-0.5">
-            <Calendar className="w-4 h-4 text-primary-400" />
-            End Date
-          </label>
-          <input
-            type="date"
-            value={endDate}
-            onChange={(e) => setEndDate(e.target.value)}
-            className="glass-input block w-full rounded-xl h-11 px-3.5 text-slate-205 text-sm focus:outline-none"
-          />
-        </div>
-
-        <div className="space-y-1.5 flex flex-col justify-between">
-          <label className="text-xs font-extrabold text-slate-300 uppercase tracking-widest flex items-center gap-1.5 mb-0.5">
-            <Filter className="w-4 h-4 text-primary-400" />
-            Status Filter
-          </label>
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="glass-input block w-full rounded-xl h-11 px-3.5 text-slate-205 text-sm focus:outline-none"
-          >
-            <option value="" className="bg-slate-900">All Scheduled</option>
-            <option value="scheduled" className="bg-slate-900">Scheduled</option>
-            <option value="checked-in" className="bg-slate-900">Checked In</option>
-            <option value="in-progress" className="bg-slate-900">In Progress</option>
-            <option value="completed" className="bg-slate-900">Completed</option>
-            <option value="cancelled" className="bg-slate-900">Cancelled</option>
-          </select>
-        </div>
-
-        <div className="flex items-end justify-end">
+      {/* Tab Switcher */}
+      <div className="flex border-b border-slate-200 mb-6">
+        <button
+          onClick={() => setActiveTab('appointments')}
+          className={`px-6 py-3 text-sm font-bold border-b-2 transition-all cursor-pointer ${
+            activeTab === 'appointments'
+              ? 'border-blue-600 text-blue-600'
+              : 'border-transparent text-slate-400 hover:text-slate-650'
+          }`}
+        >
+          Appointments List
+        </button>
+        {isReceptionistOrAdmin && (
           <button
-            onClick={() => {
-              setStartDate('');
-              setEndDate('');
-              setStatusFilter('');
-            }}
-            className="w-full h-11 px-5 rounded-xl text-sm font-bold text-slate-300 hover:text-white bg-slate-900 border border-slate-800 hover:border-slate-750 transition-all hover:scale-[1.02] cursor-pointer"
+            onClick={() => setActiveTab('reminders')}
+            className={`px-6 py-3 text-sm font-bold border-b-2 transition-all cursor-pointer flex items-center gap-2 ${
+              activeTab === 'reminders'
+                ? 'border-blue-600 text-blue-600'
+                : 'border-transparent text-slate-400 hover:text-slate-650'
+            }`}
           >
-            Clear Filters
+            <span>Service Reminders</span>
+            {reminders.filter(r => {
+              const daysLeft = Math.ceil((new Date(r.nextServiceDate) - new Date()) / (1000 * 60 * 60 * 24));
+              return daysLeft <= 1 && !r.reminderSent;
+            }).length > 0 && (
+              <span className="flex h-2 w-2 rounded-full bg-rose-500 animate-pulse"></span>
+            )}
           </button>
-        </div>
+        )}
       </div>
 
-      {/* Appointment Cards list */}
-      {loading ? (
-        <div className="flex flex-col items-center justify-center min-h-[40vh] bg-slate-900/15 rounded-3xl border border-slate-800/65 py-12">
-          <Loader2 className="w-8 h-8 text-primary-500 animate-spin" />
-          <p className="text-slate-400 text-sm mt-3 font-medium">Fetching active schedules...</p>
-        </div>
-      ) : appointments.length === 0 ? (
-        <div className="flex flex-col items-center justify-center min-h-[40vh] bg-slate-900/20 rounded-3xl border border-slate-800/80 p-8 text-center">
-          <div className="w-12 h-12 rounded-xl bg-slate-800/50 flex items-center justify-center border border-slate-700/30 mb-4">
-            <Calendar className="w-6 h-6 text-slate-500" />
-          </div>
-          <h3 className="text-base font-bold text-white">No schedules found</h3>
-          <p className="text-slate-500 text-xs mt-1 max-w-sm">
-            Try resetting your range parameters or create a new check-in book.
-          </p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 gap-5">
-          {appointments.map((appt) => {
-            const formattedDate = new Date(appt.dateTime).toLocaleString([], {
-              month: 'short',
-              day: 'numeric',
-              year: 'numeric',
-              hour: '2-digit',
-              minute: '2-digit'
-            });
+      {activeTab === 'appointments' && (
+        <div className="space-y-6">
+          {/* Date and status filter widgets */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 p-5 bg-slate-900/40 border border-slate-800 rounded-3xl shadow-md">
+            <div className="space-y-1.5 flex flex-col justify-between">
+              <label className="text-xs font-extrabold text-slate-300 uppercase tracking-widest flex items-center gap-1.5 mb-0.5">
+                <Calendar className="w-4 h-4 text-primary-400" />
+                Start Date
+              </label>
+              <input
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                className="glass-input block w-full rounded-xl h-11 px-3.5 text-slate-205 text-sm focus:outline-none"
+              />
+            </div>
 
-            return (
-              <div
-                key={appt._id}
-                className="p-6 rounded-3xl bg-slate-900/40 border border-slate-800/80 shadow-lg hover:border-slate-700/60 transition-all flex flex-col gap-5 relative overflow-hidden"
+            <div className="space-y-1.5 flex flex-col justify-between">
+              <label className="text-xs font-extrabold text-slate-300 uppercase tracking-widest flex items-center gap-1.5 mb-0.5">
+                <Calendar className="w-4 h-4 text-primary-400" />
+                End Date
+              </label>
+              <input
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                className="glass-input block w-full rounded-xl h-11 px-3.5 text-slate-205 text-sm focus:outline-none"
+              />
+            </div>
+
+            <div className="space-y-1.5 flex flex-col justify-between">
+              <label className="text-xs font-extrabold text-slate-300 uppercase tracking-widest flex items-center gap-1.5 mb-0.5">
+                <Filter className="w-4 h-4 text-primary-400" />
+                Status Filter
+              </label>
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="glass-input block w-full rounded-xl h-11 px-3.5 text-slate-205 text-sm focus:outline-none"
               >
-                {/* Visual header */}
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-850">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-primary-600/10 border border-primary-500/20 flex items-center justify-center text-primary-400">
-                      <Clock className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <p className="text-base font-extrabold text-white">{formattedDate}</p>
-                      <span className="text-xs text-slate-400 font-bold uppercase tracking-widest block mt-0.5">Assigned Tech: {appt.technicianId?.name || 'Unassigned'}</span>
-                    </div>
-                  </div>
+                <option value="" className="bg-slate-900">All Scheduled</option>
+                <option value="scheduled" className="bg-slate-900">Scheduled</option>
+                <option value="checked-in" className="bg-slate-900">Checked In</option>
+                <option value="in-progress" className="bg-slate-900">In Progress</option>
+                <option value="completed" className="bg-slate-900">Completed</option>
+                <option value="cancelled" className="bg-slate-900">Cancelled</option>
+              </select>
+            </div>
 
-                  <div className="flex items-center gap-2">
-                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-extrabold uppercase tracking-widest border ${getStatusStyle(appt.status)}`}>
-                      {appt.status}
-                    </span>
-                    <span className="text-sm font-bold text-slate-200 capitalize bg-slate-850 px-3.5 py-1 rounded-xl">
-                      {appt.serviceType}
-                    </span>
-                  </div>
-                </div>
+            <div className="flex items-end justify-end">
+              <button
+                onClick={() => {
+                  setStartDate('');
+                  setEndDate('');
+                  setStatusFilter('');
+                }}
+                className="btn-secondary w-full h-11 rounded-xl font-bold flex items-center justify-center gap-2 cursor-pointer"
+              >
+                Clear Filters
+              </button>
+            </div>
+          </div>
 
-                {/* Info layout */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-                  <div className="space-y-1.5">
-                    <span className="text-xs font-extrabold text-slate-400 uppercase tracking-widest block mb-0.5">Client & Vehicle Details</span>
-                    <div className="text-sm text-slate-300 space-y-1">
-                      <p className="flex items-center gap-1.5 font-bold text-white text-base">
-                        <User className="w-4 h-4 text-slate-400" />
-                        {appt.customerId?.name || 'Deleted Client'}
-                      </p>
-                      <p className="flex items-center gap-1.5 font-medium mt-1">
-                        <Car className="w-4 h-4 text-slate-400" />
-                        <span className="px-2 py-0.5 bg-primary-950 text-primary-400 border border-primary-500/20 font-mono font-bold text-xs rounded uppercase shrink-0">
-                          {appt.vehicleId?.plateNo}
+          {loading ? (
+            <div className="flex justify-center py-12">
+              <Loader2 className="w-8 h-8 text-primary-500 animate-spin" />
+            </div>
+          ) : appointments.length === 0 ? (
+            <div className="flex flex-col items-center justify-center p-12 bg-slate-900/40 border border-slate-800/80 rounded-3xl text-center">
+              <div className="w-12 h-12 rounded-xl bg-slate-800/80 flex items-center justify-center border border-slate-700/50 mb-4">
+                <Clock className="w-6 h-6 text-slate-400" />
+              </div>
+              <p className="text-sm font-bold text-white">No Bookings Found</p>
+              <p className="text-xs text-slate-400 mt-1 max-w-sm">There are no client appointments matching the selected filter query.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-5">
+              {appointments.map((appt) => {
+                const formattedDate = new Date(appt.dateTime).toLocaleString([], {
+                  month: 'short',
+                  day: 'numeric',
+                  year: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit'
+                });
+
+                return (
+                  <div
+                    key={appt._id}
+                    className="p-6 card-premium flex flex-col items-stretch gap-5 relative overflow-hidden"
+                  >
+                    {/* Visual header */}
+                    <div className="flex flex-row items-center justify-between gap-4 pb-4 border-b border-slate-150 w-full">
+                      <div className="flex items-center gap-3 text-left">
+                        <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-200/50 flex items-center justify-center text-blue-600 shrink-0">
+                          <Clock className="w-5 h-5" />
+                        </div>
+                        <div className="text-left">
+                          <p className="text-base font-extrabold text-slate-900 text-left">{formattedDate}</p>
+                          <span className="text-xs text-slate-500 font-bold uppercase tracking-widest block mt-0.5 text-left">Assigned Tech: {appt.technicianId?.name || 'Unassigned'}</span>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-wrap items-center justify-end gap-2 text-right">
+                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-extrabold uppercase tracking-widest border ${getStatusStyle(appt.status)}`}>
+                          {appt.status}
                         </span>
-                        <span>{appt.vehicleId?.make} {appt.vehicleId?.model}</span>
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="space-y-1.5 lg:col-span-2">
-                    <span className="text-xs font-extrabold text-slate-400 uppercase tracking-widest block mb-0.5">Diagnostic Intake Comments</span>
-                    <p className="text-sm text-slate-300 italic font-medium leading-relaxed">
-                      {appt.note ? `"${appt.note}"` : 'No intake notes recorded.'}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Subdocument check-in details display */}
-                {appt.checkIn && (
-                  <div className="p-4 bg-slate-900/60 border border-slate-850 rounded-2xl space-y-3">
-                    <div className="flex flex-wrap justify-between items-center gap-2">
-                      <div className="flex gap-6 text-sm text-slate-350">
-                        <span>
-                          <strong className="text-slate-400 uppercase text-xs tracking-widest block font-extrabold mb-1">Mileage In</strong>
-                          <span className="font-mono text-base font-extrabold text-violet-400">{appt.checkIn.mileageIn.toLocaleString()} km</span>
-                        </span>
-                        <span>
-                          <strong className="text-slate-400 uppercase text-xs tracking-widest block font-extrabold mb-1">Condition Notes</strong>
-                          <span className="text-slate-205 font-medium">{appt.checkIn.conditionNotes || 'No issues declared'}</span>
+                        <span className="text-xs font-extrabold text-slate-600 capitalize bg-slate-100 border border-slate-200 px-3.5 py-1 rounded-xl">
+                          {appt.serviceType}
                         </span>
                       </div>
-                      <span className="text-xs font-bold text-violet-400/80 bg-violet-500/10 px-2.5 py-0.5 border border-violet-500/15 rounded">Inspected</span>
                     </div>
 
-                    {/* Photos grid */}
-                    {appt.checkIn.photos && appt.checkIn.photos.length > 0 && (
-                      <div className="grid grid-cols-3 sm:grid-cols-5 gap-3 pt-1">
-                        {appt.checkIn.photos.map((photoUrl, idx) => (
-                          <div key={idx} className="relative aspect-video rounded-lg overflow-hidden border border-slate-800 bg-slate-950 group">
-                            <img
-                              src={photoUrl}
-                              alt={`Checkin photo ${idx + 1}`}
-                              className="w-full h-full object-cover"
-                            />
-                            <a
-                              href={photoUrl}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="absolute inset-0 bg-slate-950/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-xs font-bold text-white uppercase tracking-wider"
-                            >
-                              Expand
-                            </a>
+                    {/* Info layout */}
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 w-full text-left">
+                      <div className="space-y-1.5 text-left">
+                        <span className="text-xs font-extrabold text-slate-400 uppercase tracking-widest block mb-0.5 text-left">Client & Vehicle Details</span>
+                        <div className="text-sm space-y-2 text-left">
+                          <p className="flex items-center gap-1.5 font-bold text-slate-800 text-base text-left">
+                            <User className="w-4 h-4 text-slate-400" />
+                            {appt.customerId?.name || 'Deleted Client'}
+                          </p>
+                          <p className="flex items-center gap-1.5 font-medium mt-1 text-left">
+                            <Car className="w-4 h-4 text-slate-400" />
+                            <span className="px-2 py-0.5 bg-blue-50 text-blue-755 border border-blue-200/60 font-mono font-bold text-xs rounded uppercase shrink-0">
+                              {appt.vehicleId?.plateNo}
+                            </span>
+                            <span className="text-slate-655 font-semibold text-left">{appt.vehicleId?.make} {appt.vehicleId?.model}</span>
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="space-y-1.5 lg:col-span-2 text-left">
+                        <span className="text-xs font-extrabold text-slate-400 uppercase tracking-widest block mb-0.5 text-left">Diagnostic Intake Comments</span>
+                        <p className="text-sm text-slate-650 bg-slate-50 border border-slate-200/50 p-3.5 rounded-xl italic font-medium leading-relaxed mt-1 text-left w-full">
+                          {appt.note ? `"${appt.note}"` : 'No intake notes recorded.'}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Subdocument check-in details display */}
+                    {appt.checkIn && (
+                      <div className="p-5 bg-slate-50 border border-slate-250 rounded-2xl space-y-4">
+                        <div className="flex flex-wrap justify-between items-center gap-4">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 text-sm">
+                            <div>
+                              <strong className="text-slate-500 uppercase text-[10px] tracking-widest block font-extrabold mb-1">Mileage In</strong>
+                              <span className="font-mono text-base font-extrabold text-violet-700">{appt.checkIn.mileageIn.toLocaleString()} km</span>
+                            </div>
+                            <div className="sm:col-span-2">
+                              <strong className="text-slate-500 uppercase text-[10px] tracking-widest block font-extrabold mb-1">Condition Notes</strong>
+                              <span className="text-slate-700 font-semibold">{appt.checkIn.conditionNotes || 'No issues declared'}</span>
+                            </div>
                           </div>
-                        ))}
+                          <span className="text-xs font-bold text-violet-750 bg-violet-50 border border-violet-200/60 px-2.5 py-0.5 rounded-lg shrink-0">Inspected</span>
+                        </div>
+
+                        {/* Photos grid */}
+                        {appt.checkIn.photos && appt.checkIn.photos.length > 0 && (
+                          <div className="grid grid-cols-3 sm:grid-cols-5 gap-3 pt-1">
+                            {appt.checkIn.photos.map((photoUrl, idx) => (
+                              <div key={idx} className="relative aspect-video rounded-xl overflow-hidden border border-slate-200 bg-slate-100 group shadow-sm">
+                                <img
+                                  src={photoUrl}
+                                  alt={`Checkin photo ${idx + 1}`}
+                                  className="w-full h-full object-cover"
+                                />
+                                <a
+                                  href={photoUrl}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="absolute inset-0 bg-slate-900/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-xxs font-bold text-white uppercase tracking-wider"
+                                >
+                                  Expand
+                                </a>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     )}
+
+                    {/* Action buttons footer */}
+                    <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-150">
+                      {appt.status === 'scheduled' && isReceptionistOrAdmin && (
+                        <button
+                          onClick={() => {
+                            setCheckInApptId(appt._id);
+                          }}
+                          className="flex items-center gap-2 px-5 h-11 rounded-xl text-sm font-bold text-violet-600 bg-violet-50 hover:bg-violet-100 border border-violet-200 transition-all hover:scale-[1.02] cursor-pointer shadow-sm"
+                        >
+                          <Camera className="w-4 h-4" />
+                          <span>Intake / Check-In</span>
+                        </button>
+                      )}
+
+                      {appt.status === 'checked-in' && (isReceptionistOrAdmin || isTechnician) && (
+                        <button
+                          onClick={() => handleStatusChange(appt._id, 'in-progress')}
+                          className="flex items-center gap-2 px-5 h-11 rounded-xl text-sm font-bold text-amber-600 bg-amber-50 hover:bg-amber-100 border border-amber-200 transition-all hover:scale-[1.02] cursor-pointer"
+                        >
+                          <Play className="w-4 h-4" />
+                          <span>Start Repair Ops</span>
+                        </button>
+                      )}
+
+                      {appt.status === 'in-progress' && (isReceptionistOrAdmin || isTechnician) && (
+                        <button
+                          onClick={() => handleStatusChange(appt._id, 'completed')}
+                          className="flex items-center gap-2 px-5 h-11 rounded-xl text-sm font-bold text-emerald-600 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 transition-all hover:scale-[1.02] cursor-pointer"
+                        >
+                          <CheckCircle className="w-4 h-4" />
+                          <span>Finish Repairs</span>
+                        </button>
+                      )}
+
+                      {appt.status === 'scheduled' && isReceptionistOrAdmin && (
+                        <button
+                          onClick={() => handleStatusChange(appt._id, 'cancelled')}
+                          className="flex items-center gap-1.5 px-4 h-11 rounded-xl text-sm font-bold text-slate-500 hover:text-rose-600 hover:bg-rose-50 transition-all cursor-pointer hover:scale-[1.02]"
+                        >
+                          <XCircle className="w-4.5 h-4.5 shrink-0" />
+                          <span>Cancel booking</span>
+                        </button>
+                      )}
+                    </div>
                   </div>
-                )}
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
 
-                {/* Action buttons footer */}
-                <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-850/45">
-                  {appt.status === 'scheduled' && isReceptionistOrAdmin && (
-                    <button
-                      onClick={() => {
-                        setCheckInApptId(appt._id);
-                      }}
-                      className="flex items-center gap-2 px-5 h-11 rounded-xl text-sm font-bold text-violet-400 bg-violet-500/10 hover:bg-violet-500/20 border border-violet-500/20 transition-all hover:scale-[1.02] cursor-pointer shadow-lg shadow-violet-550/5"
-                    >
-                      <Camera className="w-4 h-4 animate-bounce" />
-                      <span>Intake / Check-In</span>
-                    </button>
-                  )}
+      {activeTab === 'reminders' && (
+        <div className="space-y-6">
+          <div className="flex flex-col gap-2">
+            <h2 className="text-xl font-bold text-slate-900">Service Reminders Dashboard</h2>
+            <p className="text-xs text-slate-500 font-medium">
+              Below are clients with upcoming or overdue vehicle services. Click the WhatsApp button to send them a custom reminder.
+            </p>
+          </div>
 
-                  {appt.status === 'checked-in' && (isReceptionistOrAdmin || isTechnician) && (
-                    <button
-                      onClick={() => handleStatusChange(appt._id, 'in-progress')}
-                      className="flex items-center gap-2 px-5 h-11 rounded-xl text-sm font-bold text-amber-400 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/20 transition-all hover:scale-[1.02] cursor-pointer"
-                    >
-                      <Play className="w-4 h-4 animate-pulse" />
-                      <span>Start Repair Ops</span>
-                    </button>
-                  )}
-
-                  {appt.status === 'in-progress' && (isReceptionistOrAdmin || isTechnician) && (
-                    <button
-                      onClick={() => handleStatusChange(appt._id, 'completed')}
-                      className="flex items-center gap-2 px-5 h-11 rounded-xl text-sm font-bold text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 transition-all hover:scale-[1.02] cursor-pointer"
-                    >
-                      <CheckCircle className="w-4 h-4" />
-                      <span>Finish Repairs</span>
-                    </button>
-                  )}
-
-                  {appt.status === 'scheduled' && isReceptionistOrAdmin && (
-                    <button
-                      onClick={() => handleStatusChange(appt._id, 'cancelled')}
-                      className="flex items-center gap-1.5 px-4 h-11 rounded-xl text-sm font-bold text-slate-500 hover:text-rose-455 hover:bg-rose-500/10 transition-all cursor-pointer hover:scale-[1.02]"
-                    >
-                      <XCircle className="w-4.5 h-4.5 shrink-0" />
-                      <span>Cancel booking</span>
-                    </button>
-                  )}
-                </div>
+          {remindersLoading ? (
+            <div className="flex flex-col items-center justify-center p-12 bg-white border border-slate-200 rounded-3xl">
+              <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
+              <span className="text-sm font-semibold text-slate-600 mt-3">Loading service reminders...</span>
+            </div>
+          ) : reminders.length === 0 ? (
+            <div className="flex flex-col items-center justify-center p-12 bg-white border border-slate-200 rounded-3xl text-center">
+              <div className="w-12 h-12 rounded-xl bg-slate-50 flex items-center justify-center border border-slate-100 mb-4">
+                <CheckCircle className="w-6 h-6 text-slate-400" />
               </div>
-            );
-          })}
+              <p className="text-sm font-bold text-slate-700">No Service Reminders Found</p>
+              <p className="text-xs text-slate-500 mt-1 max-w-sm">There are no vehicles scheduled for upcoming services at this time.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-5">
+              {reminders.map((rem) => {
+                const daysLeft = Math.ceil((new Date(rem.nextServiceDate) - new Date()) / (1000 * 60 * 60 * 24));
+                const message = getMessageTemplate(rem);
+                const isUrgent = daysLeft <= 1;
+
+                const reminderDateStr = new Date(rem.nextServiceDate).toLocaleDateString([], {
+                  month: 'short',
+                  day: 'numeric',
+                  year: 'numeric'
+                });
+
+                return (
+                  <div
+                    key={rem._id}
+                    className={`p-6 card-premium flex flex-col items-stretch gap-5 relative overflow-hidden ${
+                      isUrgent && !rem.reminderSent ? 'border-rose-300 shadow-sm shadow-rose-100/50' : ''
+                    }`}
+                  >
+                    {/* Header line */}
+                    <div className="flex flex-row items-center justify-between gap-4 pb-4 border-b border-slate-150 w-full">
+                      <div className="flex items-center gap-3 text-left">
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+                          isUrgent && !rem.reminderSent 
+                            ? 'bg-rose-50 border border-rose-200/50 text-rose-600' 
+                            : 'bg-blue-50 border border-blue-200/50 text-blue-600'
+                        }`}>
+                          <Calendar className="w-5 h-5" />
+                        </div>
+                        <div className="text-left">
+                          <p className="text-base font-extrabold text-slate-900 text-left">
+                            Due on {reminderDateStr}
+                          </p>
+                          <span className="text-xs text-slate-500 font-bold uppercase tracking-widest block mt-0.5 text-left">
+                            {daysLeft < 0 
+                              ? `Overdue by ${Math.abs(daysLeft)} day(s)` 
+                              : daysLeft === 0 
+                                ? 'Due Today' 
+                                : daysLeft === 1 
+                                  ? 'Due Tomorrow' 
+                                  : `In ${daysLeft} days`}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-wrap items-center justify-end gap-2 text-right">
+                        {isUrgent && !rem.reminderSent && (
+                          <span className="inline-flex items-center px-3 py-1 rounded-full text-xxs font-extrabold uppercase tracking-widest bg-rose-50 text-rose-700 border border-rose-200 animate-pulse">
+                            Action Required
+                          </span>
+                        )}
+                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-xxs font-extrabold uppercase tracking-widest border ${
+                          rem.reminderSent 
+                            ? 'bg-emerald-50 text-emerald-700 border-emerald-200' 
+                            : 'bg-slate-50 text-slate-655 border-slate-200'
+                        }`}>
+                          {rem.reminderSent ? 'Reminder Sent' : 'Pending Send'}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Details section */}
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 w-full text-left">
+                      <div className="space-y-1.5 text-left">
+                        <span className="text-xs font-extrabold text-slate-400 uppercase tracking-widest block mb-0.5 text-left">Client & Vehicle Details</span>
+                        <div className="text-sm space-y-2 text-left">
+                          <p className="flex items-center gap-1.5 font-bold text-slate-800 text-base text-left">
+                            <User className="w-4 h-4 text-slate-400" />
+                            {rem.customerId?.name || 'Deleted Client'}
+                          </p>
+                          <p className="flex items-center gap-1.5 font-medium mt-1 text-left">
+                            <Car className="w-4 h-4 text-slate-400" />
+                            <span className="px-2 py-0.5 bg-blue-50 text-blue-755 border border-blue-200/60 font-mono font-bold text-xs rounded uppercase shrink-0">
+                              {rem.vehicleId?.plateNo}
+                            </span>
+                            <span className="text-slate-655 font-semibold text-left">
+                              {rem.vehicleId?.make} {rem.vehicleId?.model}
+                            </span>
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Message preview area */}
+                      <div className="space-y-1.5 lg:col-span-2 text-left">
+                        <span className="text-xs font-extrabold text-slate-400 uppercase tracking-widest block mb-0.5 text-left">Formatted Custom Message</span>
+                        <div className="text-xs text-slate-650 bg-slate-50 border border-slate-200/60 p-3.5 rounded-xl font-medium leading-relaxed mt-1 text-left w-full relative">
+                          <p className="italic">"{message}"</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Footer Actions */}
+                    <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-150">
+                      <a
+                        href={getWhatsAppLink(rem.customerId?.phone || '', message)}
+                        target="_blank"
+                        rel="noreferrer"
+                        onClick={() => handleMarkReminderSent(rem._id, rem.customerId?.name, rem.vehicleId?.plateNo)}
+                        className="flex items-center gap-2 px-5 h-11 rounded-xl text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-500 transition-all hover:scale-[1.02] cursor-pointer shadow-sm"
+                      >
+                        <MessageSquare className="w-4.5 h-4.5" />
+                        <span>Send to WhatsApp</span>
+                      </a>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       )}
 
