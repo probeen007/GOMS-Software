@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { formatNepaliDate } from '../utils/nepaliDate';
@@ -34,7 +34,7 @@ import {
   Legend
 } from 'recharts';
 
-const COLORS = ['#6366f1', '#f59e0b', '#ec4899', '#10b981', '#06b6d4', '#8b5cf6'];
+const COLORS = ['#2563eb', '#f59e0b', '#ec4899', '#10b981', '#06b6d4', '#8b5cf6'];
 
 export default function Finance() {
   const { user } = useAuth();
@@ -198,8 +198,9 @@ export default function Finance() {
     }
   };
 
-  // Calculate expenditure category breakdown
-  const getCategoryBreakdown = () => {
+  // Calculate expenditure category breakdown (memoized: only recompute when
+  // the expenditures list actually changes, not on every unrelated render)
+  const categoryChartData = useMemo(() => {
     const breakdown = {};
     expenditures.forEach((exp) => {
       breakdown[exp.category] = (breakdown[exp.category] || 0) + exp.amount;
@@ -208,18 +209,16 @@ export default function Finance() {
       name,
       value
     }));
-  };
-
-  const categoryChartData = getCategoryBreakdown();
+  }, [expenditures]);
 
   return (
     <div className="space-y-6">
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-black text-white tracking-tight">Financial reports</h1>
-          <p className="text-sm text-slate-400 mt-1 font-semibold">
-            Monitor cash flow statement indexes, log expenditures, and audit shop financials.
+          <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">Financial Reports</h1>
+          <p className="text-sm text-slate-500 mt-1">
+            Monitor cash flow, log expenditures, and audit shop financials.
           </p>
         </div>
 
@@ -227,7 +226,7 @@ export default function Finance() {
           <button
             type="button"
             onClick={() => setIsModalOpen(true)}
-            className="flex items-center justify-center gap-2 px-5 h-11 rounded-xl text-sm font-bold text-white bg-primary-600 hover:bg-primary-500 transition-all duration-200 shadow-lg shadow-primary-500/10 hover-lift glow-effect cursor-pointer"
+            className="flex items-center justify-center gap-2 px-5 h-11 rounded-xl text-sm font-bold text-white bg-blue-600 hover:bg-blue-500 transition-all duration-200 shadow-md shadow-blue-500/10 hover:-translate-y-0.5 cursor-pointer"
           >
             <Plus className="w-5 h-5" />
             <span>Add Expenditure</span>
@@ -236,7 +235,7 @@ export default function Finance() {
       </div>
 
       {/* Report Tabs */}
-      <div className="flex flex-wrap gap-2 p-1.5 bg-slate-900/40 border border-slate-800 rounded-2xl w-fit">
+      <div className="flex flex-wrap gap-2 p-1.5 bg-white border border-slate-200 rounded-2xl w-fit shadow-sm">
         {[
           { id: 'overview', label: 'Overview', icon: LayoutGrid },
           { id: 'vat', label: 'VAT Report', icon: Receipt },
@@ -249,7 +248,7 @@ export default function Finance() {
               key={tab.id}
               type="button"
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-4 h-10 rounded-xl text-sm font-bold transition-all cursor-pointer ${activeTab === tab.id ? 'bg-primary-600 text-white shadow-md' : 'text-slate-400 hover:text-white hover:bg-slate-850'}`}
+              className={`flex items-center gap-2 px-4 h-10 rounded-xl text-sm font-bold transition-colors cursor-pointer ${activeTab === tab.id ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'}`}
             >
               <Icon className="w-4 h-4" />
               <span>{tab.label}</span>
@@ -259,10 +258,10 @@ export default function Finance() {
       </div>
 
       {/* Date Filter Panel (shared across tabs) */}
-      <div className="p-4 bg-slate-900/40 border border-slate-800 rounded-3xl flex flex-wrap gap-4 items-center justify-between">
+      <div className="p-4 bg-white border border-slate-200 rounded-2xl flex flex-wrap gap-4 items-center justify-between shadow-sm">
         <div className="flex items-center gap-2">
-          <Calendar className="w-5 h-5 text-slate-450" />
-          <span className="text-xs font-extrabold text-slate-400 uppercase tracking-widest">
+          <Calendar className="w-5 h-5 text-slate-400" />
+          <span className="text-xs font-bold text-slate-500 uppercase tracking-wide">
             Report Date Range
           </span>
         </div>
@@ -271,89 +270,86 @@ export default function Finance() {
             type="date"
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
-            className="glass-input px-3.5 h-10 rounded-xl text-sm text-slate-205 focus:outline-none"
+            className="px-3.5 h-10 rounded-xl border-slate-200 text-sm"
           />
-          <span className="text-slate-500 text-xs font-bold uppercase tracking-widest">to</span>
+          <span className="text-slate-400 text-xs font-bold uppercase tracking-wide">to</span>
           <input
             type="date"
             value={endDate}
             onChange={(e) => setEndDate(e.target.value)}
-            className="glass-input px-3.5 h-10 rounded-xl text-sm text-slate-205 focus:outline-none"
+            className="px-3.5 h-10 rounded-xl border-slate-200 text-sm"
           />
         </div>
       </div>
 
       {activeTab === 'overview' && (
       <>
-      {/* Date Filters & KPI Grid */}
-      <div className="space-y-4">
-        {/* KPI Scorecard Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          {/* Total Revenue */}
-          <div className="p-6 bg-slate-900/40 border border-slate-800 rounded-3xl relative overflow-hidden flex items-center justify-between">
-            <div className="space-y-1">
-              <span className="text-xs font-extrabold text-slate-500 uppercase tracking-widest block mb-1">Total Income (Inflow)</span>
-              <p className="text-2xl sm:text-3xl font-black text-emerald-400 font-mono">Rs. {summary.totalIncome.toFixed(2)}</p>
-            </div>
-            <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-450 shadow-lg shadow-emerald-500/5">
-              <TrendingUp className="w-6 h-6" />
-            </div>
+      {/* KPI Scorecard Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Total Revenue */}
+        <div className="p-6 bg-white border border-slate-200 rounded-2xl shadow-sm flex items-center justify-between">
+          <div className="space-y-1">
+            <span className="text-xs font-bold text-slate-400 uppercase tracking-wide block mb-1">Total Income (Inflow)</span>
+            <p className="text-2xl font-bold text-emerald-600 font-mono">Rs. {summary.totalIncome.toFixed(2)}</p>
           </div>
-
-          {/* Operating Expense */}
-          <div className="p-6 bg-slate-900/40 border border-slate-800 rounded-3xl relative overflow-hidden flex items-center justify-between">
-            <div className="space-y-1">
-              <span className="text-xs font-extrabold text-slate-500 uppercase tracking-widest block mb-1">Operating Expense (Outflow)</span>
-              <p className="text-2xl sm:text-3xl font-black text-rose-455 font-mono">Rs. {summary.totalExpenditure.toFixed(2)}</p>
-            </div>
-            <div className="w-12 h-12 rounded-2xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-455 shadow-lg shadow-rose-500/5">
-              <TrendingDown className="w-6 h-6" />
-            </div>
+          <div className="w-12 h-12 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600">
+            <TrendingUp className="w-6 h-6" />
           </div>
+        </div>
 
-          {/* Net Profit */}
-          <div className="p-6 bg-slate-900/40 border border-slate-800 rounded-3xl relative overflow-hidden flex items-center justify-between">
-            <div className="space-y-1">
-              <span className="text-xs font-extrabold text-slate-500 uppercase tracking-widest block mb-1">Net Cash Flow (Profit)</span>
-              <p className={`text-2xl sm:text-3xl font-black font-mono ${summary.netProfit >= 0 ? 'text-indigo-400' : 'text-rose-450'}`}>
-                Rs. {summary.netProfit.toFixed(2)}
-              </p>
-            </div>
-            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg ${summary.netProfit >= 0 ? 'bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 shadow-indigo-500/5' : 'bg-rose-500/10 border border-rose-500/20 text-rose-455 shadow-rose-500/5'}`}>
-              <span className="font-extrabold text-xs">NPR</span>
-            </div>
+        {/* Operating Expense */}
+        <div className="p-6 bg-white border border-slate-200 rounded-2xl shadow-sm flex items-center justify-between">
+          <div className="space-y-1">
+            <span className="text-xs font-bold text-slate-400 uppercase tracking-wide block mb-1">Operating Expense (Outflow)</span>
+            <p className="text-2xl font-bold text-rose-600 font-mono">Rs. {summary.totalExpenditure.toFixed(2)}</p>
           </div>
+          <div className="w-12 h-12 rounded-xl bg-rose-50 border border-rose-100 flex items-center justify-center text-rose-600">
+            <TrendingDown className="w-6 h-6" />
+          </div>
+        </div>
 
-          {/* Unpaid Dues Amount */}
-          <div className="p-6 bg-slate-900/40 border border-slate-800 rounded-3xl relative overflow-hidden flex items-center justify-between">
-            <div className="space-y-1">
-              <span className="text-xs font-extrabold text-slate-500 uppercase tracking-widest block mb-1">Outstanding Dues (Unpaid)</span>
-              <p className="text-2xl sm:text-3xl font-black text-sky-400 font-mono">Rs. {outstandingDues.toFixed(2)}</p>
-            </div>
-            <div className="w-12 h-12 rounded-2xl bg-sky-500/10 border border-sky-500/25 flex items-center justify-center text-sky-400 shadow-lg shadow-sky-500/5">
-              <DollarSign className="w-6 h-6" />
-            </div>
+        {/* Net Profit */}
+        <div className="p-6 bg-white border border-slate-200 rounded-2xl shadow-sm flex items-center justify-between">
+          <div className="space-y-1">
+            <span className="text-xs font-bold text-slate-400 uppercase tracking-wide block mb-1">Net Cash Flow (Profit)</span>
+            <p className={`text-2xl font-bold font-mono ${summary.netProfit >= 0 ? 'text-blue-700' : 'text-rose-600'}`}>
+              Rs. {summary.netProfit.toFixed(2)}
+            </p>
+          </div>
+          <div className={`w-12 h-12 rounded-xl flex items-center justify-center border ${summary.netProfit >= 0 ? 'bg-blue-50 border-blue-100 text-blue-700' : 'bg-rose-50 border-rose-100 text-rose-600'}`}>
+            <span className="font-extrabold text-xs">NPR</span>
+          </div>
+        </div>
+
+        {/* Unpaid Dues Amount */}
+        <div className="p-6 bg-white border border-slate-200 rounded-2xl shadow-sm flex items-center justify-between">
+          <div className="space-y-1">
+            <span className="text-xs font-bold text-slate-400 uppercase tracking-wide block mb-1">Outstanding Dues (Unpaid)</span>
+            <p className="text-2xl font-bold text-sky-600 font-mono">Rs. {outstandingDues.toFixed(2)}</p>
+          </div>
+          <div className="w-12 h-12 rounded-xl bg-sky-50 border border-sky-100 flex items-center justify-center text-sky-600">
+            <DollarSign className="w-6 h-6" />
           </div>
         </div>
       </div>
 
       {loading ? (
-        <div className="flex flex-col items-center justify-center min-h-[40vh] bg-slate-900/15 rounded-3xl border border-slate-800/65 py-12">
-          <Loader2 className="w-8 h-8 text-indigo-500 animate-spin" />
-          <p className="text-slate-400 text-sm mt-3 font-medium">Analyzing transaction ledgers...</p>
+        <div className="flex flex-col items-center justify-center min-h-[40vh] bg-white rounded-2xl border border-slate-200 py-12 shadow-sm">
+          <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
+          <p className="text-slate-500 text-sm mt-3 font-medium">Analyzing transaction ledgers...</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Daily Cash Flow Area Chart */}
-          <div className="lg:col-span-2 p-6 bg-slate-900/40 border border-slate-800 rounded-3xl shadow-xl flex flex-col justify-between">
-            <div className="flex items-center gap-2 mb-4 pb-3 border-b border-slate-850">
-              <Activity className="w-5 h-5 text-indigo-400" />
-              <h3 className="text-base font-extrabold text-white tracking-tight">Daily Cash Flow Trends</h3>
+          <div className="lg:col-span-2 p-6 bg-white border border-slate-200 rounded-2xl shadow-sm flex flex-col justify-between">
+            <div className="flex items-center gap-2 mb-4 pb-3 border-b border-slate-100">
+              <Activity className="w-5 h-5 text-blue-600" />
+              <h3 className="text-base font-bold text-slate-900 tracking-tight">Daily Cash Flow Trends</h3>
             </div>
-            
+
             <div className="h-[280px] w-full">
               {chartData.length === 0 ? (
-                <div className="h-full flex items-center justify-center text-sm text-slate-500 italic">
+                <div className="h-full flex items-center justify-center text-sm text-slate-400 italic">
                   No activity found in the selected date range.
                 </div>
               ) : (
@@ -369,12 +365,12 @@ export default function Finance() {
                         <stop offset="95%" stopColor="#ec4899" stopOpacity={0}/>
                       </linearGradient>
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-                    <XAxis dataKey="date" stroke="#64748b" fontSize={11} />
-                    <YAxis stroke="#64748b" fontSize={11} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                    <XAxis dataKey="date" stroke="#94a3b8" fontSize={11} />
+                    <YAxis stroke="#94a3b8" fontSize={11} />
                     <Tooltip
-                      contentStyle={{ backgroundColor: '#0f172a', borderColor: '#1e293b', borderRadius: '12px' }}
-                      labelStyle={{ color: '#94a3b8', fontSize: '12px', fontWeight: 'bold' }}
+                      contentStyle={{ backgroundColor: '#ffffff', borderColor: '#e2e8f0', borderRadius: '12px' }}
+                      labelStyle={{ color: '#475569', fontSize: '12px', fontWeight: 'bold' }}
                       itemStyle={{ fontSize: '13px' }}
                     />
                     <Legend wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
@@ -387,15 +383,15 @@ export default function Finance() {
           </div>
 
           {/* Expenditure Breakdown Pie Chart */}
-          <div className="p-6 bg-slate-900/40 border border-slate-800 rounded-3xl shadow-xl flex flex-col justify-between">
-            <div className="flex items-center gap-2 mb-4 pb-3 border-b border-slate-850">
-              <PieIcon className="w-5 h-5 text-amber-400" />
-              <h3 className="text-base font-extrabold text-white tracking-tight">Expense Category Share</h3>
+          <div className="p-6 bg-white border border-slate-200 rounded-2xl shadow-sm flex flex-col justify-between">
+            <div className="flex items-center gap-2 mb-4 pb-3 border-b border-slate-100">
+              <PieIcon className="w-5 h-5 text-amber-500" />
+              <h3 className="text-base font-bold text-slate-900 tracking-tight">Expense Category Share</h3>
             </div>
 
             <div className="h-[280px] w-full flex flex-col justify-center">
               {categoryChartData.length === 0 ? (
-                <div className="h-full flex items-center justify-center text-sm text-slate-500 italic">
+                <div className="h-full flex items-center justify-center text-sm text-slate-400 italic">
                   No expenditure records created.
                 </div>
               ) : (
@@ -415,8 +411,8 @@ export default function Finance() {
                       ))}
                     </Pie>
                     <Tooltip
-                      contentStyle={{ backgroundColor: '#0f172a', borderColor: '#1e293b', borderRadius: '12px' }}
-                      itemStyle={{ fontSize: '12px', color: '#fff' }}
+                      contentStyle={{ backgroundColor: '#ffffff', borderColor: '#e2e8f0', borderRadius: '12px' }}
+                      itemStyle={{ fontSize: '12px', color: '#1e293b' }}
                     />
                     <Legend verticalAlign="bottom" height={36} wrapperStyle={{ fontSize: '11px' }} />
                   </PieChart>
@@ -426,24 +422,23 @@ export default function Finance() {
           </div>
 
           {/* Expenditures Ledger Logs */}
-          <div className="lg:col-span-3 p-6 bg-slate-900/40 border border-slate-800 rounded-3xl shadow-xl space-y-4">
-            <div className="flex justify-between items-center pb-3 border-b border-slate-850">
-              <h3 className="text-base font-extrabold text-white flex items-center gap-2 tracking-tight">
-                <FileText className="w-5 h-5 text-primary-400" />
+          <div className="lg:col-span-3 p-6 bg-white border border-slate-200 rounded-2xl shadow-sm space-y-4">
+            <div className="flex justify-between items-center pb-3 border-b border-slate-100">
+              <h3 className="text-base font-bold text-slate-900 flex items-center gap-2 tracking-tight">
+                <FileText className="w-5 h-5 text-blue-600" />
                 <span>Operating Expense Ledger</span>
               </h3>
-              <span className="text-xs text-slate-500 font-extrabold tracking-widest uppercase">Audit Log entries</span>
             </div>
 
             {expenditures.length === 0 ? (
               <div className="p-12 text-center">
-                <p className="text-sm text-slate-500 italic">No expenditures logged.</p>
+                <p className="text-sm text-slate-400 italic">No expenditures logged.</p>
               </div>
             ) : (
               <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-slate-800 text-left text-sm">
+                <table className="min-w-full divide-y divide-slate-200 text-left text-sm">
                   <thead>
-                    <tr className="text-slate-450 uppercase font-extrabold tracking-widest text-xs">
+                    <tr className="text-slate-500 uppercase font-bold tracking-wide text-xs">
                       <th className="py-3.5 px-4">Date</th>
                       <th className="py-3.5 px-4">Category</th>
                       <th className="py-3.5 px-4">Reason / Notes</th>
@@ -451,17 +446,17 @@ export default function Finance() {
                       {isAdmin && <th className="py-3.5 px-4 text-right">Actions</th>}
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-850 text-slate-300">
+                  <tbody className="divide-y divide-slate-100 text-slate-700">
                     {expenditures.map((exp) => (
-                      <tr key={exp._id} className="hover:bg-slate-900/30 transition-colors text-sm">
+                      <tr key={exp._id} className="hover:bg-slate-50 transition-colors text-sm">
                         <td className="py-3.5 px-4 whitespace-nowrap font-medium">{formatNepaliDate(exp.date)}</td>
                         <td className="py-3.5 px-4 whitespace-nowrap">
-                          <span className="inline-flex px-2.5 py-1 rounded-xl bg-slate-800 border border-slate-700 text-xs font-bold text-slate-300">
+                          <span className="badge-slate">
                             {exp.category}
                           </span>
                         </td>
                         <td className="py-3.5 px-4 max-w-xs truncate font-medium" title={exp.note}>{exp.note || '—'}</td>
-                        <td className="py-3.5 px-4 text-right font-mono font-bold text-rose-455 whitespace-nowrap text-base">
+                        <td className="py-3.5 px-4 text-right font-mono font-bold text-rose-600 whitespace-nowrap text-base">
                           -Rs. {exp.amount.toFixed(2)}
                         </td>
                         {isAdmin && (
@@ -469,7 +464,7 @@ export default function Finance() {
                             <button
                               type="button"
                               onClick={() => handleDeleteExpenditure(exp._id)}
-                              className="p-2 rounded-xl text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors cursor-pointer"
+                              className="p-2 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
                               title="Void Expense"
                             >
                               <Trash2 className="w-4 h-4" />
@@ -490,37 +485,37 @@ export default function Finance() {
 
       {activeTab === 'vat' && (
         <div className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="p-6 bg-slate-900/40 border border-slate-800 rounded-3xl">
-              <span className="text-xs font-extrabold text-slate-500 uppercase tracking-widest block mb-1">Taxable Subtotal</span>
-              <p className="text-2xl font-black text-white font-mono">Rs. {vatReport.totals.subtotal.toFixed(2)}</p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="p-6 bg-white border border-slate-200 rounded-2xl shadow-sm">
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-wide block mb-1">Taxable Subtotal</span>
+              <p className="text-2xl font-bold text-slate-900 font-mono">Rs. {vatReport.totals.subtotal.toFixed(2)}</p>
             </div>
-            <div className="p-6 bg-slate-900/40 border border-slate-800 rounded-3xl">
-              <span className="text-xs font-extrabold text-slate-500 uppercase tracking-widest block mb-1">VAT Collected (13%)</span>
-              <p className="text-2xl font-black text-indigo-400 font-mono">Rs. {vatReport.totals.vat.toFixed(2)}</p>
+            <div className="p-6 bg-white border border-slate-200 rounded-2xl shadow-sm">
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-wide block mb-1">VAT Collected (13%)</span>
+              <p className="text-2xl font-bold text-blue-700 font-mono">Rs. {vatReport.totals.vat.toFixed(2)}</p>
             </div>
-            <div className="p-6 bg-slate-900/40 border border-slate-800 rounded-3xl">
-              <span className="text-xs font-extrabold text-slate-500 uppercase tracking-widest block mb-1">VAT Invoice Total</span>
-              <p className="text-2xl font-black text-emerald-400 font-mono">Rs. {vatReport.totals.total.toFixed(2)}</p>
+            <div className="p-6 bg-white border border-slate-200 rounded-2xl shadow-sm">
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-wide block mb-1">VAT Invoice Total</span>
+              <p className="text-2xl font-bold text-emerald-600 font-mono">Rs. {vatReport.totals.total.toFixed(2)}</p>
             </div>
           </div>
 
-          <div className="p-6 bg-slate-900/40 border border-slate-800 rounded-3xl shadow-xl space-y-4">
-            <div className="flex justify-between items-center pb-3 border-b border-slate-850">
-              <h3 className="text-base font-extrabold text-white flex items-center gap-2 tracking-tight">
-                <Receipt className="w-5 h-5 text-indigo-400" />
+          <div className="p-6 bg-white border border-slate-200 rounded-2xl shadow-sm space-y-4">
+            <div className="flex justify-between items-center pb-3 border-b border-slate-100">
+              <h3 className="text-base font-bold text-slate-900 flex items-center gap-2 tracking-tight">
+                <Receipt className="w-5 h-5 text-blue-600" />
                 <span>VAT Invoices ({vatReport.count})</span>
               </h3>
             </div>
             {reportLoading ? (
-              <div className="py-12 text-center"><Loader2 className="w-6 h-6 text-indigo-400 animate-spin mx-auto" /></div>
+              <div className="py-12 text-center"><Loader2 className="w-6 h-6 text-blue-600 animate-spin mx-auto" /></div>
             ) : vatReport.invoices.length === 0 ? (
-              <p className="text-sm text-slate-500 italic text-center py-8">No VAT invoices in this date range.</p>
+              <p className="text-sm text-slate-400 italic text-center py-8">No VAT invoices in this date range.</p>
             ) : (
               <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-slate-800 text-left text-sm">
+                <table className="min-w-full divide-y divide-slate-200 text-left text-sm">
                   <thead>
-                    <tr className="text-slate-450 uppercase font-extrabold tracking-widest text-xs">
+                    <tr className="text-slate-500 uppercase font-bold tracking-wide text-xs">
                       <th className="py-3.5 px-4">Invoice No</th>
                       <th className="py-3.5 px-4">Date</th>
                       <th className="py-3.5 px-4">Customer</th>
@@ -529,14 +524,14 @@ export default function Finance() {
                       <th className="py-3.5 px-4 text-right">Total</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-850 text-slate-300">
+                  <tbody className="divide-y divide-slate-100 text-slate-700">
                     {vatReport.invoices.map((inv) => (
-                      <tr key={inv._id} className="hover:bg-slate-900/30 transition-colors">
+                      <tr key={inv._id} className="hover:bg-slate-50 transition-colors">
                         <td className="py-3.5 px-4 font-mono font-bold">{inv.invoiceNo}</td>
                         <td className="py-3.5 px-4">{formatNepaliDate(inv.createdAt)}</td>
                         <td className="py-3.5 px-4">{inv.customerId?.name}</td>
                         <td className="py-3.5 px-4 text-right font-mono">Rs. {inv.subtotal.toFixed(2)}</td>
-                        <td className="py-3.5 px-4 text-right font-mono text-indigo-400">Rs. {inv.vat.toFixed(2)}</td>
+                        <td className="py-3.5 px-4 text-right font-mono text-blue-700">Rs. {inv.vat.toFixed(2)}</td>
                         <td className="py-3.5 px-4 text-right font-mono font-bold">Rs. {inv.total.toFixed(2)}</td>
                       </tr>
                     ))}
@@ -550,33 +545,33 @@ export default function Finance() {
 
       {activeTab === 'non-vat' && (
         <div className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="p-6 bg-slate-900/40 border border-slate-800 rounded-3xl">
-              <span className="text-xs font-extrabold text-slate-500 uppercase tracking-widest block mb-1">Non-VAT Subtotal</span>
-              <p className="text-2xl font-black text-white font-mono">Rs. {nonVatReport.totals.subtotal.toFixed(2)}</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="p-6 bg-white border border-slate-200 rounded-2xl shadow-sm">
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-wide block mb-1">Non-VAT Subtotal</span>
+              <p className="text-2xl font-bold text-slate-900 font-mono">Rs. {nonVatReport.totals.subtotal.toFixed(2)}</p>
             </div>
-            <div className="p-6 bg-slate-900/40 border border-slate-800 rounded-3xl">
-              <span className="text-xs font-extrabold text-slate-500 uppercase tracking-widest block mb-1">Non-VAT Invoice Total</span>
-              <p className="text-2xl font-black text-emerald-400 font-mono">Rs. {nonVatReport.totals.total.toFixed(2)}</p>
+            <div className="p-6 bg-white border border-slate-200 rounded-2xl shadow-sm">
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-wide block mb-1">Non-VAT Invoice Total</span>
+              <p className="text-2xl font-bold text-emerald-600 font-mono">Rs. {nonVatReport.totals.total.toFixed(2)}</p>
             </div>
           </div>
 
-          <div className="p-6 bg-slate-900/40 border border-slate-800 rounded-3xl shadow-xl space-y-4">
-            <div className="flex justify-between items-center pb-3 border-b border-slate-850">
-              <h3 className="text-base font-extrabold text-white flex items-center gap-2 tracking-tight">
-                <FileSpreadsheet className="w-5 h-5 text-slate-400" />
+          <div className="p-6 bg-white border border-slate-200 rounded-2xl shadow-sm space-y-4">
+            <div className="flex justify-between items-center pb-3 border-b border-slate-100">
+              <h3 className="text-base font-bold text-slate-900 flex items-center gap-2 tracking-tight">
+                <FileSpreadsheet className="w-5 h-5 text-slate-500" />
                 <span>Non-VAT Invoices ({nonVatReport.count})</span>
               </h3>
             </div>
             {reportLoading ? (
               <div className="py-12 text-center"><Loader2 className="w-6 h-6 text-slate-400 animate-spin mx-auto" /></div>
             ) : nonVatReport.invoices.length === 0 ? (
-              <p className="text-sm text-slate-500 italic text-center py-8">No Non-VAT invoices in this date range.</p>
+              <p className="text-sm text-slate-400 italic text-center py-8">No Non-VAT invoices in this date range.</p>
             ) : (
               <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-slate-800 text-left text-sm">
+                <table className="min-w-full divide-y divide-slate-200 text-left text-sm">
                   <thead>
-                    <tr className="text-slate-450 uppercase font-extrabold tracking-widest text-xs">
+                    <tr className="text-slate-500 uppercase font-bold tracking-wide text-xs">
                       <th className="py-3.5 px-4">Invoice No</th>
                       <th className="py-3.5 px-4">Date</th>
                       <th className="py-3.5 px-4">Customer</th>
@@ -584,9 +579,9 @@ export default function Finance() {
                       <th className="py-3.5 px-4 text-right">Total</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-850 text-slate-300">
+                  <tbody className="divide-y divide-slate-100 text-slate-700">
                     {nonVatReport.invoices.map((inv) => (
-                      <tr key={inv._id} className="hover:bg-slate-900/30 transition-colors">
+                      <tr key={inv._id} className="hover:bg-slate-50 transition-colors">
                         <td className="py-3.5 px-4 font-mono font-bold">{inv.invoiceNo}</td>
                         <td className="py-3.5 px-4">{formatNepaliDate(inv.createdAt)}</td>
                         <td className="py-3.5 px-4">{inv.customerId?.name}</td>
@@ -605,45 +600,45 @@ export default function Finance() {
       {activeTab === 'summary' && (
         <div className="space-y-6">
           {reportLoading || !summaryReport ? (
-            <div className="py-12 text-center"><Loader2 className="w-6 h-6 text-primary-400 animate-spin mx-auto" /></div>
+            <div className="py-12 text-center"><Loader2 className="w-6 h-6 text-blue-600 animate-spin mx-auto" /></div>
           ) : (
             <>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="p-6 bg-slate-900/40 border border-slate-800 rounded-3xl">
-                  <span className="text-xs font-extrabold text-slate-500 uppercase tracking-widest block mb-1">Total Income</span>
-                  <p className="text-2xl font-black text-emerald-400 font-mono">Rs. {summaryReport.totalIncome.toFixed(2)}</p>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="p-6 bg-white border border-slate-200 rounded-2xl shadow-sm">
+                  <span className="text-xs font-bold text-slate-400 uppercase tracking-wide block mb-1">Total Income</span>
+                  <p className="text-2xl font-bold text-emerald-600 font-mono">Rs. {summaryReport.totalIncome.toFixed(2)}</p>
                 </div>
-                <div className="p-6 bg-slate-900/40 border border-slate-800 rounded-3xl">
-                  <span className="text-xs font-extrabold text-slate-500 uppercase tracking-widest block mb-1">Total Expenditure</span>
-                  <p className="text-2xl font-black text-rose-455 font-mono">Rs. {summaryReport.totalExpenditure.toFixed(2)}</p>
+                <div className="p-6 bg-white border border-slate-200 rounded-2xl shadow-sm">
+                  <span className="text-xs font-bold text-slate-400 uppercase tracking-wide block mb-1">Total Expenditure</span>
+                  <p className="text-2xl font-bold text-rose-600 font-mono">Rs. {summaryReport.totalExpenditure.toFixed(2)}</p>
                 </div>
-                <div className="p-6 bg-slate-900/40 border border-slate-800 rounded-3xl">
-                  <span className="text-xs font-extrabold text-slate-500 uppercase tracking-widest block mb-1">Net Profit</span>
-                  <p className={`text-2xl font-black font-mono ${summaryReport.netProfit >= 0 ? 'text-indigo-400' : 'text-rose-450'}`}>Rs. {summaryReport.netProfit.toFixed(2)}</p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="p-6 bg-slate-900/40 border border-slate-800 rounded-3xl space-y-3">
-                  <h3 className="text-sm font-extrabold text-white uppercase tracking-wider flex items-center gap-2">
-                    <Receipt className="w-4.5 h-4.5 text-indigo-400" /> VAT Invoices
-                  </h3>
-                  <div className="flex justify-between text-sm text-slate-400"><span>Invoice Count:</span><strong className="text-white">{summaryReport.vatInvoiceCount}</strong></div>
-                  <div className="flex justify-between text-sm text-slate-400"><span>Invoice Total:</span><strong className="font-mono text-white">Rs. {summaryReport.vatInvoiceTotal.toFixed(2)}</strong></div>
-                  <div className="flex justify-between text-sm text-slate-400"><span>VAT Collected:</span><strong className="font-mono text-indigo-400">Rs. {summaryReport.vatCollected.toFixed(2)}</strong></div>
-                </div>
-                <div className="p-6 bg-slate-900/40 border border-slate-800 rounded-3xl space-y-3">
-                  <h3 className="text-sm font-extrabold text-white uppercase tracking-wider flex items-center gap-2">
-                    <FileSpreadsheet className="w-4.5 h-4.5 text-slate-400" /> Non-VAT Invoices
-                  </h3>
-                  <div className="flex justify-between text-sm text-slate-400"><span>Invoice Count:</span><strong className="text-white">{summaryReport.nonVatInvoiceCount}</strong></div>
-                  <div className="flex justify-between text-sm text-slate-400"><span>Invoice Total:</span><strong className="font-mono text-white">Rs. {summaryReport.nonVatInvoiceTotal.toFixed(2)}</strong></div>
+                <div className="p-6 bg-white border border-slate-200 rounded-2xl shadow-sm">
+                  <span className="text-xs font-bold text-slate-400 uppercase tracking-wide block mb-1">Net Profit</span>
+                  <p className={`text-2xl font-bold font-mono ${summaryReport.netProfit >= 0 ? 'text-blue-700' : 'text-rose-600'}`}>Rs. {summaryReport.netProfit.toFixed(2)}</p>
                 </div>
               </div>
 
-              <div className="p-6 bg-sky-950/10 border border-sky-900/20 rounded-3xl flex items-center justify-between">
-                <span className="text-sm font-extrabold text-sky-400 uppercase tracking-wider">Outstanding Dues (Unpaid, in range)</span>
-                <span className="text-2xl font-black text-sky-400 font-mono">Rs. {summaryReport.outstandingDues.toFixed(2)}</span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="p-6 bg-white border border-slate-200 rounded-2xl shadow-sm space-y-3">
+                  <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wide flex items-center gap-2">
+                    <Receipt className="w-4.5 h-4.5 text-blue-600" /> VAT Invoices
+                  </h3>
+                  <div className="flex justify-between text-sm text-slate-500"><span>Invoice Count:</span><strong className="text-slate-800">{summaryReport.vatInvoiceCount}</strong></div>
+                  <div className="flex justify-between text-sm text-slate-500"><span>Invoice Total:</span><strong className="font-mono text-slate-800">Rs. {summaryReport.vatInvoiceTotal.toFixed(2)}</strong></div>
+                  <div className="flex justify-between text-sm text-slate-500"><span>VAT Collected:</span><strong className="font-mono text-blue-700">Rs. {summaryReport.vatCollected.toFixed(2)}</strong></div>
+                </div>
+                <div className="p-6 bg-white border border-slate-200 rounded-2xl shadow-sm space-y-3">
+                  <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wide flex items-center gap-2">
+                    <FileSpreadsheet className="w-4.5 h-4.5 text-slate-500" /> Non-VAT Invoices
+                  </h3>
+                  <div className="flex justify-between text-sm text-slate-500"><span>Invoice Count:</span><strong className="text-slate-800">{summaryReport.nonVatInvoiceCount}</strong></div>
+                  <div className="flex justify-between text-sm text-slate-500"><span>Invoice Total:</span><strong className="font-mono text-slate-800">Rs. {summaryReport.nonVatInvoiceTotal.toFixed(2)}</strong></div>
+                </div>
+              </div>
+
+              <div className="p-6 bg-sky-50 border border-sky-100 rounded-2xl flex items-center justify-between">
+                <span className="text-sm font-bold text-sky-700 uppercase tracking-wide">Outstanding Dues (Unpaid, in range)</span>
+                <span className="text-2xl font-bold text-sky-700 font-mono">Rs. {summaryReport.outstandingDues.toFixed(2)}</span>
               </div>
             </>
           )}
@@ -652,12 +647,12 @@ export default function Finance() {
 
       {/* Modal: Add Manual Expenditure */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-955/75 backdrop-blur-sm">
-          <div className="relative w-full max-w-md glass-card rounded-3xl overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200">
-            <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-primary-500 via-sky-400 to-indigo-500"></div>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/40 backdrop-blur-sm">
+          <div className="relative w-full max-w-md bg-white rounded-3xl overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200 border border-slate-100">
+            <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-blue-500 via-sky-400 to-indigo-500"></div>
 
-            <div className="flex items-center justify-between p-6 border-b border-slate-800">
-              <h2 className="text-xl font-extrabold text-white tracking-tight">Record Operating Expense</h2>
+            <div className="flex items-center justify-between p-6 border-b border-slate-100">
+              <h2 className="text-lg font-bold text-slate-900">Record Operating Expense</h2>
               <button
                 type="button"
                 onClick={() => {
@@ -670,7 +665,7 @@ export default function Finance() {
                   });
                   setModalError('');
                 }}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-850 transition-colors cursor-pointer"
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-800 hover:bg-slate-50 transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -678,34 +673,34 @@ export default function Finance() {
 
             <form onSubmit={handleAddExpenditure} className="p-6 space-y-4">
               {modalError && (
-                <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-start gap-2.5">
-                  <AlertCircle className="w-4.5 h-4.5 text-rose-455 shrink-0 mt-0.5" />
-                  <span className="text-xs text-rose-300 font-medium leading-relaxed">{modalError}</span>
+                <div className="p-3 rounded-xl bg-rose-50 border border-rose-100 flex items-start gap-2.5">
+                  <AlertCircle className="w-4.5 h-4.5 text-rose-600 shrink-0 mt-0.5" />
+                  <span className="text-xs text-rose-700 font-bold">{modalError}</span>
                 </div>
               )}
 
               <div className="space-y-1.5">
-                <label className="text-xs font-extrabold text-slate-300 uppercase tracking-widest block mb-0.5">Expense Category *</label>
+                <label className="text-xs font-extrabold text-slate-500 uppercase tracking-wide">Expense Category *</label>
                 <select
                   required
                   value={newExpense.category}
                   onChange={(e) => setNewExpense({ ...newExpense, category: e.target.value })}
-                  className="glass-input block w-full rounded-xl h-11 px-3.5 text-slate-205 text-sm focus:outline-none font-bold"
+                  className="block w-full h-11 rounded-xl border-slate-200 text-sm font-bold cursor-pointer"
                 >
-                  <option value="" className="bg-slate-950">Select category...</option>
-                  <option value="Rent" className="bg-slate-950">Shop Rent</option>
-                  <option value="Utilities" className="bg-slate-950">Utility Bills (Water, Electricity)</option>
-                  <option value="Salaries" className="bg-slate-950">Staff Salaries</option>
-                  <option value="Marketing" className="bg-slate-950">Marketing & Ads</option>
-                  <option value="Tools & Supplies" className="bg-slate-950">Equipment & Tool Repairs</option>
-                  <option value="Office Expense" className="bg-slate-950">Office Stationery & Supplies</option>
-                  <option value="Tax" className="bg-slate-950">Government Taxes / Business Fees</option>
-                  <option value="Other" className="bg-slate-950">Other Overhead</option>
+                  <option value="">Select category...</option>
+                  <option value="Rent">Shop Rent</option>
+                  <option value="Utilities">Utility Bills (Water, Electricity)</option>
+                  <option value="Salaries">Staff Salaries</option>
+                  <option value="Marketing">Marketing &amp; Ads</option>
+                  <option value="Tools & Supplies">Equipment &amp; Tool Repairs</option>
+                  <option value="Office Expense">Office Stationery &amp; Supplies</option>
+                  <option value="Tax">Government Taxes / Business Fees</option>
+                  <option value="Other">Other Overhead</option>
                 </select>
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-extrabold text-slate-300 uppercase tracking-widest block mb-0.5">Expense Amount (Rs.) *</label>
+                <label className="text-xs font-extrabold text-slate-500 uppercase tracking-wide">Expense Amount (Rs.) *</label>
                 <input
                   type="number"
                   step="0.01"
@@ -713,33 +708,33 @@ export default function Finance() {
                   placeholder="0.00"
                   value={newExpense.amount}
                   onChange={(e) => setNewExpense({ ...newExpense, amount: e.target.value })}
-                  className="glass-input block w-full rounded-xl h-11 px-3.5 text-slate-205 text-sm font-semibold focus:outline-none"
+                  className="block w-full h-11 rounded-xl border-slate-200 text-sm font-semibold"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-extrabold text-slate-300 uppercase tracking-widest block mb-0.5">Transaction Date *</label>
+                <label className="text-xs font-extrabold text-slate-500 uppercase tracking-wide">Transaction Date *</label>
                 <input
                   type="date"
                   required
                   value={newExpense.date}
                   onChange={(e) => setNewExpense({ ...newExpense, date: e.target.value })}
-                  className="glass-input block w-full rounded-xl h-11 px-3.5 text-slate-205 text-sm focus:outline-none"
+                  className="block w-full h-11 rounded-xl border-slate-200 text-sm"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-extrabold text-slate-300 uppercase tracking-widest block mb-0.5">Expense Description / Notes</label>
+                <label className="text-xs font-extrabold text-slate-500 uppercase tracking-wide">Expense Description / Notes</label>
                 <textarea
                   placeholder="e.g. Paid electricity bill for showroom for June 2026..."
                   value={newExpense.note}
                   onChange={(e) => setNewExpense({ ...newExpense, note: e.target.value })}
                   rows="3"
-                  className="glass-input block w-full rounded-xl py-3 px-3.5 text-slate-205 text-sm resize-none focus:outline-none"
+                  className="block w-full rounded-xl border-slate-200 text-sm resize-none py-3 px-3.5"
                 ></textarea>
               </div>
 
-              <div className="flex gap-3 justify-end pt-4 border-t border-slate-800 mt-6">
+              <div className="flex gap-3 justify-end pt-4 border-t border-slate-100 mt-6">
                 <button
                   type="button"
                   onClick={() => {
@@ -752,24 +747,22 @@ export default function Finance() {
                     });
                     setModalError('');
                   }}
-                  className="px-5 h-11 rounded-xl text-sm font-bold text-slate-300 hover:text-white bg-slate-850 transition-colors cursor-pointer"
+                  className="px-4 py-2.5 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={modalLoading}
-                  className="flex items-center justify-center gap-1.5 px-5 h-11 rounded-xl text-sm font-bold text-white bg-primary-600 hover:bg-primary-500 disabled:opacity-50 transition-all shadow-lg shadow-primary-550/15 cursor-pointer"
+                  className="flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-500 disabled:opacity-50 transition-all shadow-md shadow-blue-500/10 cursor-pointer"
                 >
                   {modalLoading ? (
                     <>
-                      <Loader2 className="w-4.5 h-4.5 animate-spin" />
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
                       <span>Recording...</span>
                     </>
                   ) : (
-                    <>
-                      <span>Record Expense</span>
-                    </>
+                    <span>Record Expense</span>
                   )}
                 </button>
               </div>

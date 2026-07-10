@@ -123,6 +123,7 @@ const servicingSchema = new mongoose.Schema(
 // Indexes
 servicingSchema.index({ status: 1 });
 servicingSchema.index({ customerId: 1 });
+servicingSchema.index({ createdAt: -1 });
 
 const Servicing = mongoose.model('Servicing', servicingSchema);
 

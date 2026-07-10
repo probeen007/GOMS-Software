@@ -67,8 +67,8 @@ export default function Dashboard() {
       if (user.role === 'admin' || user.role === 'accountant') {
         const cashFlowRes = await axios.get('/api/finance/cash-flow');
         setCashFlow(cashFlowRes.data);
-        const invoiceRes = await axios.get('/api/invoices');
-        setUnpaidInvoices(invoiceRes.data.filter((inv) => inv.status !== 'paid').slice(0, 5));
+        const invoiceRes = await axios.get('/api/invoices', { params: { limit: 20 } });
+        setUnpaidInvoices(invoiceRes.data.invoices.filter((inv) => inv.status !== 'paid').slice(0, 5));
       }
 
       if (user.role === 'admin' || user.role === 'receptionist') {
@@ -79,8 +79,8 @@ export default function Dashboard() {
       }
 
       if (user.role === 'admin' || user.role === 'technician') {
-        const servicingRes = await axios.get('/api/servicing');
-        setJobCards(servicingRes.data.filter((jc) => jc.status === 'open').slice(0, 5));
+        const servicingRes = await axios.get('/api/servicing', { params: { status: 'open', limit: 5 } });
+        setJobCards(servicingRes.data.records);
       }
 
       const notiRes = await axios.get('/api/notifications');
@@ -178,7 +178,7 @@ export default function Dashboard() {
             <select
               value={timeFilter}
               onChange={(e) => setTimeFilter(e.target.value)}
-              className="bg-white border border-slate-200 hover:border-slate-350 text-slate-800 rounded-xl px-3 py-1.5 text-xs font-semibold focus:outline-none transition-all cursor-pointer"
+              className="bg-white border border-slate-200 hover:border-slate-300 text-slate-800 rounded-xl px-3 py-1.5 text-xs font-semibold focus:outline-none transition-all cursor-pointer"
             >
               <option value="day">Today</option>
               <option value="week">This Week</option>
@@ -213,13 +213,13 @@ export default function Dashboard() {
             </span>
           </div>
           <div className="space-y-1.5 pt-4 lg:pt-0 lg:pl-5">
-            <span className="text-xs font-bold text-slate-550 uppercase tracking-wider block">Net Revenue (Profit)</span>
+            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">Net Revenue (Profit)</span>
             <span className={`text-xl font-extrabold tracking-tight block ${metrics?.netProfit >= 0 ? 'text-emerald-700' : 'text-rose-600'}`}>
               Rs. {metrics?.netProfit?.toLocaleString(undefined, { minimumFractionDigits: 2 }) || '0.00'}
             </span>
           </div>
           <div className="space-y-1.5 pt-4 lg:pt-0 lg:pl-5">
-            <span className="text-xs font-bold text-slate-550 uppercase tracking-wider block">Outstanding Dues</span>
+            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">Outstanding Dues</span>
             <span className="text-xl font-extrabold text-blue-600 tracking-tight block">
               Rs. {metrics?.totalOutstanding?.toLocaleString(undefined, { minimumFractionDigits: 2 }) || '0.00'}
             </span>
@@ -233,13 +233,13 @@ export default function Dashboard() {
           {/* Card 1: Vehicles Serviced */}
           <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between group hover:-translate-y-0.5 transition-all duration-300">
             <div className="flex items-center gap-2.5">
-              <div className="p-2.5 rounded-xl bg-sky-50 text-sky-600 border border-sky-100/50 group-hover:bg-sky-100 transition-colors">
-                <Car className="w-5.5 h-5.5" />
+              <div className="p-2.5 rounded-xl bg-blue-50 text-blue-600 border border-blue-100/50 group-hover:bg-blue-100 transition-colors">
+                <Car className="w-5 h-5" />
               </div>
-              <span className="text-xs font-extrabold text-slate-500 uppercase tracking-wider">Serviced</span>
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Serviced</span>
             </div>
             <div className="mt-4">
-              <h3 className="text-3xl font-black text-slate-900 tracking-tight">
+              <h3 className="text-2xl font-bold text-slate-900 tracking-tight">
                 {metrics?.vehiclesServiced || 0}
               </h3>
               <p className="text-xs text-slate-400 font-semibold mt-0.5">Vehicles serviced</p>
@@ -250,12 +250,12 @@ export default function Dashboard() {
           <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between group hover:-translate-y-0.5 transition-all duration-300">
             <div className="flex items-center gap-2.5">
               <div className="p-2.5 rounded-xl bg-violet-50 text-violet-600 border border-violet-100/50 group-hover:bg-violet-100 transition-colors">
-                <Users className="w-5.5 h-5.5" />
+                <Users className="w-5 h-5" />
               </div>
-              <span className="text-xs font-extrabold text-slate-500 uppercase tracking-wider">Customers</span>
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Customers</span>
             </div>
             <div className="mt-4">
-              <h3 className="text-3xl font-black text-slate-900 tracking-tight">
+              <h3 className="text-2xl font-bold text-slate-900 tracking-tight">
                 {metrics?.totalCustomers || 0}
               </h3>
               <p className="text-xs text-slate-400 font-semibold mt-0.5">Client directory</p>
@@ -266,12 +266,12 @@ export default function Dashboard() {
           <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between group hover:-translate-y-0.5 transition-all duration-300">
             <div className="flex items-center gap-2.5">
               <div className="p-2.5 rounded-xl bg-amber-50 text-amber-600 border border-amber-100/50 group-hover:bg-amber-100 transition-colors">
-                <Wrench className="w-5.5 h-5.5" />
+                <Wrench className="w-5 h-5" />
               </div>
-              <span className="text-xs font-extrabold text-slate-500 uppercase tracking-wider">Pending</span>
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Pending</span>
             </div>
             <div className="mt-4">
-              <h3 className="text-3xl font-black text-slate-900 tracking-tight">
+              <h3 className="text-2xl font-bold text-slate-900 tracking-tight">
                 {metrics?.pendingServices || 0}
               </h3>
               <p className="text-xs text-slate-400 font-semibold mt-0.5">Jobs in progress</p>
@@ -281,13 +281,13 @@ export default function Dashboard() {
           {/* Card 4: Upcoming Service Reminders */}
           <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between group hover:-translate-y-0.5 transition-all duration-300">
             <div className="flex items-center gap-2.5">
-              <div className="p-2.5 rounded-xl bg-pink-50 text-pink-655 border border-pink-100/50 group-hover:bg-pink-100 transition-colors">
-                <Bell className="w-5.5 h-5.5" />
+              <div className="p-2.5 rounded-xl bg-indigo-50 text-indigo-600 border border-indigo-100/50 group-hover:bg-indigo-100 transition-colors">
+                <Bell className="w-5 h-5" />
               </div>
-              <span className="text-xs font-extrabold text-slate-500 uppercase tracking-wider">Reminders</span>
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Reminders</span>
             </div>
             <div className="mt-4">
-              <h3 className="text-3xl font-black text-slate-900 tracking-tight">
+              <h3 className="text-2xl font-bold text-slate-900 tracking-tight">
                 {metrics?.upcomingServiceReminders || 0}
               </h3>
               <p className="text-xs text-slate-400 font-semibold mt-0.5">Next service due</p>
@@ -297,13 +297,13 @@ export default function Dashboard() {
           {/* Card 5: Staff Present Today */}
           <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between group hover:-translate-y-0.5 transition-all duration-300">
             <div className="flex items-center gap-2.5">
-              <div className="p-2.5 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-100/50 group-hover:bg-emerald-100 transition-colors">
-                <UserCheck className="w-5.5 h-5.5" />
+              <div className="p-2.5 rounded-xl bg-blue-50 text-blue-600 border border-blue-100/50 group-hover:bg-blue-100 transition-colors">
+                <UserCheck className="w-5 h-5" />
               </div>
-              <span className="text-xs font-extrabold text-slate-500 uppercase tracking-wider">Attendance</span>
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Attendance</span>
             </div>
             <div className="mt-4">
-              <h3 className="text-3xl font-black text-slate-900 tracking-tight">
+              <h3 className="text-2xl font-bold text-slate-900 tracking-tight">
                 {metrics?.staffPresentToday || 0}
               </h3>
               <p className="text-xs text-slate-400 font-semibold mt-0.5">Staff present</p>
@@ -313,13 +313,13 @@ export default function Dashboard() {
           {/* Card 6: Completed Services */}
           <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between group hover:-translate-y-0.5 transition-all duration-300">
             <div className="flex items-center gap-2.5">
-              <div className="p-2.5 rounded-xl bg-teal-50 text-teal-600 border border-teal-100/50 group-hover:bg-teal-100 transition-colors">
-                <CheckCircle2 className="w-5.5 h-5.5" />
+              <div className="p-2.5 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-100/50 group-hover:bg-emerald-100 transition-colors">
+                <CheckCircle2 className="w-5 h-5" />
               </div>
-              <span className="text-xs font-extrabold text-slate-500 uppercase tracking-wider">Completed</span>
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Completed</span>
             </div>
             <div className="mt-4">
-              <h3 className="text-3xl font-black text-slate-900 tracking-tight">
+              <h3 className="text-2xl font-bold text-slate-900 tracking-tight">
                 {metrics?.completedServices || 0}
               </h3>
               <p className="text-xs text-slate-400 font-semibold mt-0.5">Finished services</p>
@@ -342,7 +342,7 @@ export default function Dashboard() {
                 <div className="flex items-center justify-between">
                   <div>
                     <h2 className="text-base font-bold text-slate-900 uppercase tracking-wider">Cash Flow Dynamics</h2>
-                    <p className="text-xs text-slate-550 mt-0.5">Vibrant area chart of daily income vs expenditures (last 30 days)</p>
+                    <p className="text-xs text-slate-500 mt-0.5">Vibrant area chart of daily income vs expenditures (last 30 days)</p>
                   </div>
                   <div className="flex items-center gap-3 text-xs font-bold uppercase tracking-wider">
                     <span className="flex items-center gap-1.5 text-emerald-600">
@@ -360,7 +360,7 @@ export default function Dashboard() {
                   {cashFlow.chartData.length === 0 ? (
                     <div className="h-full flex flex-col items-center justify-center text-center">
                       <Info className="w-7 h-7 text-slate-400 mb-2" />
-                      <p className="text-xs font-semibold text-slate-550">No transaction trends found for this month.</p>
+                      <p className="text-xs font-semibold text-slate-500">No transaction trends found for this month.</p>
                     </div>
                   ) : (
                     <ResponsiveContainer width="100%" height="100%">
@@ -415,7 +415,7 @@ export default function Dashboard() {
                       </thead>
                       <tbody className="divide-y divide-slate-100 text-sm">
                         {unpaidInvoices.map((inv) => (
-                          <tr key={inv._id} className="hover:bg-slate-55/40">
+                          <tr key={inv._id} className="hover:bg-slate-50">
                             <td className="py-3 font-semibold text-slate-800">#{inv.invoiceNo}</td>
                             <td className="py-3 text-slate-900 font-bold">Rs. {inv.amountDue.toFixed(2)}</td>
                             <td className="py-3">
@@ -461,7 +461,7 @@ export default function Dashboard() {
                 {appointments.length === 0 ? (
                   <div className="text-center py-8 bg-slate-50 rounded-xl border border-slate-200">
                     <Calendar className="w-7 h-7 text-slate-400 mx-auto mb-2" />
-                    <p className="text-xs font-semibold text-slate-555">No appointments scheduled for today.</p>
+                    <p className="text-xs font-semibold text-slate-500">No appointments scheduled for today.</p>
                   </div>
                 ) : (
                   appointments.map((appt) => {
@@ -483,10 +483,10 @@ export default function Dashboard() {
                                 appt.status === 'checked-in'
                                   ? 'bg-emerald-50 text-emerald-600 border border-emerald-100'
                                   : appt.status === 'in-progress'
-                                  ? 'bg-sky-50 text-sky-655 border border-sky-100'
+                                  ? 'bg-sky-50 text-sky-600 border border-sky-100'
                                   : appt.status === 'scheduled'
                                   ? 'bg-blue-50 text-blue-600 border border-blue-100'
-                                  : 'bg-slate-150 text-slate-600 border border-slate-250'
+                                  : 'bg-slate-100 text-slate-600 border border-slate-200'
                               }`}>
                                 {appt.status}
                               </span>
@@ -522,13 +522,13 @@ export default function Dashboard() {
                             </>
                           )}
                           {appt.status === 'checked-in' && (
-                            <span className="text-xs text-emerald-650 font-bold flex items-center gap-1.5 bg-emerald-50 px-2.5 py-1.5 rounded-md border border-emerald-100">
-                              <CheckCircle2 className="w-4 h-4 text-emerald-550" />
+                            <span className="text-xs text-emerald-600 font-bold flex items-center gap-1.5 bg-emerald-50 px-2.5 py-1.5 rounded-md border border-emerald-100">
+                              <CheckCircle2 className="w-4 h-4 text-emerald-500" />
                               <span>Checked-In</span>
                             </span>
                           )}
                           {appt.status === 'in-progress' && (
-                            <span className="text-xs text-sky-655 font-bold flex items-center gap-1.5 bg-sky-50 px-2.5 py-1.5 rounded-md border border-sky-100">
+                            <span className="text-xs text-sky-600 font-bold flex items-center gap-1.5 bg-sky-50 px-2.5 py-1.5 rounded-md border border-sky-100">
                               <Wrench className="w-4 h-4 text-sky-600" />
                               <span>Servicing...</span>
                             </span>
@@ -610,11 +610,11 @@ export default function Dashboard() {
                     className="p-3 rounded-xl border border-slate-100 bg-slate-50/50 hover:bg-white hover:border-blue-200 hover:shadow-md hover:shadow-blue-900/5 transition-all flex items-center gap-4 group text-left"
                   >
                     <div className="p-3 rounded-xl bg-blue-50 text-blue-600 group-hover:bg-blue-100 transition-all shrink-0">
-                      <Plus className="w-6 h-6" />
+                      <Plus className="w-5 h-5" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <span className="font-bold text-base text-slate-800 group-hover:text-blue-600 transition-colors block">Book Slots</span>
-                      <span className="text-sm text-slate-450 block mt-0.5">Manage schedule</span>
+                      <span className="font-bold text-sm text-slate-800 group-hover:text-blue-600 transition-colors block">Book Slots</span>
+                      <span className="text-xs text-slate-400 block mt-0.5">Manage schedule</span>
                     </div>
                   </Link>
                   <Link
@@ -622,11 +622,11 @@ export default function Dashboard() {
                     className="p-3 rounded-xl border border-slate-100 bg-slate-50/50 hover:bg-white hover:border-violet-200 hover:shadow-md hover:shadow-violet-900/5 transition-all flex items-center gap-4 group text-left"
                   >
                     <div className="p-3 rounded-xl bg-violet-50 text-violet-600 group-hover:bg-violet-100 transition-all shrink-0">
-                      <Users className="w-6 h-6" />
+                      <Users className="w-5 h-5" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <span className="font-bold text-base text-slate-800 group-hover:text-violet-600 transition-colors block">Register Client</span>
-                      <span className="text-sm text-slate-450 block mt-0.5">Add new customer</span>
+                      <span className="font-bold text-sm text-slate-800 group-hover:text-violet-600 transition-colors block">Register Client</span>
+                      <span className="text-xs text-slate-400 block mt-0.5">Add new customer</span>
                     </div>
                   </Link>
                 </>
@@ -639,11 +639,11 @@ export default function Dashboard() {
                     className="p-3 rounded-xl border border-slate-100 bg-slate-50/50 hover:bg-white hover:border-emerald-200 hover:shadow-md hover:shadow-emerald-900/5 transition-all flex items-center gap-4 group text-left"
                   >
                     <div className="p-3 rounded-xl bg-emerald-50 text-emerald-600 group-hover:bg-emerald-100 transition-all shrink-0">
-                      <TrendingUp className="w-6 h-6" />
+                      <TrendingUp className="w-5 h-5" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <span className="font-bold text-base text-slate-800 group-hover:text-emerald-600 transition-colors block">Record Expense</span>
-                      <span className="text-sm text-slate-450 block mt-0.5">Log company spend</span>
+                      <span className="font-bold text-sm text-slate-800 group-hover:text-emerald-600 transition-colors block">Record Expense</span>
+                      <span className="text-xs text-slate-400 block mt-0.5">Log company spend</span>
                     </div>
                   </Link>
                   <Link
@@ -651,11 +651,11 @@ export default function Dashboard() {
                     className="p-3 rounded-xl border border-slate-100 bg-slate-50/50 hover:bg-white hover:border-blue-200 hover:shadow-md hover:shadow-blue-900/5 transition-all flex items-center gap-4 group text-left"
                   >
                     <div className="p-3 rounded-xl bg-blue-50 text-blue-600 group-hover:bg-blue-100 transition-all shrink-0">
-                      <Receipt className="w-6 h-6" />
+                      <Receipt className="w-5 h-5" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <span className="font-bold text-base text-slate-800 group-hover:text-blue-600 transition-colors block">View Invoices</span>
-                      <span className="text-sm text-slate-450 block mt-0.5">Billing & receipts</span>
+                      <span className="font-bold text-sm text-slate-800 group-hover:text-blue-600 transition-colors block">View Invoices</span>
+                      <span className="text-xs text-slate-400 block mt-0.5">Billing & receipts</span>
                     </div>
                   </Link>
                 </>
@@ -668,11 +668,11 @@ export default function Dashboard() {
                     className="p-3 rounded-xl border border-slate-100 bg-slate-50/50 hover:bg-white hover:border-blue-200 hover:shadow-md hover:shadow-blue-900/5 transition-all flex items-center gap-4 group text-left"
                   >
                     <div className="p-3 rounded-xl bg-blue-50 text-blue-600 group-hover:bg-blue-100 transition-all shrink-0">
-                      <Wrench className="w-6 h-6" />
+                      <Wrench className="w-5 h-5" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <span className="font-bold text-base text-slate-800 group-hover:text-blue-600 transition-colors block">Inventory Parts</span>
-                      <span className="text-sm text-slate-450 block mt-0.5">Stock levels</span>
+                      <span className="font-bold text-sm text-slate-800 group-hover:text-blue-600 transition-colors block">Inventory Parts</span>
+                      <span className="text-xs text-slate-400 block mt-0.5">Stock levels</span>
                     </div>
                   </Link>
                   <Link
@@ -680,11 +680,11 @@ export default function Dashboard() {
                     className="p-3 rounded-xl border border-slate-100 bg-slate-50/50 hover:bg-white hover:border-blue-200 hover:shadow-md hover:shadow-blue-900/5 transition-all flex items-center gap-4 group text-left"
                   >
                     <div className="p-3 rounded-xl bg-blue-50 text-blue-600 group-hover:bg-blue-100 transition-all shrink-0">
-                      <ClipboardList className="w-6 h-6" />
+                      <ClipboardList className="w-5 h-5" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <span className="font-bold text-base text-slate-800 group-hover:text-blue-600 transition-colors block">Servicing</span>
-                      <span className="text-sm text-slate-450 block mt-0.5">Active work orders</span>
+                      <span className="font-bold text-sm text-slate-800 group-hover:text-blue-600 transition-colors block">Servicing</span>
+                      <span className="text-xs text-slate-400 block mt-0.5">Active work orders</span>
                     </div>
                   </Link>
                 </>
@@ -706,10 +706,10 @@ export default function Dashboard() {
 
             <div className="space-y-3.5">
               {notifications.length === 0 ? (
-                <p className="text-sm text-slate-550 text-center py-4">No recent activity logs.</p>
+                <p className="text-sm text-slate-500 text-center py-4">No recent activity logs.</p>
               ) : (
                 notifications.map((noti) => (
-                  <div key={noti._id} className="p-3 rounded-xl bg-slate-55/60 border border-slate-150 flex gap-3 items-center">
+                  <div key={noti._id} className="p-3 rounded-xl bg-slate-50 border border-slate-100 flex gap-3 items-center">
                     <div className={`w-10 h-10 rounded-xl flex items-center justify-center border text-sm font-bold shrink-0 ${
                       noti.type === 'inventory'
                         ? 'bg-rose-50 border-rose-200 text-rose-600'

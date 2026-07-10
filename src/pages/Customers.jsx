@@ -185,7 +185,7 @@ export default function Customers() {
           <select
             value={recordSearchBy}
             onChange={(e) => setRecordSearchBy(e.target.value)}
-            className="h-11 bg-white border border-slate-200 rounded-xl px-3.5 text-sm font-semibold text-slate-700 focus:outline-none focus:border-blue-550 cursor-pointer"
+            className="h-11 bg-white border border-slate-200 rounded-xl px-3.5 text-sm font-semibold text-slate-700 focus:outline-none focus:border-blue-500 cursor-pointer"
           >
             <option value="vehicle-number">Vehicle Number</option>
             <option value="customer-name">Customer Name</option>
@@ -200,7 +200,7 @@ export default function Customers() {
               placeholder="Search by vehicle number, customer name, or phone..."
               value={recordSearchTerm}
               onChange={(e) => setRecordSearchTerm(e.target.value)}
-              className="block w-full h-11 bg-white border border-slate-200 hover:border-slate-350 text-slate-800 pl-10 pr-4 rounded-xl text-sm focus:outline-none focus:border-blue-550 focus:ring-1 focus:ring-blue-550 transition-all placeholder-slate-450"
+              className="block w-full h-11 bg-white border border-slate-200 hover:border-slate-300 text-slate-800 pl-10 pr-4 rounded-xl text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all placeholder-slate-400"
             />
           </div>
           <button
@@ -223,12 +223,12 @@ export default function Customers() {
             placeholder="Search by customer name, phone number, or email..."
             value={search}
             onChange={handleSearchChange}
-            className="block w-full h-14 bg-white border border-slate-200 hover:border-slate-350 text-slate-800 pl-11 pr-4 rounded-2xl text-sm focus:outline-none focus:border-blue-550 focus:ring-1 focus:ring-blue-550 transition-all placeholder-slate-450 shadow-sm"
+            className="block w-full h-14 bg-white border border-slate-200 hover:border-slate-300 text-slate-800 pl-11 pr-4 rounded-2xl text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all placeholder-slate-400 shadow-sm"
           />
         </div>
         <div className="h-14 bg-white border border-slate-200 rounded-2xl flex items-center justify-between px-6 shadow-sm">
           <span className="text-xs font-extrabold text-slate-500 uppercase tracking-wider">Total records</span>
-          <span className="text-2xl font-black text-blue-650">{totalCustomers}</span>
+          <span className="text-2xl font-bold text-blue-600">{totalCustomers}</span>
         </div>
       </div>
 
@@ -241,7 +241,7 @@ export default function Customers() {
       ) : customers.length === 0 ? (
         <div className="flex flex-col items-center justify-center min-h-[40vh] bg-white rounded-3xl border border-slate-200 p-8 text-center shadow-sm">
           <div className="w-12 h-12 rounded-xl bg-slate-50 flex items-center justify-center border border-slate-200 mb-4">
-            <User className="w-6 h-6 text-slate-450" />
+            <User className="w-6 h-6 text-slate-400" />
           </div>
           <h3 className="text-base font-bold text-slate-800">No customers found</h3>
           <p className="text-slate-500 text-sm mt-1 max-w-sm">
@@ -252,7 +252,7 @@ export default function Customers() {
         <div className="space-y-4">
           {/* Table Container for large screens */}
           <div className="hidden md:block overflow-hidden rounded-2xl bg-white border border-slate-200 shadow-sm">
-            <table className="min-w-full divide-y divide-slate-150 text-left">
+            <table className="min-w-full divide-y divide-slate-100 text-left">
               <thead className="bg-slate-50/75">
                 <tr>
                   <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Client Info</th>
@@ -271,7 +271,7 @@ export default function Customers() {
                   >
                     <td className="px-6 py-4.5 whitespace-nowrap">
                       <div className="flex items-center gap-3.5">
-                        <div className="w-10 h-10 rounded-xl bg-blue-50/65 flex items-center justify-center font-bold text-blue-650 text-sm group-hover:bg-blue-100 transition-colors uppercase border border-blue-100/30">
+                        <div className="w-10 h-10 rounded-xl bg-blue-50/65 flex items-center justify-center font-bold text-blue-600 text-sm group-hover:bg-blue-100 transition-colors uppercase border border-blue-100/30">
                           {customer.name.charAt(0)}
                         </div>
                         <div>
@@ -286,7 +286,7 @@ export default function Customers() {
                     </td>
                     <td className="px-6 py-4.5 whitespace-nowrap">
                       <div className="space-y-1">
-                        <div className="flex items-center gap-2 text-sm text-slate-650">
+                        <div className="flex items-center gap-2 text-sm text-slate-600">
                           <Phone className="w-3.5 h-3.5 text-slate-400" />
                           <span>{customer.phone}</span>
                         </div>
@@ -387,7 +387,7 @@ export default function Customers() {
                   )}
                 </div>
 
-                <div className="space-y-2 border-t border-b border-slate-100 py-3 text-sm text-slate-650">
+                <div className="space-y-2 border-t border-b border-slate-100 py-3 text-sm text-slate-600">
                   <div className="flex items-center gap-2">
                     <Phone className="w-3.5 h-3.5 text-slate-400" />
                     <span>{customer.phone}</span>
@@ -417,7 +417,7 @@ export default function Customers() {
                         </button>
                         <button
                           onClick={() => setDeleteConfirmId(null)}
-                          className="px-2.5 py-1 rounded bg-white border border-slate-200 text-slate-550 cursor-pointer"
+                          className="px-2.5 py-1 rounded bg-white border border-slate-200 text-slate-500 cursor-pointer"
                         >
                           No
                         </button>
@@ -425,7 +425,7 @@ export default function Customers() {
                     ) : (
                       <button
                         onClick={() => setDeleteConfirmId(customer._id)}
-                        className="flex items-center gap-1.5 text-xs font-bold text-slate-400 hover:text-rose-650 cursor-pointer"
+                        className="flex items-center gap-1.5 text-xs font-bold text-slate-400 hover:text-rose-600 cursor-pointer"
                       >
                         <Trash2 className="w-4 h-4" />
                         <span>Delete Client</span>
@@ -471,7 +471,7 @@ export default function Customers() {
             {/* Gradient accent header bar */}
             <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-blue-500 via-sky-400 to-indigo-500"></div>
 
-            <div className="flex items-center justify-between p-6 border-b border-slate-150">
+            <div className="flex items-center justify-between p-6 border-b border-slate-100">
               <h2 className="text-lg font-bold text-slate-900">Create Customer Profile</h2>
               <button
                 onClick={() => setIsModalOpen(false)}
@@ -498,7 +498,7 @@ export default function Customers() {
                     placeholder="e.g. John Doe"
                     value={newCustomer.name}
                     onChange={(e) => setNewCustomer({ ...newCustomer, name: e.target.value })}
-                    className="block w-full bg-slate-50/50 border border-slate-200 hover:border-slate-350 text-slate-800 rounded-xl py-2.5 px-3.5 text-sm focus:outline-none focus:bg-white focus:border-blue-550 transition-all placeholder-slate-400"
+                    className="block w-full bg-slate-50/50 border border-slate-200 hover:border-slate-300 text-slate-800 rounded-xl py-2.5 px-3.5 text-sm focus:outline-none focus:bg-white focus:border-blue-500 transition-all placeholder-slate-400"
                   />
                 </div>
 
@@ -510,7 +510,7 @@ export default function Customers() {
                     placeholder="e.g. +977 98xxxxxxxx"
                     value={newCustomer.phone}
                     onChange={(e) => setNewCustomer({ ...newCustomer, phone: e.target.value })}
-                    className="block w-full bg-slate-50/50 border border-slate-200 hover:border-slate-350 text-slate-800 rounded-xl py-2.5 px-3.5 text-sm focus:outline-none focus:bg-white focus:border-blue-550 transition-all placeholder-slate-400"
+                    className="block w-full bg-slate-50/50 border border-slate-200 hover:border-slate-300 text-slate-800 rounded-xl py-2.5 px-3.5 text-sm focus:outline-none focus:bg-white focus:border-blue-500 transition-all placeholder-slate-400"
                   />
                 </div>
 
@@ -519,7 +519,7 @@ export default function Customers() {
                   <select
                     value={newCustomer.type}
                     onChange={(e) => setNewCustomer({ ...newCustomer, type: e.target.value })}
-                    className="block w-full bg-slate-50/50 border border-slate-200 hover:border-slate-350 text-slate-800 rounded-xl py-2.5 px-3.5 text-sm focus:outline-none focus:bg-white focus:border-blue-550 transition-all cursor-pointer"
+                    className="block w-full bg-slate-50/50 border border-slate-200 hover:border-slate-300 text-slate-800 rounded-xl py-2.5 px-3.5 text-sm focus:outline-none focus:bg-white focus:border-blue-500 transition-all cursor-pointer"
                   >
                     <option value="individual">Individual</option>
                     <option value="corporate">Corporate</option>
@@ -533,7 +533,7 @@ export default function Customers() {
                     placeholder="e.g. john@example.com"
                     value={newCustomer.email}
                     onChange={(e) => setNewCustomer({ ...newCustomer, email: e.target.value })}
-                    className="block w-full bg-slate-50/50 border border-slate-200 hover:border-slate-350 text-slate-800 rounded-xl py-2.5 px-3.5 text-sm focus:outline-none focus:bg-white focus:border-blue-550 transition-all placeholder-slate-400"
+                    className="block w-full bg-slate-50/50 border border-slate-200 hover:border-slate-300 text-slate-800 rounded-xl py-2.5 px-3.5 text-sm focus:outline-none focus:bg-white focus:border-blue-500 transition-all placeholder-slate-400"
                   />
                 </div>
 
@@ -544,7 +544,7 @@ export default function Customers() {
                     value={newCustomer.address}
                     onChange={(e) => setNewCustomer({ ...newCustomer, address: e.target.value })}
                     rows="2"
-                    className="block w-full bg-slate-50/50 border border-slate-200 hover:border-slate-350 text-slate-800 rounded-xl py-2.5 px-3.5 text-sm focus:outline-none focus:bg-white focus:border-blue-550 transition-all placeholder-slate-400 resize-none"
+                    className="block w-full bg-slate-50/50 border border-slate-200 hover:border-slate-300 text-slate-800 rounded-xl py-2.5 px-3.5 text-sm focus:outline-none focus:bg-white focus:border-blue-500 transition-all placeholder-slate-400 resize-none"
                   ></textarea>
                 </div>
 
@@ -560,7 +560,7 @@ export default function Customers() {
                     placeholder="e.g. Hilux"
                     value={newCustomer.vehicleModel}
                     onChange={(e) => setNewCustomer({ ...newCustomer, vehicleModel: e.target.value })}
-                    className="block w-full bg-slate-50/50 border border-slate-200 hover:border-slate-350 text-slate-800 rounded-xl py-2.5 px-3.5 text-sm focus:outline-none focus:bg-white focus:border-blue-550 transition-all placeholder-slate-400"
+                    className="block w-full bg-slate-50/50 border border-slate-200 hover:border-slate-300 text-slate-800 rounded-xl py-2.5 px-3.5 text-sm focus:outline-none focus:bg-white focus:border-blue-500 transition-all placeholder-slate-400"
                   />
                 </div>
 
@@ -571,12 +571,12 @@ export default function Customers() {
                     placeholder="e.g. BA-1-PA-2026"
                     value={newCustomer.vehicleNumber}
                     onChange={(e) => setNewCustomer({ ...newCustomer, vehicleNumber: e.target.value.toUpperCase() })}
-                    className="block w-full bg-slate-50/50 border border-slate-200 hover:border-slate-350 text-slate-800 rounded-xl py-2.5 px-3.5 text-sm focus:outline-none focus:bg-white focus:border-blue-550 transition-all placeholder-slate-400"
+                    className="block w-full bg-slate-50/50 border border-slate-200 hover:border-slate-300 text-slate-800 rounded-xl py-2.5 px-3.5 text-sm focus:outline-none focus:bg-white focus:border-blue-500 transition-all placeholder-slate-400"
                   />
                 </div>
               </div>
 
-              <div className="flex gap-3 justify-end pt-4 border-t border-slate-150 mt-6">
+              <div className="flex gap-3 justify-end pt-4 border-t border-slate-100 mt-6">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}

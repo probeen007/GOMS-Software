@@ -106,19 +106,45 @@ router.post(
 // @access  Private (admin, receptionist, accountant)
 router.get('/', authenticate, authorize('admin', 'receptionist', 'accountant'), async (req, res) => {
   try {
-    const { status } = req.query;
-    let query = {};
+    const { status, search } = req.query;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 15;
+    const skip = (page - 1) * limit;
 
+    let query = {};
     if (status) {
       query.status = status;
     }
 
-    const invoices = await Invoice.find(query)
-      .populate('customerId', 'name phone email')
-      .populate('vehicleId', 'plateNo make model')
-      .sort({ createdAt: -1 });
+    if (search && search.trim()) {
+      const regex = { $regex: search.trim(), $options: 'i' };
+      const [matchingCustomers, matchingVehicles] = await Promise.all([
+        Customer.find({ name: regex, deletedAt: null }).select('_id'),
+        Vehicle.find({ $or: [{ plateNo: regex }, { make: regex }, { model: regex }] }).select('_id')
+      ]);
+      query.$or = [
+        { invoiceNo: regex },
+        { customerId: { $in: matchingCustomers.map((c) => c._id) } },
+        { vehicleId: { $in: matchingVehicles.map((v) => v._id) } }
+      ];
+    }
 
-    res.json(invoices);
+    const [invoices, total] = await Promise.all([
+      Invoice.find(query)
+        .populate('customerId', 'name phone email')
+        .populate('vehicleId', 'plateNo make model')
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit),
+      Invoice.countDocuments(query)
+    ]);
+
+    res.json({
+      invoices,
+      page,
+      pages: Math.ceil(total / limit),
+      total
+    });
   } catch (err) {
     console.error('Fetch invoices error:', err.message);
     res.status(500).json({ message: 'Server error' });

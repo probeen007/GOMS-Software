@@ -10,14 +10,14 @@ import {
   AlertCircle,
   X,
   User,
-  Car,
-  PlusCircle,
   Plus,
   Printer,
   CheckCircle,
   Archive,
   AlertTriangle,
-  Filter
+  Filter,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 
 export default function Servicing() {
@@ -33,6 +33,8 @@ export default function Servicing() {
   const [selectedRecord, setSelectedRecord] = useState(null);
   const [statusFilter, setStatusFilter] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   // Service record search (by vehicle number / customer name / customer number)
   const [recordSearchQuery, setRecordSearchQuery] = useState(searchParams.get('q') || '');
@@ -80,11 +82,12 @@ export default function Servicing() {
     setLoading(true);
     try {
       const response = await axios.get('/api/servicing', {
-        params: { status: statusFilter }
+        params: { status: statusFilter, search: searchTerm, page, limit: 15 }
       });
-      setRecords(response.data);
+      setRecords(response.data.records);
+      setTotalPages(response.data.pages || 1);
       if (selectedRecord) {
-        const updated = response.data.find(r => r._id === selectedRecord._id);
+        const updated = response.data.records.find(r => r._id === selectedRecord._id);
         if (updated) setSelectedRecord(updated);
       }
     } catch (err) {
@@ -105,9 +108,22 @@ export default function Servicing() {
   };
 
   useEffect(() => {
-    fetchRecords();
     fetchInventory();
-  }, [statusFilter]);
+  }, []);
+
+  // Reset to page 1 whenever the filter/search criteria change
+  useEffect(() => {
+    setPage(1);
+  }, [statusFilter, searchTerm]);
+
+  // Debounce the search box so we don't fire a request on every keystroke
+  useEffect(() => {
+    const delay = setTimeout(() => {
+      fetchRecords();
+    }, 350);
+    return () => clearTimeout(delay);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [statusFilter, searchTerm, page]);
 
   // Run the deep-linked service-record search on mount (from Customers page)
   useEffect(() => {
@@ -295,15 +311,8 @@ export default function Servicing() {
     }
   };
 
-  const filteredRecords = records.filter(record => {
-    const term = searchTerm.toLowerCase();
-    const clientName = record.customerId?.name?.toLowerCase() || '';
-    const plateNo = record.vehicleId?.plateNo?.toLowerCase() || '';
-    const make = record.vehicleId?.make?.toLowerCase() || '';
-    const model = record.vehicleId?.model?.toLowerCase() || '';
-    const ref = record._id?.slice(-6).toLowerCase() || '';
-    return clientName.includes(term) || plateNo.includes(term) || make.includes(term) || model.includes(term) || ref.includes(term);
-  });
+  // Search/status filtering now happens server-side (see fetchRecords), so
+  // `records` already holds the current page's matching results.
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -311,8 +320,8 @@ export default function Servicing() {
       <div className="lg:col-span-2 space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-extrabold text-white tracking-tight">Servicing</h1>
-            <p className="text-slate-350 text-sm mt-1.5 font-medium">
+            <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">Servicing</h1>
+            <p className="text-sm text-slate-500 mt-1">
               Track vehicle repairs, log workshop operations, and allocate inventory.
             </p>
           </div>
@@ -320,7 +329,7 @@ export default function Servicing() {
             <button
               type="button"
               onClick={() => setIsCreateModalOpen(true)}
-              className="flex items-center justify-center gap-2 px-5 h-11 bg-primary-600 hover:bg-primary-500 rounded-xl text-sm font-bold text-white transition-all shadow-lg shadow-primary-500/10 hover:scale-[1.02] cursor-pointer"
+              className="flex items-center justify-center gap-2 px-5 h-11 bg-blue-600 hover:bg-blue-500 rounded-xl text-sm font-bold text-white transition-all duration-200 shadow-md shadow-blue-500/10 hover:-translate-y-0.5 cursor-pointer"
             >
               <Plus className="w-5 h-5" />
               <span>New Servicing Record</span>
@@ -330,18 +339,18 @@ export default function Servicing() {
 
         {/* Deep-linked service record search results (from Customers page) */}
         {(searchLoading || searchResults) && (
-          <div className="p-5 bg-slate-900/40 border border-slate-800 rounded-3xl shadow-md space-y-3">
+          <div className="p-5 bg-white border border-slate-200 rounded-2xl shadow-sm space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-extrabold text-slate-300 uppercase tracking-widest flex items-center gap-1.5">
-                <Search className="w-4 h-4 text-primary-400" />
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-wide flex items-center gap-1.5">
+                <Search className="w-4 h-4 text-blue-600" />
                 Service Record Search: &quot;{recordSearchQuery}&quot;
               </span>
-              <button type="button" onClick={clearRecordSearch} className="text-xs text-slate-400 hover:text-white font-bold flex items-center gap-1 cursor-pointer">
+              <button type="button" onClick={clearRecordSearch} className="text-xs text-slate-500 hover:text-slate-800 font-bold flex items-center gap-1 cursor-pointer">
                 <X className="w-3.5 h-3.5" /> Clear
               </button>
             </div>
             {searchLoading ? (
-              <div className="py-6 text-center"><Loader2 className="w-5 h-5 text-primary-400 animate-spin mx-auto" /></div>
+              <div className="py-6 text-center"><Loader2 className="w-5 h-5 text-blue-600 animate-spin mx-auto" /></div>
             ) : searchResults.length === 0 ? (
               <p className="text-xs text-slate-500 italic">No service records matched your search.</p>
             ) : (
@@ -350,13 +359,13 @@ export default function Servicing() {
                   <div
                     key={r._id}
                     onClick={() => setSelectedRecord(r)}
-                    className="p-3 rounded-xl bg-slate-900/60 border border-slate-800 hover:border-primary-500/40 cursor-pointer flex items-center justify-between text-sm"
+                    className="p-3 rounded-xl bg-slate-50 border border-slate-100 hover:border-blue-200 cursor-pointer flex items-center justify-between text-sm"
                   >
                     <div>
-                      <span className="font-bold text-white">{r.customerId?.name}</span>
-                      <span className="text-slate-400 ml-2 font-mono text-xs uppercase">{r.vehicleId?.plateNo}</span>
+                      <span className="font-bold text-slate-800">{r.customerId?.name}</span>
+                      <span className="text-slate-500 ml-2 font-mono text-xs uppercase">{r.vehicleId?.plateNo}</span>
                     </div>
-                    <span className={`text-xs font-black uppercase tracking-wider px-2 py-0.5 rounded border ${r.status === 'open' ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20' : 'bg-slate-800 text-slate-400 border-slate-700'}`}>
+                    <span className={r.status === 'open' ? 'badge-indigo' : 'badge-slate'}>
                       {r.status}
                     </span>
                   </div>
@@ -367,25 +376,25 @@ export default function Servicing() {
         )}
 
         {/* Search & Filter widgets */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-5 bg-slate-900/40 border border-slate-800 rounded-3xl shadow-md">
-          <div className="space-y-1.5 flex flex-col justify-between">
-            <label className="text-xs font-extrabold text-slate-300 uppercase tracking-widest flex items-center gap-1.5 mb-0.5">
-              <Search className="w-4 h-4 text-primary-400" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-5 bg-white border border-slate-200 rounded-2xl shadow-sm">
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold text-slate-500 uppercase tracking-wide flex items-center gap-1.5">
+              <Search className="w-4 h-4 text-blue-600" />
               Search Servicing Records
             </label>
             <div className="relative">
               <input
                 type="text"
-                placeholder="Search by plate, client name, model or REF..."
+                placeholder="Search by plate, client name, or model..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="glass-input block w-full rounded-xl h-11 pl-3.5 pr-10 text-slate-200 text-sm focus:outline-none placeholder-slate-500 font-medium"
+                className="block w-full h-11 rounded-xl border-slate-200 pl-3.5 pr-10 text-sm"
               />
               {searchTerm && (
                 <button
                   type="button"
                   onClick={() => setSearchTerm('')}
-                  className="absolute right-3 top-3 text-slate-400 hover:text-white"
+                  className="absolute right-3 top-3 text-slate-400 hover:text-slate-700 cursor-pointer"
                 >
                   <X className="w-4.5 h-4.5" />
                 </button>
@@ -393,61 +402,59 @@ export default function Servicing() {
             </div>
           </div>
 
-          <div className="space-y-1.5 flex flex-col justify-between">
-            <label className="text-xs font-extrabold text-slate-300 uppercase tracking-widest flex items-center gap-1.5 mb-0.5">
-              <Filter className="w-4 h-4 text-primary-400" />
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold text-slate-500 uppercase tracking-wide flex items-center gap-1.5">
+              <Filter className="w-4 h-4 text-blue-600" />
               Status Filter
             </label>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="glass-input block w-full rounded-xl h-11 px-3.5 text-slate-200 text-sm focus:outline-none font-bold"
+              className="block w-full h-11 rounded-xl border-slate-200 text-sm cursor-pointer"
             >
-              <option value="" className="bg-slate-900">All Statuses</option>
-              <option value="open" className="bg-slate-900">Open Tickets</option>
-              <option value="closed" className="bg-slate-900">Closed Tickets</option>
+              <option value="">All Statuses</option>
+              <option value="open">Open Tickets</option>
+              <option value="closed">Closed Tickets</option>
             </select>
           </div>
         </div>
 
         {loading ? (
-          <div className="flex flex-col items-center justify-center min-h-[45vh] bg-slate-900/15 rounded-3xl border border-slate-800/65 py-12">
-            <Loader2 className="w-8 h-8 text-primary-500 animate-spin" />
-            <p className="text-slate-400 text-sm mt-3 font-medium">Loading workshop logs...</p>
+          <div className="flex flex-col items-center justify-center min-h-[45vh] bg-white rounded-2xl border border-slate-200 py-12 shadow-sm">
+            <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
+            <p className="text-slate-500 text-sm mt-3 font-semibold">Loading workshop logs...</p>
           </div>
-        ) : filteredRecords.length === 0 ? (
-          <div className="flex flex-col items-center justify-center min-h-[45vh] bg-slate-900/20 rounded-3xl border border-slate-800/80 p-8 text-center">
-            <div className="w-12 h-12 rounded-xl bg-slate-800/50 flex items-center justify-center border border-slate-700/30 mb-4">
-              <Wrench className="w-6 h-6 text-slate-500" />
+        ) : records.length === 0 ? (
+          <div className="flex flex-col items-center justify-center min-h-[45vh] bg-white border border-slate-200 rounded-2xl p-8 text-center shadow-sm">
+            <div className="w-12 h-12 rounded-xl bg-slate-50 flex items-center justify-center border border-slate-200 mb-4">
+              <Wrench className="w-6 h-6 text-slate-400" />
             </div>
-            <h3 className="text-base font-bold text-white">No servicing records found</h3>
-            <p className="text-slate-400 text-xs mt-1 max-w-sm font-medium">
+            <h3 className="text-base font-bold text-slate-800">No servicing records found</h3>
+            <p className="text-slate-500 text-sm mt-1 max-w-sm">
               {searchTerm ? "No records match your search criteria." : "Create a new servicing record for a customer's vehicle to get started."}
             </p>
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-3">
-            {filteredRecords.map((record) => (
+            {records.map((record) => (
               <div
                 key={record._id}
                 onClick={() => setSelectedRecord(record)}
-                className={`p-5 rounded-3xl border transition-all cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative overflow-hidden ${selectedRecord?._id === record._id ? 'bg-primary-950/20 border-primary-500/40' : 'bg-slate-900/40 border-slate-800/80 hover:border-slate-700/60'}`}
+                className={`p-5 rounded-2xl border transition-all cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm hover:shadow-md ${selectedRecord?._id === record._id ? 'bg-blue-50/50 border-blue-200' : 'bg-white border-slate-200'}`}
               >
                 <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-mono font-bold text-slate-400 bg-slate-800/60 px-2 py-0.5 rounded">REC: {record._id.slice(-6).toUpperCase()}</span>
-                    <span className={`inline-flex px-2.5 py-0.5 rounded text-xs font-black uppercase tracking-wider border ${record.status === 'open' ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20' : 'bg-slate-800 text-slate-400 border-slate-700'}`}>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-xs font-mono font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded">REC: {record._id.slice(-6).toUpperCase()}</span>
+                    <span className={record.status === 'open' ? 'badge-indigo' : 'badge-slate'}>
                       {record.status}
                     </span>
                     {record.invoiceId && (
-                      <span className="inline-flex px-2.5 py-0.5 rounded text-xs font-black uppercase tracking-wider border bg-emerald-500/10 text-emerald-400 border-emerald-500/20">
-                        Invoiced
-                      </span>
+                      <span className="badge-emerald">Invoiced</span>
                     )}
                   </div>
-                  <h3 className="text-base font-extrabold text-white">{record.customerId?.name}</h3>
-                  <div className="flex items-center gap-3 text-xs text-slate-400 font-medium">
-                    <span className="px-2 py-0.5 bg-primary-950 text-primary-400 border border-primary-500/10 font-mono font-bold rounded uppercase text-xs">
+                  <h3 className="text-base font-bold text-slate-900">{record.customerId?.name}</h3>
+                  <div className="flex items-center gap-3 text-xs text-slate-500 font-medium">
+                    <span className="px-2 py-0.5 bg-blue-50 text-blue-700 border border-blue-100 font-mono font-bold rounded uppercase text-xs">
                       {record.vehicleId?.plateNo}
                     </span>
                     <span>{record.vehicleId?.make} {record.vehicleId?.model}</span>
@@ -455,42 +462,68 @@ export default function Servicing() {
                 </div>
 
                 <div className="text-left sm:text-right shrink-0">
-                  <span className="text-xs text-slate-400 uppercase tracking-widest font-extrabold block">Total billing</span>
-                  <p className="text-base font-black text-indigo-400 font-mono mt-0.5">Rs. {record.total.toFixed(2)}</p>
+                  <span className="text-xs text-slate-400 uppercase tracking-wide font-bold block">Total billing</span>
+                  <p className="text-base font-bold text-blue-700 font-mono mt-0.5">Rs. {record.total.toFixed(2)}</p>
                   <p className="text-xs text-slate-500 mt-0.5 font-medium">Opened: {formatNepaliDate(record.createdAt)}</p>
                 </div>
               </div>
             ))}
           </div>
         )}
+
+        {!loading && totalPages > 1 && (
+          <div className="flex items-center justify-between bg-transparent pt-2 px-2">
+            <span className="text-sm font-semibold text-slate-500">
+              Page {page} of {totalPages}
+            </span>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setPage((p) => Math.max(p - 1, 1))}
+                disabled={page === 1}
+                className="p-2.5 rounded-xl bg-white border border-slate-200 text-slate-500 hover:text-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+              >
+                <ChevronLeft className="w-4.5 h-4.5" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setPage((p) => Math.min(p + 1, totalPages))}
+                disabled={page === totalPages}
+                className="p-2.5 rounded-xl bg-white border border-slate-200 text-slate-500 hover:text-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+              >
+                <ChevronRight className="w-4.5 h-4.5" />
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Workshop Desk Detailed panel */}
       <div className="space-y-6">
-        <h2 className="text-xl font-extrabold text-white tracking-tight">Servicing Workspace</h2>
+        <h2 className="text-lg font-bold text-slate-900">Servicing Workspace</h2>
         {selectedRecord ? (
-          <div className="p-6 rounded-3xl bg-slate-900/40 border border-slate-800/80 space-y-6 shadow-2xl relative overflow-hidden">
+          <div className="p-6 bg-white border border-slate-200 rounded-2xl shadow-sm space-y-6">
             {/* Header info */}
-            <div className="space-y-2 pb-4 border-b border-slate-800">
+            <div className="space-y-2 pb-4 border-b border-slate-100">
               <div className="flex justify-between items-start gap-2">
-                <span className="text-xs font-mono text-primary-400 font-bold bg-primary-950/45 px-2.5 py-0.5 border border-primary-500/25 rounded">
-                  REC ID: {selectedRecord._id}
+                <span className="text-xs font-mono text-blue-700 font-bold bg-blue-50 px-2.5 py-0.5 border border-blue-100 rounded">
+                  REC ID: {selectedRecord._id.slice(-8).toUpperCase()}
                 </span>
-                <span className={`text-xs font-black uppercase tracking-wider px-2.5 py-0.5 rounded border ${selectedRecord.status === 'open' ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/10' : 'bg-slate-800 text-slate-400 border-slate-700'}`}>
+                <span className={selectedRecord.status === 'open' ? 'badge-indigo' : 'badge-slate'}>
                   {selectedRecord.status}
                 </span>
               </div>
-              <h3 className="text-lg font-extrabold text-white mt-2">{selectedRecord.customerId?.name}</h3>
-              <p className="text-sm text-slate-400 font-medium">Plate Number: <strong className="font-mono text-slate-200 uppercase">{selectedRecord.vehicleId?.plateNo}</strong></p>
+              <h3 className="text-lg font-bold text-slate-900 mt-2">{selectedRecord.customerId?.name}</h3>
+              <p className="text-sm text-slate-500 font-medium">Plate Number: <strong className="font-mono text-slate-700 uppercase">{selectedRecord.vehicleId?.plateNo}</strong></p>
               {selectedRecord.invoiceId && (
-                <p className="text-xs text-emerald-400 font-bold">This record has already been invoiced.</p>
+                <p className="text-xs text-emerald-600 font-bold">This record has already been invoiced.</p>
               )}
             </div>
 
             {/* Diagnoses / Findings */}
             <div className="space-y-1.5">
-              <span className="text-xs font-extrabold text-slate-400 uppercase tracking-widest block">Diagnoses & Findings Log</span>
-              <p className="text-sm text-slate-300 bg-slate-900/50 p-3.5 rounded-xl border border-slate-850 italic font-medium leading-relaxed">
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-wide block">Diagnoses &amp; Findings Log</span>
+              <p className="text-sm text-slate-700 bg-slate-50 p-3.5 rounded-xl border border-slate-100 italic font-medium leading-relaxed">
                 {selectedRecord.findings || 'No diagnoses recorded yet.'}
               </p>
             </div>
@@ -498,13 +531,13 @@ export default function Servicing() {
             {/* Line allocations display */}
             <div className="space-y-4">
               <div className="space-y-2">
-                <span className="text-xs font-extrabold text-slate-400 uppercase tracking-widest block">Allocated Spares</span>
+                <span className="text-xs font-bold text-slate-400 uppercase tracking-wide block">Allocated Spares</span>
                 {selectedRecord.parts.length === 0 ? (
                   <p className="text-xs text-slate-500 italic font-medium">No parts allocated yet.</p>
                 ) : (
                   <div className="space-y-2">
                     {selectedRecord.parts.map((p, idx) => (
-                      <div key={idx} className="flex justify-between items-center text-sm text-slate-200">
+                      <div key={idx} className="flex justify-between items-center text-sm text-slate-700">
                         <span className="font-medium">{p.name} <strong className="text-slate-400 text-xs font-normal">({p.qty} x Rs. {p.unitPrice})</strong></span>
                         <span className="font-mono font-bold">Rs. {p.total.toFixed(2)}</span>
                       </div>
@@ -514,13 +547,13 @@ export default function Servicing() {
               </div>
 
               <div className="space-y-2">
-                <span className="text-xs font-extrabold text-slate-400 uppercase tracking-widest block">Logged Labour</span>
+                <span className="text-xs font-bold text-slate-400 uppercase tracking-wide block">Logged Labour</span>
                 {selectedRecord.labour.length === 0 ? (
                   <p className="text-xs text-slate-500 italic font-medium">No labor logged yet.</p>
                 ) : (
                   <div className="space-y-2">
                     {selectedRecord.labour.map((l, idx) => (
-                      <div key={idx} className="flex justify-between items-center text-sm text-slate-200">
+                      <div key={idx} className="flex justify-between items-center text-sm text-slate-700">
                         <span className="font-medium">{l.name} <strong className="text-slate-400 text-xs font-normal">({l.hours} hrs x Rs. {l.unitPrice})</strong></span>
                         <span className="font-mono font-bold">Rs. {l.total.toFixed(2)}</span>
                       </div>
@@ -531,76 +564,78 @@ export default function Servicing() {
             </div>
 
             {/* Finance totals */}
-            <div className="space-y-2.5 border-t border-slate-800 pt-4 text-sm font-semibold text-slate-400">
+            <div className="space-y-2.5 border-t border-slate-100 pt-4 text-sm font-semibold text-slate-500">
               <div className="flex justify-between">
                 <span>Subtotal:</span>
-                <span className="font-mono text-slate-200 font-bold">Rs. {selectedRecord.subtotal.toFixed(2)}</span>
+                <span className="font-mono text-slate-700 font-bold">Rs. {selectedRecord.subtotal.toFixed(2)}</span>
               </div>
               <div className="flex justify-between">
                 <span>VAT (13%):</span>
                 <span className="font-mono">Rs. {selectedRecord.vat.toFixed(2)}</span>
               </div>
-              <div className="flex justify-between text-base font-extrabold text-white border-t border-slate-850 pt-3">
-                <span className="text-indigo-400">Total Billable:</span>
-                <span className="font-mono text-indigo-400">Rs. {selectedRecord.total.toFixed(2)}</span>
+              <div className="flex justify-between text-base font-bold text-slate-900 border-t border-slate-200 pt-3">
+                <span className="text-blue-700">Total Billable:</span>
+                <span className="font-mono text-blue-700">Rs. {selectedRecord.total.toFixed(2)}</span>
               </div>
             </div>
 
             {/* Forms section (Technicians can add spares/labour, reception can close) */}
             {selectedRecord.status === 'open' && (
-              <div className="space-y-4 pt-4 border-t border-slate-850">
+              <div className="space-y-4 pt-4 border-t border-slate-100">
                 {isTechnicianOrAdmin && (
                   <>
                     {/* Add Part Form */}
-                    <form onSubmit={handleAllocatePart} className="p-4 bg-slate-900/40 border border-slate-850 rounded-2xl space-y-3">
-                      <span className="text-xs font-extrabold text-slate-400 uppercase tracking-widest block">Allocate Spare Part</span>
-                      {partError && <p className="text-xs text-rose-400 font-medium">{partError}</p>}
-                      <div className="flex gap-2">
+                    <form onSubmit={handleAllocatePart} className="p-4 bg-slate-50 border border-slate-100 rounded-xl space-y-3">
+                      <span className="text-xs font-bold text-slate-500 uppercase tracking-wide block">Allocate Spare Part</span>
+                      {partError && <p className="text-xs text-rose-600 font-medium">{partError}</p>}
+                      <div className="flex flex-col sm:flex-row gap-2">
                         <select
                           required
                           value={partId}
                           onChange={(e) => setPartId(e.target.value)}
-                          className="glass-input block flex-1 rounded-xl h-11 px-3.5 text-slate-205 text-sm focus:outline-none"
+                          className="block flex-1 h-11 rounded-xl border-slate-200 text-sm cursor-pointer"
                         >
-                          <option value="" className="bg-slate-950">-- Pick Part --</option>
+                          <option value="">-- Pick Part --</option>
                           {inventoryList.map(p => (
-                            <option key={p._id} value={p._id} className="bg-slate-950" disabled={p.qty <= 0}>
+                            <option key={p._id} value={p._id} disabled={p.qty <= 0}>
                               {p.name} (Stock: {p.qty}) (Rs. {p.unitPrice})
                             </option>
                           ))}
                         </select>
-                        <input
-                          type="number"
-                          required
-                          min="1"
-                          placeholder="Qty"
-                          value={partQty}
-                          onChange={(e) => setPartQty(e.target.value)}
-                          className="glass-input block w-16 rounded-xl h-11 px-2 text-slate-205 text-sm text-center focus:outline-none"
-                        />
-                        <button
-                          type="submit"
-                          disabled={partLoading}
-                          className="h-11 px-5 bg-indigo-650 hover:bg-indigo-550 rounded-xl text-sm font-bold text-white transition-all disabled:opacity-40 cursor-pointer"
-                        >
-                          Add
-                        </button>
+                        <div className="flex gap-2">
+                          <input
+                            type="number"
+                            required
+                            min="1"
+                            placeholder="Qty"
+                            value={partQty}
+                            onChange={(e) => setPartQty(e.target.value)}
+                            className="block w-16 h-11 rounded-xl border-slate-200 text-sm text-center"
+                          />
+                          <button
+                            type="submit"
+                            disabled={partLoading}
+                            className="h-11 px-5 bg-blue-600 hover:bg-blue-500 rounded-xl text-sm font-bold text-white transition-colors disabled:opacity-40 cursor-pointer shrink-0"
+                          >
+                            Add
+                          </button>
+                        </div>
                       </div>
                     </form>
 
                     {/* Add Labour Form */}
-                    <form onSubmit={handleLogLabour} className="p-4 bg-slate-900/40 border border-slate-855 rounded-2xl space-y-3">
-                      <span className="text-xs font-extrabold text-slate-450 uppercase tracking-widest block">Log Labor Task</span>
-                      {labourError && <p className="text-xs text-rose-400 font-medium">{labourError}</p>}
+                    <form onSubmit={handleLogLabour} className="p-4 bg-slate-50 border border-slate-100 rounded-xl space-y-3">
+                      <span className="text-xs font-bold text-slate-500 uppercase tracking-wide block">Log Labor Task</span>
+                      {labourError && <p className="text-xs text-rose-600 font-medium">{labourError}</p>}
                       <input
                         type="text"
                         required
                         placeholder="Operation Description (e.g. Engine tuning)"
                         value={labourName}
                         onChange={(e) => setLabourName(e.target.value)}
-                        className="glass-input block w-full rounded-xl h-11 px-3.5 text-slate-205 text-sm focus:outline-none"
+                        className="block w-full h-11 rounded-xl border-slate-200 text-sm"
                       />
-                      <div className="flex gap-2">
+                      <div className="flex flex-col sm:flex-row gap-2">
                         <input
                           type="number"
                           step="0.1"
@@ -608,7 +643,7 @@ export default function Servicing() {
                           placeholder="Hours"
                           value={labourHours}
                           onChange={(e) => setLabourHours(e.target.value)}
-                          className="glass-input block w-1/2 rounded-xl h-11 px-3 text-slate-205 text-sm text-center focus:outline-none"
+                          className="block sm:w-1/2 h-11 rounded-xl border-slate-200 text-sm text-center"
                         />
                         <input
                           type="number"
@@ -616,12 +651,12 @@ export default function Servicing() {
                           placeholder="Rate (Rs.)"
                           value={labourRate}
                           onChange={(e) => setLabourRate(e.target.value)}
-                          className="glass-input block w-1/2 rounded-xl h-11 px-3 text-slate-205 text-sm text-center focus:outline-none font-mono"
+                          className="block sm:w-1/2 h-11 rounded-xl border-slate-200 text-sm text-center font-mono"
                         />
                         <button
                           type="submit"
                           disabled={labourLoading}
-                          className="h-11 px-5 bg-indigo-650 hover:bg-indigo-550 rounded-xl text-sm font-bold text-white transition-all disabled:opacity-40 cursor-pointer"
+                          className="h-11 px-5 bg-blue-600 hover:bg-blue-500 rounded-xl text-sm font-bold text-white transition-colors disabled:opacity-40 cursor-pointer shrink-0"
                         >
                           Log
                         </button>
@@ -634,7 +669,7 @@ export default function Servicing() {
                 {isReceptionistOrAdmin && (
                   <button
                     onClick={() => setIsCloseModalOpen(true)}
-                    className="flex items-center justify-center gap-2 w-full h-11 bg-emerald-600 hover:bg-emerald-500 rounded-xl text-sm font-bold text-white transition-all hover:scale-[1.02] shadow-lg shadow-emerald-500/10 cursor-pointer"
+                    className="flex items-center justify-center gap-2 w-full h-11 bg-emerald-600 hover:bg-emerald-500 rounded-xl text-sm font-bold text-white transition-colors shadow-md shadow-emerald-500/10 cursor-pointer"
                   >
                     <CheckCircle className="w-4.5 h-4.5" />
                     <span>Close Servicing Record</span>
@@ -649,35 +684,32 @@ export default function Servicing() {
                 href={`/api/servicing/${selectedRecord._id}/pdf?token=${localStorage.getItem('token')}`}
                 target="_blank"
                 rel="noreferrer"
-                className="flex items-center justify-center gap-2.5 w-full h-11 rounded-xl text-sm font-bold text-slate-300 bg-slate-900 hover:bg-slate-850 border border-slate-800 hover:border-slate-750 transition-all hover:scale-[1.02] cursor-pointer"
+                className="flex items-center justify-center gap-2 w-full h-11 rounded-xl text-sm font-bold text-slate-600 hover:text-slate-900 bg-white hover:bg-slate-50 border border-slate-200 transition-colors cursor-pointer"
               >
                 <Printer className="w-4.5 h-4.5" />
-                <span>Print Service Sheet / Worksheet</span>
+                <span>Print Service Sheet</span>
               </a>
             </div>
           </div>
         ) : (
-          <div className="p-6 rounded-3xl bg-slate-900/10 border border-slate-850 py-16 text-center">
-            <p className="text-slate-400 text-sm font-medium">Select a servicing record from the workshop list to log diagnostic updates, allocate parts, or sign off and close the ticket.</p>
+          <div className="p-6 bg-white border border-slate-200 rounded-2xl py-16 text-center shadow-sm">
+            <p className="text-slate-500 text-sm font-medium">Select a servicing record from the workshop list to log diagnostic updates, allocate parts, or sign off and close the ticket.</p>
           </div>
         )}
       </div>
 
       {/* Modal: New Servicing Record */}
       {isCreateModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-955/75 backdrop-blur-sm">
-          <div className="relative w-full max-w-md glass-card rounded-3xl overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200">
-            <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-primary-500 to-indigo-400"></div>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/40 backdrop-blur-sm">
+          <div className="relative w-full max-w-md bg-white rounded-3xl overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200 border border-slate-100">
+            <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-blue-500 via-sky-400 to-indigo-500"></div>
 
-            <div className="flex items-center justify-between p-6 border-b border-slate-800">
-              <div className="flex items-center gap-2">
-                <PlusCircle className="w-5 h-5 text-primary-400" />
-                <h2 className="text-xl font-extrabold text-white tracking-tight">New Servicing Record</h2>
-              </div>
+            <div className="flex items-center justify-between p-6 border-b border-slate-100">
+              <h2 className="text-lg font-bold text-slate-900">New Servicing Record</h2>
               <button
                 type="button"
                 onClick={() => { setIsCreateModalOpen(false); resetCreateForm(); }}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-white transition-colors cursor-pointer"
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-800 hover:bg-slate-50 transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -685,18 +717,18 @@ export default function Servicing() {
 
             <form onSubmit={handleCreateRecord} className="p-6 space-y-4">
               {createError && (
-                <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-start gap-2.5">
-                  <AlertCircle className="w-4.5 h-4.5 text-rose-455 shrink-0 mt-0.5" />
-                  <span className="text-xs text-rose-300 font-medium leading-relaxed">{createError}</span>
+                <div className="p-3 rounded-xl bg-rose-50 border border-rose-100 flex items-start gap-2.5">
+                  <AlertCircle className="w-4.5 h-4.5 text-rose-600 shrink-0 mt-0.5" />
+                  <span className="text-xs text-rose-700 font-bold">{createError}</span>
                 </div>
               )}
 
               <div className="space-y-1.5">
-                <label className="text-xs font-extrabold text-slate-300 uppercase tracking-widest block mb-0.5">Customer *</label>
+                <label className="text-xs font-extrabold text-slate-500 uppercase tracking-wide">Customer *</label>
                 {selectedCustomerId ? (
-                  <div className="flex items-center justify-between p-3 rounded-xl bg-slate-900/60 border border-slate-800">
-                    <span className="text-sm font-bold text-white flex items-center gap-2"><User className="w-4 h-4 text-primary-400" /> {selectedCustomerName}</span>
-                    <button type="button" onClick={() => { setSelectedCustomerId(''); setSelectedCustomerName(''); setCustomerVehicles([]); setSelectedVehicleId(''); }} className="text-xs text-slate-400 hover:text-white cursor-pointer">Change</button>
+                  <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-200">
+                    <span className="text-sm font-bold text-slate-800 flex items-center gap-2"><User className="w-4 h-4 text-blue-600" /> {selectedCustomerName}</span>
+                    <button type="button" onClick={() => { setSelectedCustomerId(''); setSelectedCustomerName(''); setCustomerVehicles([]); setSelectedVehicleId(''); }} className="text-xs text-slate-500 hover:text-slate-800 cursor-pointer">Change</button>
                   </div>
                 ) : (
                   <div className="relative">
@@ -705,19 +737,19 @@ export default function Servicing() {
                       placeholder="Search customer by name or phone..."
                       value={customerSearch}
                       onChange={(e) => setCustomerSearch(e.target.value)}
-                      className="glass-input block w-full rounded-xl h-11 px-3.5 text-slate-205 text-sm focus:outline-none"
+                      className="block w-full h-11 rounded-xl border-slate-200 text-sm"
                     />
                     {customerSearchLoading && <Loader2 className="w-4 h-4 text-slate-400 animate-spin absolute right-3 top-3.5" />}
                     {searchedCustomers.length > 0 && (
-                      <div className="absolute z-10 mt-1 w-full bg-slate-900 border border-slate-800 rounded-xl shadow-xl overflow-hidden">
+                      <div className="absolute z-10 mt-1 w-full bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden">
                         {searchedCustomers.map((c) => (
                           <button
                             type="button"
                             key={c._id}
                             onClick={() => handleSelectCustomer(c)}
-                            className="w-full text-left px-3.5 py-2.5 text-sm text-slate-200 hover:bg-slate-800 cursor-pointer"
+                            className="w-full text-left px-3.5 py-2.5 text-sm text-slate-700 hover:bg-slate-50 cursor-pointer"
                           >
-                            {c.name} <span className="text-slate-500 text-xs">({c.phone})</span>
+                            {c.name} <span className="text-slate-400 text-xs">({c.phone})</span>
                           </button>
                         ))}
                       </div>
@@ -728,18 +760,18 @@ export default function Servicing() {
 
               {selectedCustomerId && (
                 <div className="space-y-1.5">
-                  <label className="text-xs font-extrabold text-slate-300 uppercase tracking-widest block mb-0.5">Vehicle *</label>
+                  <label className="text-xs font-extrabold text-slate-500 uppercase tracking-wide">Vehicle *</label>
                   {customerVehicles.length === 0 ? (
-                    <p className="text-xs text-slate-450 italic">This customer has no registered vehicles yet.</p>
+                    <p className="text-xs text-slate-500 italic">This customer has no registered vehicles yet.</p>
                   ) : (
                     <select
                       required
                       value={selectedVehicleId}
                       onChange={(e) => setSelectedVehicleId(e.target.value)}
-                      className="glass-input block w-full rounded-xl h-11 px-3.5 text-slate-205 text-sm focus:outline-none font-bold"
+                      className="block w-full h-11 rounded-xl border-slate-200 text-sm font-bold cursor-pointer"
                     >
                       {customerVehicles.map((v) => (
-                        <option key={v._id} value={v._id} className="bg-slate-950">
+                        <option key={v._id} value={v._id}>
                           {v.plateNo} — {v.make} {v.model}
                         </option>
                       ))}
@@ -748,22 +780,22 @@ export default function Servicing() {
                 </div>
               )}
 
-              <div className="flex gap-3 justify-end pt-4 border-t border-slate-800 mt-6">
+              <div className="flex gap-3 justify-end pt-4 border-t border-slate-100 mt-6">
                 <button
                   type="button"
                   onClick={() => { setIsCreateModalOpen(false); resetCreateForm(); }}
-                  className="px-5 h-11 rounded-xl text-sm font-bold text-slate-300 hover:text-white bg-slate-855 transition-colors cursor-pointer"
+                  className="px-4 py-2.5 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={createLoading || !selectedCustomerId || !selectedVehicleId}
-                  className="flex items-center justify-center gap-1.5 px-5 h-11 rounded-xl text-sm font-bold text-white bg-primary-600 hover:bg-primary-500 disabled:opacity-50 transition-all shadow-lg shadow-primary-550/15 cursor-pointer"
+                  className="flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-500 disabled:opacity-50 transition-all shadow-md shadow-blue-500/10 cursor-pointer"
                 >
                   {createLoading ? (
                     <>
-                      <Loader2 className="w-4.5 h-4.5 animate-spin" />
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
                       <span>Creating...</span>
                     </>
                   ) : (
@@ -778,14 +810,14 @@ export default function Servicing() {
 
       {/* Modal: Close Servicing Record */}
       {isCloseModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-955/75 backdrop-blur-sm">
-          <div className="relative w-full max-w-md glass-card rounded-3xl overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200">
-            <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-emerald-500 to-teal-400"></div>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/40 backdrop-blur-sm">
+          <div className="relative w-full max-w-md bg-white rounded-3xl overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200 border border-slate-100">
+            <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-emerald-500 to-teal-500"></div>
 
-            <div className="flex items-center justify-between p-6 border-b border-slate-800">
+            <div className="flex items-center justify-between p-6 border-b border-slate-100">
               <div className="flex items-center gap-2">
-                <Archive className="w-5 h-5 text-emerald-455" />
-                <h2 className="text-xl font-extrabold text-white tracking-tight">Sign Off / Close Servicing Record</h2>
+                <Archive className="w-5 h-5 text-emerald-600" />
+                <h2 className="text-lg font-bold text-slate-900">Sign Off / Close Servicing Record</h2>
               </div>
               <button
                 type="button"
@@ -795,7 +827,7 @@ export default function Servicing() {
                   setFindings('');
                   setCloseError('');
                 }}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-white transition-colors cursor-pointer"
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-800 hover:bg-slate-50 transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -803,36 +835,36 @@ export default function Servicing() {
 
             <form onSubmit={handleCloseRecord} className="p-6 space-y-4">
               {closeError && (
-                <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-start gap-2.5">
-                  <AlertTriangle className="w-4.5 h-4.5 text-rose-455 shrink-0 mt-0.5" />
-                  <span className="text-xs text-rose-300 font-medium leading-relaxed">{closeError}</span>
+                <div className="p-3 rounded-xl bg-rose-50 border border-rose-100 flex items-start gap-2.5">
+                  <AlertTriangle className="w-4.5 h-4.5 text-rose-600 shrink-0 mt-0.5" />
+                  <span className="text-xs text-rose-700 font-bold">{closeError}</span>
                 </div>
               )}
 
               <div className="space-y-1.5">
-                <label className="text-xs font-extrabold text-slate-300 uppercase tracking-widest block mb-0.5">Odometer Mileage Out (km)</label>
+                <label className="text-xs font-extrabold text-slate-500 uppercase tracking-wide">Odometer Mileage Out (km)</label>
                 <input
                   type="number"
                   placeholder="e.g. 102500"
                   value={mileageOut}
                   onChange={(e) => setMileageOut(e.target.value)}
-                  className="glass-input block w-full rounded-xl h-11 px-3.5 text-slate-205 text-sm font-semibold focus:outline-none"
+                  className="block w-full h-11 rounded-xl border-slate-200 text-sm font-semibold"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-extrabold text-slate-300 uppercase tracking-widest block mb-0.5">Diagnostic Findings & Actions Taken *</label>
+                <label className="text-xs font-extrabold text-slate-500 uppercase tracking-wide">Diagnostic Findings &amp; Actions Taken *</label>
                 <textarea
                   required
                   placeholder="Summarize parts replaced, tasks completed, or instructions for the client..."
                   value={findings}
                   onChange={(e) => setFindings(e.target.value)}
                   rows="3"
-                  className="glass-input block w-full rounded-xl py-3 px-3.5 text-slate-205 text-sm resize-none focus:outline-none"
+                  className="block w-full rounded-xl border-slate-200 text-sm resize-none py-3 px-3.5"
                 ></textarea>
               </div>
 
-              <div className="flex gap-3 justify-end pt-4 border-t border-slate-800 mt-6">
+              <div className="flex gap-3 justify-end pt-4 border-t border-slate-100 mt-6">
                 <button
                   type="button"
                   onClick={() => {
@@ -841,23 +873,23 @@ export default function Servicing() {
                     setFindings('');
                     setCloseError('');
                   }}
-                  className="px-5 h-11 rounded-xl text-sm font-bold text-slate-300 hover:text-white bg-slate-850 transition-colors cursor-pointer"
+                  className="px-4 py-2.5 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={closeLoading}
-                  className="flex items-center justify-center gap-1.5 px-5 h-11 rounded-xl text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 transition-all shadow-lg shadow-emerald-550/15 cursor-pointer"
+                  className="flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 transition-all shadow-md shadow-emerald-500/10 cursor-pointer"
                 >
                   {closeLoading ? (
                     <>
-                      <Loader2 className="w-4.5 h-4.5 animate-spin" />
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
                       <span>Closing...</span>
                     </>
                   ) : (
                     <>
-                      <CheckCircle className="w-4.5 h-4.5" />
+                      <CheckCircle className="w-3.5 h-3.5" />
                       <span>Close Record</span>
                     </>
                   )}

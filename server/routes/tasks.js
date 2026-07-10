@@ -1,6 +1,7 @@
 import express from 'express';
 import { body, validationResult } from 'express-validator';
 import Task from '../models/Task.js';
+import User from '../models/User.js';
 import { authenticate, authorize } from '../middleware/auth.js';
 import { logAction } from '../utils/logger.js';
 import { isWithinSupportedDateRange } from '../utils/dateRange.js';
@@ -12,14 +13,50 @@ const router = express.Router();
 // @access  Private
 router.get('/', authenticate, async (req, res) => {
   try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 15;
+    const skip = (page - 1) * limit;
+
+    const { search, status, priority } = req.query;
+
     let query = {};
     if (req.user.role === 'technician') {
       query.assignedTo = req.user.id;
     }
-    const tasks = await Task.find(query)
-      .populate('assignedTo', 'name email role')
-      .sort({ dueDate: 1 });
-    res.json(tasks);
+    if (status && status !== 'all') {
+      query.status = status;
+    }
+    if (priority && priority !== 'all') {
+      query.priority = priority;
+    }
+
+    if (search && search.trim()) {
+      const regex = { $regex: search.trim(), $options: 'i' };
+      const matchingStaff = await User.find({ name: regex }).select('_id');
+      query.$or = [
+        { title: regex },
+        { description: regex },
+        { assignedTo: { $in: matchingStaff.map((u) => u._id) } }
+      ];
+    }
+
+    const [tasks, total, completedTotal] = await Promise.all([
+      Task.find(query)
+        .populate('assignedTo', 'name email role')
+        .sort({ dueDate: 1 })
+        .skip(skip)
+        .limit(limit),
+      Task.countDocuments(query),
+      Task.countDocuments({ ...query, status: 'completed' })
+    ]);
+
+    res.json({
+      tasks,
+      page,
+      pages: Math.ceil(total / limit),
+      total,
+      completedTotal
+    });
   } catch (err) {
     console.error('Fetch tasks error:', err.message);
     res.status(500).json({ message: 'Server error' });

@@ -81,8 +81,7 @@ export default function Login() {
                   placeholder="admin@pmautomobiles.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="pr-4 block w-full rounded-xl text-slate-800 border border-slate-200 focus:ring-2 focus:ring-blue-100 focus:border-blue-500 outline-none placeholder-slate-400 bg-white transition-all"
-                  style={{ height: '44px', paddingLeft: '48px', fontSize: '15px' }}
+                  className="h-11 pl-12 pr-4 block w-full rounded-xl text-[15px] text-slate-800 border border-slate-200 focus:ring-2 focus:ring-blue-100 focus:border-blue-500 outline-none placeholder-slate-400 bg-white transition-all"
                 />
               </div>
             </div>
@@ -104,8 +103,7 @@ export default function Login() {
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="pr-4 block w-full rounded-xl text-slate-800 border border-slate-200 focus:ring-2 focus:ring-blue-100 focus:border-blue-500 outline-none placeholder-slate-400 bg-white transition-all"
-                  style={{ height: '44px', paddingLeft: '48px', fontSize: '15px' }}
+                  className="h-11 pl-12 pr-4 block w-full rounded-xl text-[15px] text-slate-800 border border-slate-200 focus:ring-2 focus:ring-blue-100 focus:border-blue-500 outline-none placeholder-slate-400 bg-white transition-all"
                 />
               </div>
             </div>
@@ -113,8 +111,7 @@ export default function Login() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full flex items-center justify-center rounded-xl shadow-md text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 transition-all duration-200 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer hover:shadow-lg"
-              style={{ height: '46px' }}
+              className="h-12 w-full flex items-center justify-center rounded-xl shadow-md text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 transition-all duration-200 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer hover:shadow-lg"
             >
               {loading ? (
                 <div className="flex items-center justify-center gap-2">

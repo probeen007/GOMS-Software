@@ -167,14 +167,14 @@ export default function CustomerProfile() {
       <div className="flex items-center gap-4">
         <button
           onClick={() => navigate('/customers')}
-          className="p-2.5 rounded-xl bg-white border border-slate-200 text-slate-500 hover:text-slate-900 hover:bg-slate-550/10 transition-all duration-200 shadow-sm cursor-pointer"
+          className="p-2.5 rounded-xl bg-white border border-slate-200 text-slate-500 hover:text-slate-900 hover:bg-slate-500/10 transition-all duration-200 shadow-sm cursor-pointer"
           title="Back to Directory"
         >
           <ArrowLeft className="w-5 h-5" />
         </button>
         <div>
           <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">{customer.name}</h1>
-          <p className="text-slate-550 text-sm mt-0.5 font-semibold capitalize">Client profile &bull; {customer.type} account</p>
+          <p className="text-slate-500 text-sm mt-0.5 font-semibold capitalize">Client profile &bull; {customer.type} account</p>
         </div>
       </div>
 
@@ -185,14 +185,14 @@ export default function CustomerProfile() {
           <div className="p-6 bg-white border border-slate-200 rounded-3xl relative overflow-hidden shadow-sm">
             <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-blue-500 to-indigo-500"></div>
             
-            <div className="flex items-center justify-between pb-4 border-b border-slate-150">
-              <span className="text-xs font-extrabold text-slate-550 uppercase tracking-widest">Client Details</span>
+            <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+              <span className="text-xs font-extrabold text-slate-500 uppercase tracking-widest">Client Details</span>
               {customer.type === 'corporate' ? (
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-violet-50 text-violet-600 border border-violet-100">
                   <Building className="w-3.5 h-3.5" /> Corporate
                 </span>
               ) : (
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-sky-50 text-sky-655 border border-sky-100">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-sky-50 text-sky-600 border border-sky-100">
                   <User className="w-3.5 h-3.5" /> Individual
                 </span>
               )}
@@ -221,7 +221,7 @@ export default function CustomerProfile() {
                     <span className="truncate">{customer.email}</span>
                   </div>
                 ) : (
-                  <p className="text-sm text-slate-450 italic">No email logged</p>
+                  <p className="text-sm text-slate-400 italic">No email logged</p>
                 )}
               </div>
 
@@ -233,7 +233,7 @@ export default function CustomerProfile() {
                     <span>{customer.address}</span>
                   </div>
                 ) : (
-                  <p className="text-sm text-slate-450 italic">No address logged</p>
+                  <p className="text-sm text-slate-400 italic">No address logged</p>
                 )}
               </div>
             </div>
@@ -241,20 +241,20 @@ export default function CustomerProfile() {
             {/* Loyalty points banner */}
             <div className="p-5 bg-blue-50/50 border border-blue-100 rounded-2xl flex items-center justify-between shadow-sm">
               <div>
-                <span className="text-xs text-blue-650 font-extrabold uppercase tracking-wider">Loyalty Balance</span>
+                <span className="text-xs text-blue-600 font-extrabold uppercase tracking-wider">Loyalty Balance</span>
                 <p className="text-xs text-slate-500 mt-0.5">Automated rewards program</p>
               </div>
-              <span className="text-2xl font-black text-blue-600">{customer.loyaltyPoints || 0} pts</span>
+              <span className="text-2xl font-bold text-blue-600">{customer.loyaltyPoints || 0} pts</span>
             </div>
 
             {/* Loyalty Points Ledger History statement card */}
-            <div className="mt-5 p-5 bg-slate-50/50 border border-slate-150 rounded-2xl space-y-4">
+            <div className="mt-5 p-5 bg-slate-50/50 border border-slate-100 rounded-2xl space-y-4">
               <div className="flex justify-between items-center">
                 <span className="text-xs font-extrabold text-slate-500 uppercase tracking-wider">Points statement audit</span>
                 {user?.role === 'admin' && (
                   <button
                     onClick={() => setIsAdjustPointsOpen(true)}
-                    className="text-xs font-bold text-blue-600 hover:text-blue-550 transition-colors uppercase tracking-wider cursor-pointer"
+                    className="text-xs font-bold text-blue-600 hover:text-blue-500 transition-colors uppercase tracking-wider cursor-pointer"
                   >
                     Adjust points
                   </button>
@@ -265,13 +265,13 @@ export default function CustomerProfile() {
                   <p className="text-xs text-slate-400 italic text-center py-4">No point history ledger found.</p>
                 ) : (
                   loyaltyHistory.map((txn) => (
-                    <div key={txn._id} className="p-3 bg-white rounded-xl flex justify-between items-center text-xs text-slate-650 border border-slate-100 shadow-sm">
+                    <div key={txn._id} className="p-3 bg-white rounded-xl flex justify-between items-center text-xs text-slate-600 border border-slate-100 shadow-sm">
                       <div>
                         <p className="font-bold text-slate-800 capitalize">{txn.transactionType}</p>
                         <p className="text-xs text-slate-500 mt-0.5">{txn.notes}</p>
                         <p className="text-[10px] text-slate-400 mt-0.5">{formatNepaliDate(txn.createdAt)}</p>
                       </div>
-                      <span className={`font-mono font-black text-sm shrink-0 pl-2 ${txn.points > 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                      <span className={`font-mono font-bold text-sm shrink-0 pl-2 ${txn.points > 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
                         {txn.points > 0 ? `+${txn.points}` : txn.points}
                       </span>
                     </div>
@@ -298,7 +298,7 @@ export default function CustomerProfile() {
               {user?.role !== 'technician' && (
                 <button
                   onClick={() => setIsModalOpen(true)}
-                  className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-805 hover:bg-slate-50 bg-white border border-slate-200 shadow-sm transition-all cursor-pointer"
+                  className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-800 hover:bg-slate-50 bg-white border border-slate-200 shadow-sm transition-all cursor-pointer"
                 >
                   <Plus className="w-4 h-4" />
                   <span>Add Vehicle</span>
@@ -310,7 +310,7 @@ export default function CustomerProfile() {
             {vehicles.length === 0 ? (
               <div className="p-8 border border-dashed border-slate-200 rounded-2xl text-center bg-slate-50/30">
                 <Car className="w-8 h-8 text-slate-400 mx-auto mb-3" />
-                <h4 className="text-xs font-bold text-slate-550">No vehicles registered</h4>
+                <h4 className="text-xs font-bold text-slate-500">No vehicles registered</h4>
                 <p className="text-xs text-slate-500 mt-0.5">Add a vehicle to enable bookings, service checks, and quote builds.</p>
               </div>
             ) : (
@@ -318,7 +318,7 @@ export default function CustomerProfile() {
                 {vehicles.map((vehicle) => (
                   <div
                     key={vehicle._id}
-                    className="p-4 rounded-2xl bg-slate-50/50 border border-slate-155 flex flex-col justify-between hover:border-blue-200 transition-colors shadow-sm"
+                    className="p-4 rounded-2xl bg-slate-50/50 border border-slate-100 flex flex-col justify-between hover:border-blue-200 transition-colors shadow-sm"
                   >
                     <div>
                       {/* Plate Badge and Make/Model */}
@@ -333,17 +333,17 @@ export default function CustomerProfile() {
                         {vehicle.make} {vehicle.model}
                       </h4>
 
-                      <div className="mt-3 space-y-1.5 text-xs text-slate-650 border-t border-slate-200/60 pt-2.5">
+                      <div className="mt-3 space-y-1.5 text-xs text-slate-600 border-t border-slate-200/60 pt-2.5">
                         {vehicle.colour && (
                           <div className="flex justify-between">
-                            <span className="text-slate-450 uppercase tracking-wide font-extrabold">Colour</span>
+                            <span className="text-slate-400 uppercase tracking-wide font-extrabold">Colour</span>
                             <span className="capitalize font-semibold text-slate-800">{vehicle.colour}</span>
                           </div>
                         )}
                         {vehicle.vin && (
                           <div className="flex justify-between">
-                            <span className="text-slate-450 uppercase tracking-wide font-extrabold">VIN</span>
-                            <span className="font-mono font-semibold text-slate-850">{vehicle.vin}</span>
+                            <span className="text-slate-400 uppercase tracking-wide font-extrabold">VIN</span>
+                            <span className="font-mono font-semibold text-slate-800">{vehicle.vin}</span>
                           </div>
                         )}
                       </div>
@@ -362,8 +362,8 @@ export default function CustomerProfile() {
             </h3>
             
             <div className="p-8 border border-dashed border-slate-200 rounded-2xl text-center bg-slate-50/30">
-              <Wrench className="w-8 h-8 text-slate-455 mx-auto mb-3" />
-              <h4 className="text-xs font-bold text-slate-550">No service history records yet</h4>
+              <Wrench className="w-8 h-8 text-slate-400 mx-auto mb-3" />
+              <h4 className="text-xs font-bold text-slate-500">No service history records yet</h4>
               <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto leading-relaxed">
                 Service logs, closed job cards, and invoice lists will appear here automatically once repair cards are closed in subsequent steps.
               </p>
@@ -374,16 +374,16 @@ export default function CustomerProfile() {
 
       {/* Modal: Add Vehicle Form */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-955/40 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/40 backdrop-blur-sm">
           <div className="relative w-full max-w-md bg-white rounded-3xl overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200 border border-slate-100">
             {/* Gradient accent header bar */}
             <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-blue-500 via-sky-400 to-indigo-500"></div>
 
-            <div className="flex items-center justify-between p-6 border-b border-slate-150">
+            <div className="flex items-center justify-between p-6 border-b border-slate-100">
               <h2 className="text-lg font-bold text-slate-900">Register Vehicle</h2>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-805 hover:bg-slate-50 transition-colors cursor-pointer"
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-800 hover:bg-slate-50 transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -393,7 +393,7 @@ export default function CustomerProfile() {
               {modalError && (
                 <div className="p-3 rounded-xl bg-rose-50 border border-rose-100 flex items-start gap-2.5">
                   <AlertCircle className="w-4.5 h-4.5 text-rose-600 shrink-0 mt-0.5" />
-                  <span className="text-xs text-rose-705 font-bold">{modalError}</span>
+                  <span className="text-xs text-rose-700 font-bold">{modalError}</span>
                 </div>
               )}
 
@@ -406,7 +406,7 @@ export default function CustomerProfile() {
                     placeholder="e.g. BA-1-PA-2026"
                     value={newVehicle.plateNo}
                     onChange={(e) => setNewVehicle({ ...newVehicle, plateNo: e.target.value.toUpperCase() })}
-                    className="block w-full bg-slate-50/50 border border-slate-200 hover:border-slate-350 text-slate-805 rounded-xl py-2.5 px-3.5 text-sm focus:outline-none focus:bg-white focus:border-blue-550 transition-all placeholder-slate-400"
+                    className="block w-full bg-slate-50/50 border border-slate-200 hover:border-slate-300 text-slate-800 rounded-xl py-2.5 px-3.5 text-sm focus:outline-none focus:bg-white focus:border-blue-500 transition-all placeholder-slate-400"
                   />
                 </div>
 
@@ -418,7 +418,7 @@ export default function CustomerProfile() {
                     placeholder="e.g. Toyota"
                     value={newVehicle.make}
                     onChange={(e) => setNewVehicle({ ...newVehicle, make: e.target.value })}
-                    className="block w-full bg-slate-50/50 border border-slate-200 hover:border-slate-355 text-slate-805 rounded-xl py-2.5 px-3.5 text-sm focus:outline-none focus:bg-white focus:border-blue-550 transition-all placeholder-slate-400"
+                    className="block w-full bg-slate-50/50 border border-slate-200 hover:border-slate-300 text-slate-800 rounded-xl py-2.5 px-3.5 text-sm focus:outline-none focus:bg-white focus:border-blue-500 transition-all placeholder-slate-400"
                   />
                 </div>
 
@@ -430,7 +430,7 @@ export default function CustomerProfile() {
                     placeholder="e.g. Hilux"
                     value={newVehicle.model}
                     onChange={(e) => setNewVehicle({ ...newVehicle, model: e.target.value })}
-                    className="block w-full bg-slate-50/50 border border-slate-200 hover:border-slate-355 text-slate-805 rounded-xl py-2.5 px-3.5 text-sm focus:outline-none focus:bg-white focus:border-blue-550 transition-all placeholder-slate-400"
+                    className="block w-full bg-slate-50/50 border border-slate-200 hover:border-slate-300 text-slate-800 rounded-xl py-2.5 px-3.5 text-sm focus:outline-none focus:bg-white focus:border-blue-500 transition-all placeholder-slate-400"
                   />
                 </div>
 
@@ -441,7 +441,7 @@ export default function CustomerProfile() {
                     required
                     value={newVehicle.year}
                     onChange={(e) => setNewVehicle({ ...newVehicle, year: parseInt(e.target.value) || new Date().getFullYear() })}
-                    className="block w-full bg-slate-50/50 border border-slate-200 hover:border-slate-350 text-slate-800 rounded-xl py-2.5 px-3.5 text-sm focus:outline-none focus:bg-white focus:border-blue-555 transition-all"
+                    className="block w-full bg-slate-50/50 border border-slate-200 hover:border-slate-300 text-slate-800 rounded-xl py-2.5 px-3.5 text-sm focus:outline-none focus:bg-white focus:border-blue-500 transition-all"
                   />
                 </div>
 
@@ -452,7 +452,7 @@ export default function CustomerProfile() {
                     placeholder="e.g. Metallic Grey"
                     value={newVehicle.colour}
                     onChange={(e) => setNewVehicle({ ...newVehicle, colour: e.target.value })}
-                    className="block w-full bg-slate-50/50 border border-slate-200 hover:border-slate-355 text-slate-805 rounded-xl py-2.5 px-3.5 text-sm focus:outline-none focus:bg-white focus:border-blue-555 transition-all placeholder-slate-400"
+                    className="block w-full bg-slate-50/50 border border-slate-200 hover:border-slate-300 text-slate-800 rounded-xl py-2.5 px-3.5 text-sm focus:outline-none focus:bg-white focus:border-blue-500 transition-all placeholder-slate-400"
                   />
                 </div>
 
@@ -463,16 +463,16 @@ export default function CustomerProfile() {
                     placeholder="e.g. JT3HN10U3D002938"
                     value={newVehicle.vin}
                     onChange={(e) => setNewVehicle({ ...newVehicle, vin: e.target.value.toUpperCase() })}
-                    className="block w-full bg-slate-50/50 border border-slate-200 hover:border-slate-355 text-slate-805 rounded-xl py-2.5 px-3.5 text-sm focus:outline-none focus:bg-white focus:border-blue-555 transition-all placeholder-slate-400 font-mono"
+                    className="block w-full bg-slate-50/50 border border-slate-200 hover:border-slate-300 text-slate-800 rounded-xl py-2.5 px-3.5 text-sm focus:outline-none focus:bg-white focus:border-blue-500 transition-all placeholder-slate-400 font-mono"
                   />
                 </div>
               </div>
 
-              <div className="flex gap-3 justify-end pt-4 border-t border-slate-150 mt-6">
+              <div className="flex gap-3 justify-end pt-4 border-t border-slate-100 mt-6">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2.5 rounded-xl text-xs font-bold text-slate-650 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 transition-colors cursor-pointer"
+                  className="px-4 py-2.5 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -501,11 +501,11 @@ export default function CustomerProfile() {
 
       {/* Modal: Adjust Loyalty Points */}
       {isAdjustPointsOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-955/40 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/40 backdrop-blur-sm">
           <div className="relative w-full max-w-md bg-white rounded-3xl overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200 border border-slate-100">
-            <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-blue-550 to-indigo-500"></div>
+            <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-blue-500 to-indigo-500"></div>
 
-            <div className="flex items-center justify-between p-6 border-b border-slate-150">
+            <div className="flex items-center justify-between p-6 border-b border-slate-100">
               <h2 className="text-lg font-bold text-slate-900">Adjust Loyalty Points</h2>
               <button
                 onClick={() => {
@@ -514,7 +514,7 @@ export default function CustomerProfile() {
                   setAdjustNotes('');
                   setAdjustError('');
                 }}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-805 hover:bg-slate-50 transition-colors cursor-pointer"
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-800 hover:bg-slate-50 transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -536,9 +536,9 @@ export default function CustomerProfile() {
                   placeholder="e.g. 50 or -30"
                   value={adjustPoints}
                   onChange={(e) => setAdjustPoints(e.target.value)}
-                  className="block w-full bg-slate-50/50 border border-slate-200 hover:border-slate-350 text-slate-800 rounded-xl py-2.5 px-3.5 text-sm font-bold focus:outline-none focus:bg-white focus:border-blue-550 transition-all"
+                  className="block w-full bg-slate-50/50 border border-slate-200 hover:border-slate-300 text-slate-800 rounded-xl py-2.5 px-3.5 text-sm font-bold focus:outline-none focus:bg-white focus:border-blue-500 transition-all"
                 />
-                <p className="text-xs text-slate-450 mt-1 font-semibold">Use positive integers to award points, negative integers to deduct them.</p>
+                <p className="text-xs text-slate-400 mt-1 font-semibold">Use positive integers to award points, negative integers to deduct them.</p>
               </div>
 
               <div className="space-y-1.5">
@@ -549,11 +549,11 @@ export default function CustomerProfile() {
                   value={adjustNotes}
                   onChange={(e) => setAdjustNotes(e.target.value)}
                   rows="3"
-                  className="block w-full bg-slate-50/50 border border-slate-200 hover:border-slate-350 text-slate-805 rounded-xl py-2.5 px-3.5 text-sm focus:outline-none focus:bg-white focus:border-blue-555 transition-all resize-none placeholder-slate-400"
+                  className="block w-full bg-slate-50/50 border border-slate-200 hover:border-slate-300 text-slate-800 rounded-xl py-2.5 px-3.5 text-sm focus:outline-none focus:bg-white focus:border-blue-500 transition-all resize-none placeholder-slate-400"
                 ></textarea>
               </div>
 
-              <div className="flex gap-3 justify-end pt-4 border-t border-slate-150 mt-6">
+              <div className="flex gap-3 justify-end pt-4 border-t border-slate-100 mt-6">
                 <button
                   type="button"
                   onClick={() => {

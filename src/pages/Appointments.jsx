@@ -16,11 +16,8 @@ import {
   XCircle,
   Filter,
   Camera,
-  Layers,
-  TrendingUp,
   Image as ImageIcon,
-  MessageSquare,
-  Send
+  MessageSquare
 } from 'lucide-react';
 
 export default function Appointments() {
@@ -312,16 +309,16 @@ export default function Appointments() {
       {/* Header section */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold text-white tracking-tight">Appointments & Check-In Portal</h1>
-          <p className="text-slate-355 text-sm mt-1.5 font-medium">
-            Book incoming clients, log physical mileage-in specs, upload vehicle condition pictures, and track status.
+          <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">Appointments &amp; Check-In</h1>
+          <p className="text-sm text-slate-500 mt-1">
+            Book incoming clients, log intake mileage and condition, and track appointment status.
           </p>
         </div>
 
         {isReceptionistOrAdmin && (
           <button
             onClick={() => setIsModalOpen(true)}
-            className="flex items-center justify-center gap-2.5 px-5 h-11 rounded-xl text-sm font-bold text-white bg-primary-600 hover:bg-primary-500 transition-all shadow-lg shadow-primary-500/10 hover:scale-[1.02] glow-effect cursor-pointer"
+            className="flex items-center justify-center gap-2 px-5 h-11 rounded-xl text-sm font-bold text-white bg-blue-600 hover:bg-blue-500 transition-all duration-200 shadow-md shadow-blue-500/10 hover:-translate-y-0.5 cursor-pointer"
           >
             <Plus className="w-5 h-5" />
             <span>Book Appointment</span>
@@ -330,13 +327,13 @@ export default function Appointments() {
       </div>
 
       {/* Tab Switcher */}
-      <div className="flex border-b border-slate-200 mb-6">
+      <div className="flex border-b border-slate-200">
         <button
           onClick={() => setActiveTab('appointments')}
-          className={`px-6 py-3 text-sm font-bold border-b-2 transition-all cursor-pointer ${
+          className={`px-6 py-3 text-sm font-bold border-b-2 transition-colors cursor-pointer ${
             activeTab === 'appointments'
               ? 'border-blue-600 text-blue-600'
-              : 'border-transparent text-slate-400 hover:text-slate-650'
+              : 'border-transparent text-slate-400 hover:text-slate-600'
           }`}
         >
           Appointments List
@@ -344,10 +341,10 @@ export default function Appointments() {
         {isReceptionistOrAdmin && (
           <button
             onClick={() => setActiveTab('reminders')}
-            className={`px-6 py-3 text-sm font-bold border-b-2 transition-all cursor-pointer flex items-center gap-2 ${
+            className={`px-6 py-3 text-sm font-bold border-b-2 transition-colors cursor-pointer flex items-center gap-2 ${
               activeTab === 'reminders'
                 ? 'border-blue-600 text-blue-600'
-                : 'border-transparent text-slate-400 hover:text-slate-650'
+                : 'border-transparent text-slate-400 hover:text-slate-600'
             }`}
           >
             <span>Service Reminders</span>
@@ -355,7 +352,7 @@ export default function Appointments() {
               const daysLeft = Math.ceil((new Date(r.nextServiceDate) - new Date()) / (1000 * 60 * 60 * 24));
               return daysLeft <= 1 && !r.reminderSent;
             }).length > 0 && (
-              <span className="flex h-2 w-2 rounded-full bg-rose-500 animate-pulse"></span>
+              <span className="flex h-2 w-2 rounded-full bg-rose-500"></span>
             )}
           </button>
         )}
@@ -364,60 +361,60 @@ export default function Appointments() {
       {activeTab === 'appointments' && (
         <div className="space-y-6">
           {/* Date and status filter widgets */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 p-5 bg-slate-900/40 border border-slate-800 rounded-3xl shadow-md">
-            <div className="space-y-1.5 flex flex-col justify-between">
-              <label className="text-xs font-extrabold text-slate-300 uppercase tracking-widest flex items-center gap-1.5 mb-0.5">
-                <Calendar className="w-4 h-4 text-primary-400" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 p-5 bg-white border border-slate-200 rounded-2xl shadow-sm">
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-wide flex items-center gap-1.5">
+                <Calendar className="w-4 h-4 text-blue-600" />
                 Start Date
               </label>
               <input
                 type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
-                className="glass-input block w-full rounded-xl h-11 px-3.5 text-slate-205 text-sm focus:outline-none"
+                className="block w-full h-11 rounded-xl border-slate-200 text-sm"
               />
             </div>
 
-            <div className="space-y-1.5 flex flex-col justify-between">
-              <label className="text-xs font-extrabold text-slate-300 uppercase tracking-widest flex items-center gap-1.5 mb-0.5">
-                <Calendar className="w-4 h-4 text-primary-400" />
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-wide flex items-center gap-1.5">
+                <Calendar className="w-4 h-4 text-blue-600" />
                 End Date
               </label>
               <input
                 type="date"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
-                className="glass-input block w-full rounded-xl h-11 px-3.5 text-slate-205 text-sm focus:outline-none"
+                className="block w-full h-11 rounded-xl border-slate-200 text-sm"
               />
             </div>
 
-            <div className="space-y-1.5 flex flex-col justify-between">
-              <label className="text-xs font-extrabold text-slate-300 uppercase tracking-widest flex items-center gap-1.5 mb-0.5">
-                <Filter className="w-4 h-4 text-primary-400" />
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-wide flex items-center gap-1.5">
+                <Filter className="w-4 h-4 text-blue-600" />
                 Status Filter
               </label>
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="glass-input block w-full rounded-xl h-11 px-3.5 text-slate-205 text-sm focus:outline-none"
+                className="block w-full h-11 rounded-xl border-slate-200 text-sm cursor-pointer"
               >
-                <option value="" className="bg-slate-900">All Scheduled</option>
-                <option value="scheduled" className="bg-slate-900">Scheduled</option>
-                <option value="checked-in" className="bg-slate-900">Checked In</option>
-                <option value="in-progress" className="bg-slate-900">In Progress</option>
-                <option value="completed" className="bg-slate-900">Completed</option>
-                <option value="cancelled" className="bg-slate-900">Cancelled</option>
+                <option value="">All Scheduled</option>
+                <option value="scheduled">Scheduled</option>
+                <option value="checked-in">Checked In</option>
+                <option value="in-progress">In Progress</option>
+                <option value="completed">Completed</option>
+                <option value="cancelled">Cancelled</option>
               </select>
             </div>
 
-            <div className="flex items-end justify-end">
+            <div className="flex items-end">
               <button
                 onClick={() => {
                   setStartDate('');
                   setEndDate('');
                   setStatusFilter('');
                 }}
-                className="btn-secondary w-full h-11 rounded-xl font-bold flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full h-11 rounded-xl text-sm font-bold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 transition-colors cursor-pointer"
               >
                 Clear Filters
               </button>
@@ -425,71 +422,72 @@ export default function Appointments() {
           </div>
 
           {loading ? (
-            <div className="flex justify-center py-12">
-              <Loader2 className="w-8 h-8 text-primary-500 animate-spin" />
+            <div className="flex flex-col items-center justify-center min-h-[40vh] bg-white rounded-2xl border border-slate-200 py-12 shadow-sm">
+              <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
+              <p className="text-slate-500 text-sm mt-3 font-semibold">Loading appointments...</p>
             </div>
           ) : appointments.length === 0 ? (
-            <div className="flex flex-col items-center justify-center p-12 bg-slate-900/40 border border-slate-800/80 rounded-3xl text-center">
-              <div className="w-12 h-12 rounded-xl bg-slate-800/80 flex items-center justify-center border border-slate-700/50 mb-4">
+            <div className="flex flex-col items-center justify-center min-h-[40vh] bg-white border border-slate-200 rounded-2xl p-8 text-center shadow-sm">
+              <div className="w-12 h-12 rounded-xl bg-slate-50 flex items-center justify-center border border-slate-200 mb-4">
                 <Clock className="w-6 h-6 text-slate-400" />
               </div>
-              <p className="text-sm font-bold text-white">No Bookings Found</p>
-              <p className="text-xs text-slate-400 mt-1 max-w-sm">There are no client appointments matching the selected filter query.</p>
+              <h3 className="text-base font-bold text-slate-800">No bookings found</h3>
+              <p className="text-slate-500 text-sm mt-1 max-w-sm">There are no client appointments matching the selected filters.</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 gap-5">
+            <div className="grid grid-cols-1 gap-4">
               {appointments.map((appt) => {
                 const formattedDate = formatNepaliDateTime(appt.dateTime);
 
                 return (
                   <div
                     key={appt._id}
-                    className="p-6 card-premium flex flex-col items-stretch gap-5 relative overflow-hidden"
+                    className="p-6 bg-white border border-slate-200 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 flex flex-col gap-5"
                   >
                     {/* Visual header */}
-                    <div className="flex flex-row items-center justify-between gap-4 pb-4 border-b border-slate-150 w-full">
-                      <div className="flex items-center gap-3 text-left">
-                        <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-200/50 flex items-center justify-center text-blue-600 shrink-0">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 shrink-0">
                           <Clock className="w-5 h-5" />
                         </div>
-                        <div className="text-left">
-                          <p className="text-base font-extrabold text-slate-900 text-left">{formattedDate}</p>
-                          <span className="text-xs text-slate-500 font-bold uppercase tracking-widest block mt-0.5 text-left">Assigned Tech: {appt.technicianId?.name || 'Unassigned'}</span>
+                        <div>
+                          <p className="text-base font-bold text-slate-900">{formattedDate}</p>
+                          <span className="text-xs text-slate-500 font-semibold block mt-0.5">Assigned Tech: {appt.technicianId?.name || 'Unassigned'}</span>
                         </div>
                       </div>
 
-                      <div className="flex flex-wrap items-center justify-end gap-2 text-right">
-                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-extrabold uppercase tracking-widest border ${getStatusStyle(appt.status)}`}>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide border ${getStatusStyle(appt.status)}`}>
                           {appt.status}
                         </span>
-                        <span className="text-xs font-extrabold text-slate-600 capitalize bg-slate-100 border border-slate-200 px-3.5 py-1 rounded-xl">
+                        <span className="text-xs font-bold text-slate-600 bg-slate-100 border border-slate-200 px-3 py-1 rounded-full">
                           {appt.serviceType}
                         </span>
                       </div>
                     </div>
 
                     {/* Info layout */}
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 w-full text-left">
-                      <div className="space-y-1.5 text-left">
-                        <span className="text-xs font-extrabold text-slate-400 uppercase tracking-widest block mb-0.5 text-left">Client & Vehicle Details</span>
-                        <div className="text-sm space-y-2 text-left">
-                          <p className="flex items-center gap-1.5 font-bold text-slate-800 text-base text-left">
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+                      <div className="space-y-1.5">
+                        <span className="text-xs font-bold text-slate-400 uppercase tracking-wide block">Client &amp; Vehicle</span>
+                        <div className="text-sm space-y-2">
+                          <p className="flex items-center gap-1.5 font-bold text-slate-800 text-base">
                             <User className="w-4 h-4 text-slate-400" />
                             {appt.customerId?.name || 'Deleted Client'}
                           </p>
-                          <p className="flex items-center gap-1.5 font-medium mt-1 text-left">
+                          <p className="flex items-center gap-1.5 font-medium">
                             <Car className="w-4 h-4 text-slate-400" />
-                            <span className="px-2 py-0.5 bg-blue-50 text-blue-755 border border-blue-200/60 font-mono font-bold text-xs rounded uppercase shrink-0">
+                            <span className="px-2 py-0.5 bg-blue-50 text-blue-700 border border-blue-100 font-mono font-bold text-xs rounded uppercase shrink-0">
                               {appt.vehicleId?.plateNo}
                             </span>
-                            <span className="text-slate-655 font-semibold text-left">{appt.vehicleId?.make} {appt.vehicleId?.model}</span>
+                            <span className="text-slate-600 font-semibold">{appt.vehicleId?.make} {appt.vehicleId?.model}</span>
                           </p>
                         </div>
                       </div>
 
-                      <div className="space-y-1.5 lg:col-span-2 text-left">
-                        <span className="text-xs font-extrabold text-slate-400 uppercase tracking-widest block mb-0.5 text-left">Diagnostic Intake Comments</span>
-                        <p className="text-sm text-slate-650 bg-slate-50 border border-slate-200/50 p-3.5 rounded-xl italic font-medium leading-relaxed mt-1 text-left w-full">
+                      <div className="space-y-1.5 lg:col-span-2">
+                        <span className="text-xs font-bold text-slate-400 uppercase tracking-wide block">Customer Notes</span>
+                        <p className="text-sm text-slate-600 bg-slate-50 border border-slate-100 p-3.5 rounded-xl italic font-medium leading-relaxed">
                           {appt.note ? `"${appt.note}"` : 'No intake notes recorded.'}
                         </p>
                       </div>
@@ -497,36 +495,38 @@ export default function Appointments() {
 
                     {/* Subdocument check-in details display */}
                     {appt.checkIn && (
-                      <div className="p-5 bg-slate-50 border border-slate-250 rounded-2xl space-y-4">
+                      <div className="p-5 bg-slate-50 border border-slate-100 rounded-xl space-y-4">
                         <div className="flex flex-wrap justify-between items-center gap-4">
                           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 text-sm">
                             <div>
-                              <strong className="text-slate-500 uppercase text-[10px] tracking-widest block font-extrabold mb-1">Mileage In</strong>
+                              <strong className="text-slate-500 uppercase text-[10px] tracking-wide block font-bold mb-1">Mileage In</strong>
                               <span className="font-mono text-base font-extrabold text-violet-700">{appt.checkIn.mileageIn.toLocaleString()} km</span>
                             </div>
                             <div className="sm:col-span-2">
-                              <strong className="text-slate-500 uppercase text-[10px] tracking-widest block font-extrabold mb-1">Condition Notes</strong>
+                              <strong className="text-slate-500 uppercase text-[10px] tracking-wide block font-bold mb-1">Condition Notes</strong>
                               <span className="text-slate-700 font-semibold">{appt.checkIn.conditionNotes || 'No issues declared'}</span>
                             </div>
                           </div>
-                          <span className="text-xs font-bold text-violet-750 bg-violet-50 border border-violet-200/60 px-2.5 py-0.5 rounded-lg shrink-0">Inspected</span>
+                          <span className="badge-violet shrink-0">Inspected</span>
                         </div>
 
                         {/* Photos grid */}
                         {appt.checkIn.photos && appt.checkIn.photos.length > 0 && (
                           <div className="grid grid-cols-3 sm:grid-cols-5 gap-3 pt-1">
                             {appt.checkIn.photos.map((photoUrl, idx) => (
-                              <div key={idx} className="relative aspect-video rounded-xl overflow-hidden border border-slate-200 bg-slate-100 group shadow-sm">
+                              <div key={idx} className="relative aspect-video rounded-lg overflow-hidden border border-slate-200 bg-slate-100 group shadow-sm">
                                 <img
                                   src={photoUrl}
                                   alt={`Checkin photo ${idx + 1}`}
+                                  loading="lazy"
+                                  decoding="async"
                                   className="w-full h-full object-cover"
                                 />
                                 <a
                                   href={photoUrl}
                                   target="_blank"
                                   rel="noreferrer"
-                                  className="absolute inset-0 bg-slate-900/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-xxs font-bold text-white uppercase tracking-wider"
+                                  className="absolute inset-0 bg-slate-900/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-[10px] font-bold text-white uppercase tracking-wide"
                                 >
                                   Expand
                                 </a>
@@ -538,33 +538,31 @@ export default function Appointments() {
                     )}
 
                     {/* Action buttons footer */}
-                    <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-150">
+                    <div className="flex flex-wrap items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
                       {appt.status === 'scheduled' && isReceptionistOrAdmin && (
                         <button
-                          onClick={() => {
-                            setCheckInApptId(appt._id);
-                          }}
-                          className="flex items-center gap-2 px-5 h-11 rounded-xl text-sm font-bold text-violet-600 bg-violet-50 hover:bg-violet-100 border border-violet-200 transition-all hover:scale-[1.02] cursor-pointer shadow-sm"
+                          onClick={() => setCheckInApptId(appt._id)}
+                          className="flex items-center gap-2 px-4 h-10 rounded-lg text-sm font-bold text-violet-700 bg-violet-50 hover:bg-violet-100 border border-violet-200 transition-colors cursor-pointer"
                         >
                           <Camera className="w-4 h-4" />
-                          <span>Intake / Check-In</span>
+                          <span>Check-In</span>
                         </button>
                       )}
 
                       {appt.status === 'checked-in' && (isReceptionistOrAdmin || isTechnician) && (
                         <button
                           onClick={() => handleStatusChange(appt._id, 'in-progress')}
-                          className="flex items-center gap-2 px-5 h-11 rounded-xl text-sm font-bold text-amber-600 bg-amber-50 hover:bg-amber-100 border border-amber-200 transition-all hover:scale-[1.02] cursor-pointer"
+                          className="flex items-center gap-2 px-4 h-10 rounded-lg text-sm font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 transition-colors cursor-pointer"
                         >
                           <Play className="w-4 h-4" />
-                          <span>Start Repair Ops</span>
+                          <span>Start Repair</span>
                         </button>
                       )}
 
                       {appt.status === 'in-progress' && (isReceptionistOrAdmin || isTechnician) && (
                         <button
                           onClick={() => handleStatusChange(appt._id, 'completed')}
-                          className="flex items-center gap-2 px-5 h-11 rounded-xl text-sm font-bold text-emerald-600 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 transition-all hover:scale-[1.02] cursor-pointer"
+                          className="flex items-center gap-2 px-4 h-10 rounded-lg text-sm font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 transition-colors cursor-pointer"
                         >
                           <CheckCircle className="w-4 h-4" />
                           <span>Finish Repairs</span>
@@ -574,10 +572,10 @@ export default function Appointments() {
                       {appt.status === 'scheduled' && isReceptionistOrAdmin && (
                         <button
                           onClick={() => handleStatusChange(appt._id, 'cancelled')}
-                          className="flex items-center gap-1.5 px-4 h-11 rounded-xl text-sm font-bold text-slate-500 hover:text-rose-600 hover:bg-rose-50 transition-all cursor-pointer hover:scale-[1.02]"
+                          className="flex items-center gap-1.5 px-4 h-10 rounded-lg text-sm font-bold text-slate-500 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
                         >
-                          <XCircle className="w-4.5 h-4.5 shrink-0" />
-                          <span>Cancel booking</span>
+                          <XCircle className="w-4 h-4 shrink-0" />
+                          <span>Cancel</span>
                         </button>
                       )}
                     </div>
@@ -591,28 +589,28 @@ export default function Appointments() {
 
       {activeTab === 'reminders' && (
         <div className="space-y-6">
-          <div className="flex flex-col gap-2">
-            <h2 className="text-xl font-bold text-slate-900">Service Reminders Dashboard</h2>
-            <p className="text-xs text-slate-500 font-medium">
-              Below are clients with upcoming or overdue vehicle services. Click the WhatsApp button to send them a custom reminder.
+          <div className="flex flex-col gap-1">
+            <h2 className="text-lg font-bold text-slate-900">Service reminders</h2>
+            <p className="text-sm text-slate-500">
+              Clients with upcoming or overdue vehicle services. Use the WhatsApp button to send a reminder.
             </p>
           </div>
 
           {remindersLoading ? (
-            <div className="flex flex-col items-center justify-center p-12 bg-white border border-slate-200 rounded-3xl">
+            <div className="flex flex-col items-center justify-center min-h-[40vh] bg-white border border-slate-200 rounded-2xl py-12 shadow-sm">
               <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
-              <span className="text-sm font-semibold text-slate-600 mt-3">Loading service reminders...</span>
+              <span className="text-sm font-semibold text-slate-500 mt-3">Loading service reminders...</span>
             </div>
           ) : reminders.length === 0 ? (
-            <div className="flex flex-col items-center justify-center p-12 bg-white border border-slate-200 rounded-3xl text-center">
-              <div className="w-12 h-12 rounded-xl bg-slate-50 flex items-center justify-center border border-slate-100 mb-4">
+            <div className="flex flex-col items-center justify-center min-h-[40vh] bg-white border border-slate-200 rounded-2xl p-8 text-center shadow-sm">
+              <div className="w-12 h-12 rounded-xl bg-slate-50 flex items-center justify-center border border-slate-200 mb-4">
                 <CheckCircle className="w-6 h-6 text-slate-400" />
               </div>
-              <p className="text-sm font-bold text-slate-700">No Service Reminders Found</p>
-              <p className="text-xs text-slate-500 mt-1 max-w-sm">There are no vehicles scheduled for upcoming services at this time.</p>
+              <h3 className="text-base font-bold text-slate-800">No service reminders</h3>
+              <p className="text-slate-500 text-sm mt-1 max-w-sm">There are no vehicles scheduled for upcoming services at this time.</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 gap-5">
+            <div className="grid grid-cols-1 gap-4">
               {reminders.map((rem) => {
                 const daysLeft = Math.ceil((new Date(rem.nextServiceDate) - new Date()) / (1000 * 60 * 60 * 24));
                 const message = getMessageTemplate(rem);
@@ -623,46 +621,46 @@ export default function Appointments() {
                 return (
                   <div
                     key={rem._id}
-                    className={`p-6 card-premium flex flex-col items-stretch gap-5 relative overflow-hidden ${
-                      isUrgent && !rem.reminderSent ? 'border-rose-300 shadow-sm shadow-rose-100/50' : ''
+                    className={`p-6 bg-white border rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 flex flex-col gap-5 ${
+                      isUrgent && !rem.reminderSent ? 'border-rose-200' : 'border-slate-200'
                     }`}
                   >
                     {/* Header line */}
-                    <div className="flex flex-row items-center justify-between gap-4 pb-4 border-b border-slate-150 w-full">
-                      <div className="flex items-center gap-3 text-left">
-                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
-                          isUrgent && !rem.reminderSent 
-                            ? 'bg-rose-50 border border-rose-200/50 text-rose-600' 
-                            : 'bg-blue-50 border border-blue-200/50 text-blue-600'
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border ${
+                          isUrgent && !rem.reminderSent
+                            ? 'bg-rose-50 border-rose-100 text-rose-600'
+                            : 'bg-blue-50 border-blue-100 text-blue-600'
                         }`}>
                           <Calendar className="w-5 h-5" />
                         </div>
-                        <div className="text-left">
-                          <p className="text-base font-extrabold text-slate-900 text-left">
+                        <div>
+                          <p className="text-base font-bold text-slate-900">
                             Due on {reminderDateStr}
                           </p>
-                          <span className="text-xs text-slate-500 font-bold uppercase tracking-widest block mt-0.5 text-left">
-                            {daysLeft < 0 
-                              ? `Overdue by ${Math.abs(daysLeft)} day(s)` 
-                              : daysLeft === 0 
-                                ? 'Due Today' 
-                                : daysLeft === 1 
-                                  ? 'Due Tomorrow' 
+                          <span className="text-xs text-slate-500 font-semibold block mt-0.5">
+                            {daysLeft < 0
+                              ? `Overdue by ${Math.abs(daysLeft)} day(s)`
+                              : daysLeft === 0
+                                ? 'Due today'
+                                : daysLeft === 1
+                                  ? 'Due tomorrow'
                                   : `In ${daysLeft} days`}
                           </span>
                         </div>
                       </div>
 
-                      <div className="flex flex-wrap items-center justify-end gap-2 text-right">
+                      <div className="flex flex-wrap items-center gap-2">
                         {isUrgent && !rem.reminderSent && (
-                          <span className="inline-flex items-center px-3 py-1 rounded-full text-xxs font-extrabold uppercase tracking-widest bg-rose-50 text-rose-700 border border-rose-200 animate-pulse">
+                          <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide bg-rose-50 text-rose-700 border border-rose-200">
                             Action Required
                           </span>
                         )}
-                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-xxs font-extrabold uppercase tracking-widest border ${
-                          rem.reminderSent 
-                            ? 'bg-emerald-50 text-emerald-700 border-emerald-200' 
-                            : 'bg-slate-50 text-slate-655 border-slate-200'
+                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide border ${
+                          rem.reminderSent
+                            ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                            : 'bg-slate-100 text-slate-600 border-slate-200'
                         }`}>
                           {rem.reminderSent ? 'Reminder Sent' : 'Pending Send'}
                         </span>
@@ -670,20 +668,20 @@ export default function Appointments() {
                     </div>
 
                     {/* Details section */}
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 w-full text-left">
-                      <div className="space-y-1.5 text-left">
-                        <span className="text-xs font-extrabold text-slate-400 uppercase tracking-widest block mb-0.5 text-left">Client & Vehicle Details</span>
-                        <div className="text-sm space-y-2 text-left">
-                          <p className="flex items-center gap-1.5 font-bold text-slate-800 text-base text-left">
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+                      <div className="space-y-1.5">
+                        <span className="text-xs font-bold text-slate-400 uppercase tracking-wide block">Client &amp; Vehicle</span>
+                        <div className="text-sm space-y-2">
+                          <p className="flex items-center gap-1.5 font-bold text-slate-800 text-base">
                             <User className="w-4 h-4 text-slate-400" />
                             {rem.customerId?.name || 'Deleted Client'}
                           </p>
-                          <p className="flex items-center gap-1.5 font-medium mt-1 text-left">
+                          <p className="flex items-center gap-1.5 font-medium">
                             <Car className="w-4 h-4 text-slate-400" />
-                            <span className="px-2 py-0.5 bg-blue-50 text-blue-755 border border-blue-200/60 font-mono font-bold text-xs rounded uppercase shrink-0">
+                            <span className="px-2 py-0.5 bg-blue-50 text-blue-700 border border-blue-100 font-mono font-bold text-xs rounded uppercase shrink-0">
                               {rem.vehicleId?.plateNo}
                             </span>
-                            <span className="text-slate-655 font-semibold text-left">
+                            <span className="text-slate-600 font-semibold">
                               {rem.vehicleId?.make} {rem.vehicleId?.model}
                             </span>
                           </p>
@@ -691,22 +689,22 @@ export default function Appointments() {
                       </div>
 
                       {/* Message preview area */}
-                      <div className="space-y-1.5 lg:col-span-2 text-left">
-                        <span className="text-xs font-extrabold text-slate-400 uppercase tracking-widest block mb-0.5 text-left">Formatted Custom Message</span>
-                        <div className="text-xs text-slate-650 bg-slate-50 border border-slate-200/60 p-3.5 rounded-xl font-medium leading-relaxed mt-1 text-left w-full relative">
+                      <div className="space-y-1.5 lg:col-span-2">
+                        <span className="text-xs font-bold text-slate-400 uppercase tracking-wide block">Message preview</span>
+                        <div className="text-xs text-slate-600 bg-slate-50 border border-slate-100 p-3.5 rounded-xl font-medium leading-relaxed">
                           <p className="italic">"{message}"</p>
                         </div>
                       </div>
                     </div>
 
                     {/* Footer Actions */}
-                    <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-150">
+                    <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
                       <a
                         href={getWhatsAppLink(rem.customerId?.phone || '', message)}
                         target="_blank"
                         rel="noreferrer"
                         onClick={() => handleMarkReminderSent(rem._id, rem.customerId?.name, rem.vehicleId?.plateNo)}
-                        className="flex items-center gap-2 px-5 h-11 rounded-xl text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-500 transition-all hover:scale-[1.02] cursor-pointer shadow-sm"
+                        className="flex items-center gap-2 px-5 h-10 rounded-lg text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-500 transition-colors cursor-pointer shadow-sm"
                       >
                         <MessageSquare className="w-4.5 h-4.5" />
                         <span>Send to WhatsApp</span>
@@ -722,19 +720,16 @@ export default function Appointments() {
 
       {/* Modal: Book Appointment */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-955/75 backdrop-blur-sm">
-          <div className="relative w-full max-w-lg glass-card rounded-3xl overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200">
-            <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-primary-500 via-sky-400 to-indigo-500"></div>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/40 backdrop-blur-sm">
+          <div className="relative w-full max-w-lg bg-white rounded-3xl overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200 border border-slate-100">
+            <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-blue-500 via-sky-400 to-indigo-500"></div>
 
-            <div className="flex items-center justify-between p-6 border-b border-slate-800">
-              <div className="flex items-center gap-2">
-                <Calendar className="w-5 h-5 text-primary-400" />
-                <h2 className="text-xl font-extrabold text-white tracking-tight">Create Booking</h2>
-              </div>
+            <div className="flex items-center justify-between p-6 border-b border-slate-100">
+              <h2 className="text-lg font-bold text-slate-900">Create Booking</h2>
               <button
                 type="button"
                 onClick={() => setIsModalOpen(false)}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-white transition-colors cursor-pointer"
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-800 hover:bg-slate-50 transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -742,18 +737,18 @@ export default function Appointments() {
 
             <form onSubmit={handleBookAppointment} className="p-6 space-y-4">
               {modalError && (
-                <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-start gap-2.5">
-                  <AlertCircle className="w-4.5 h-4.5 text-rose-400 shrink-0 mt-0.5" />
-                  <span className="text-xs text-rose-300 font-medium leading-relaxed">{modalError}</span>
+                <div className="p-3 rounded-xl bg-rose-50 border border-rose-100 flex items-start gap-2.5">
+                  <AlertCircle className="w-4.5 h-4.5 text-rose-600 shrink-0 mt-0.5" />
+                  <span className="text-xs text-rose-700 font-bold">{modalError}</span>
                 </div>
               )}
 
               {/* Customer selection */}
               <div className="space-y-1.5 relative">
-                <label className="text-xs font-bold text-slate-300 uppercase tracking-wide">1. Search Client *</label>
+                <label className="text-xs font-extrabold text-slate-500 uppercase tracking-wide">1. Search Client *</label>
                 {selectedCustomerId ? (
-                  <div className="p-3 rounded-xl bg-slate-900 border border-slate-850 flex justify-between items-center">
-                    <span className="text-xs font-semibold text-white">{selectedCustomerName}</span>
+                  <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex justify-between items-center">
+                    <span className="text-sm font-semibold text-slate-800">{selectedCustomerName}</span>
                     <button
                       type="button"
                       onClick={() => {
@@ -762,7 +757,7 @@ export default function Appointments() {
                         setVehicles([]);
                         setSelectedVehicleId('');
                       }}
-                      className="text-slate-500 hover:text-white hover:bg-slate-800 p-0.5 rounded"
+                      className="text-slate-400 hover:text-slate-800 hover:bg-slate-100 p-0.5 rounded cursor-pointer"
                     >
                       <X className="w-4 h-4" />
                     </button>
@@ -774,23 +769,23 @@ export default function Appointments() {
                       placeholder="Type customer name or phone..."
                       value={customerSearch}
                       onChange={(e) => setCustomerSearch(e.target.value)}
-                      className="glass-input block w-full rounded-xl py-2.5 px-3.5 text-slate-200 text-sm placeholder-slate-650"
+                      className="block w-full bg-slate-50/50 border border-slate-200 hover:border-slate-300 text-slate-800 rounded-xl py-2.5 px-3.5 text-sm focus:outline-none focus:bg-white focus:border-blue-500 transition-all placeholder-slate-400"
                     />
                     {searchLoading && (
                       <div className="absolute right-3.5 top-9.5">
-                        <Loader2 className="w-4 h-4 text-primary-500 animate-spin" />
+                        <Loader2 className="w-4 h-4 text-blue-500 animate-spin" />
                       </div>
                     )}
                     {searchedCustomers.length > 0 && (
-                      <div className="absolute z-25 top-full mt-1.5 inset-x-0 bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-2xl divide-y divide-slate-850">
+                      <div className="absolute z-20 top-full mt-1.5 inset-x-0 bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-xl divide-y divide-slate-100">
                         {searchedCustomers.map((cust) => (
                           <div
                             key={cust._id}
                             onClick={() => handleSelectCustomer(cust)}
-                            className="p-3 text-xs text-slate-300 hover:bg-slate-800 cursor-pointer flex justify-between items-center"
+                            className="p-3 text-xs text-slate-600 hover:bg-slate-50 cursor-pointer flex justify-between items-center"
                           >
-                            <span className="font-semibold text-white">{cust.name}</span>
-                            <span className="text-slate-500 text-xxs">{cust.phone}</span>
+                            <span className="font-semibold text-slate-800">{cust.name}</span>
+                            <span className="text-slate-400">{cust.phone}</span>
                           </div>
                         ))}
                       </div>
@@ -801,18 +796,18 @@ export default function Appointments() {
 
               {/* Vehicle selection */}
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-300 uppercase tracking-wide">2. Choose Vehicle *</label>
+                <label className="text-xs font-extrabold text-slate-500 uppercase tracking-wide">2. Choose Vehicle *</label>
                 <select
                   disabled={!selectedCustomerId || vehicles.length === 0}
                   value={selectedVehicleId}
                   onChange={(e) => setSelectedVehicleId(e.target.value)}
-                  className="glass-input block w-full rounded-xl py-2.5 px-3.5 text-slate-250 text-sm disabled:opacity-40"
+                  className="block w-full bg-slate-50/50 border border-slate-200 hover:border-slate-300 text-slate-800 rounded-xl py-2.5 px-3.5 text-sm focus:outline-none focus:bg-white focus:border-blue-500 transition-all disabled:opacity-40 cursor-pointer"
                 >
                   {vehicles.length === 0 ? (
-                    <option value="" className="bg-slate-900">-- Choose customer first (Must have registered vehicles) --</option>
+                    <option value="">-- Choose customer first (must have registered vehicles) --</option>
                   ) : (
                     vehicles.map(v => (
-                      <option key={v._id} value={v._id} className="bg-slate-900">
+                      <option key={v._id} value={v._id}>
                         [{v.plateNo}] {v.make} {v.model} ({v.year})
                       </option>
                     ))
@@ -822,17 +817,17 @@ export default function Appointments() {
 
               {/* Technician assignment */}
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-300 uppercase tracking-wide">3. Assign Technician *</label>
+                <label className="text-xs font-extrabold text-slate-500 uppercase tracking-wide">3. Assign Technician *</label>
                 <select
                   value={selectedTechId}
                   onChange={(e) => setSelectedTechId(e.target.value)}
-                  className="glass-input block w-full rounded-xl py-2.5 px-3.5 text-slate-200 text-sm"
+                  className="block w-full bg-slate-50/50 border border-slate-200 hover:border-slate-300 text-slate-800 rounded-xl py-2.5 px-3.5 text-sm focus:outline-none focus:bg-white focus:border-blue-500 transition-all cursor-pointer"
                 >
                   {technicians.length === 0 ? (
-                    <option value="" className="bg-slate-900">-- Loading technicians... --</option>
+                    <option value="">-- Loading technicians... --</option>
                   ) : (
                     technicians.map(t => (
-                      <option key={t._id} value={t._id} className="bg-slate-900">
+                      <option key={t._id} value={t._id}>
                         {t.name} ({t.email})
                       </option>
                     ))
@@ -841,60 +836,60 @@ export default function Appointments() {
               </div>
 
               {/* Time and service details */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="col-span-2 space-y-1.5">
-                  <label className="text-xs font-bold text-slate-300 uppercase tracking-wide">4. Appointment DateTime *</label>
+              <div className="grid grid-cols-1 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-extrabold text-slate-500 uppercase tracking-wide">4. Appointment Date &amp; Time *</label>
                   <input
                     type="datetime-local"
                     required
                     value={dateTime}
                     onChange={(e) => setDateTime(e.target.value)}
-                    className="glass-input block w-full rounded-xl py-2.5 px-3.5 text-slate-200 text-sm"
+                    className="block w-full bg-slate-50/50 border border-slate-200 hover:border-slate-300 text-slate-800 rounded-xl py-2.5 px-3.5 text-sm focus:outline-none focus:bg-white focus:border-blue-500 transition-all"
                   />
                 </div>
 
-                <div className="col-span-2 space-y-1.5">
-                  <label className="text-xs font-bold text-slate-300 uppercase tracking-wide">5. Service Category *</label>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-extrabold text-slate-500 uppercase tracking-wide">5. Service Category *</label>
                   <select
                     value={serviceType}
                     onChange={(e) => setServiceType(e.target.value)}
-                    className="glass-input block w-full rounded-xl py-2.5 px-3.5 text-slate-200 text-sm"
+                    className="block w-full bg-slate-50/50 border border-slate-200 hover:border-slate-300 text-slate-800 rounded-xl py-2.5 px-3.5 text-sm focus:outline-none focus:bg-white focus:border-blue-500 transition-all cursor-pointer"
                   >
-                    <option value="Regular Maintenance" className="bg-slate-900">Regular Maintenance / Servicing</option>
-                    <option value="Engine Repair" className="bg-slate-900">Engine Tuning / Overhauling</option>
-                    <option value="Brake Overhaul" className="bg-slate-900">Brake assembly check</option>
-                    <option value="Electrical Diagnostic" className="bg-slate-900">Electrical diagnostics</option>
-                    <option value="Suspension Repair" className="bg-slate-900">Suspension check</option>
-                    <option value="Other" className="bg-slate-900">Other diagnostic repairs</option>
+                    <option value="Regular Maintenance">Regular Maintenance / Servicing</option>
+                    <option value="Engine Repair">Engine Tuning / Overhauling</option>
+                    <option value="Brake Overhaul">Brake Assembly Check</option>
+                    <option value="Electrical Diagnostic">Electrical Diagnostics</option>
+                    <option value="Suspension Repair">Suspension Check</option>
+                    <option value="Other">Other Diagnostic Repairs</option>
                   </select>
                 </div>
 
-                <div className="col-span-2 space-y-1.5">
-                  <label className="text-xs font-bold text-slate-300 uppercase tracking-wide">Customer Notes</label>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-extrabold text-slate-500 uppercase tracking-wide">Customer Notes</label>
                   <textarea
                     placeholder="e.g. Squeaking noise on rear axle, check brake pads."
                     value={note}
                     onChange={(e) => setNote(e.target.value)}
-                    rows="2.5"
-                    className="glass-input block w-full rounded-xl py-2.5 px-3.5 text-slate-200 text-sm resize-none"
+                    rows="2"
+                    className="block w-full bg-slate-50/50 border border-slate-200 hover:border-slate-300 text-slate-800 rounded-xl py-2.5 px-3.5 text-sm focus:outline-none focus:bg-white focus:border-blue-500 transition-all resize-none placeholder-slate-400"
                   ></textarea>
                 </div>
               </div>
 
-              <div className="flex gap-3 justify-end pt-4 border-t border-slate-800 mt-6">
+              <div className="flex gap-3 justify-end pt-4 border-t border-slate-100 mt-6">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-5 h-11 rounded-xl text-sm font-bold text-slate-300 hover:text-white bg-slate-850 transition-colors cursor-pointer"
+                  className="px-4 py-2.5 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={modalLoading}
-                  className="flex items-center justify-center gap-1.5 px-5 h-11 rounded-xl text-sm font-bold text-white bg-primary-600 hover:bg-primary-500 disabled:opacity-50 transition-all shadow-lg shadow-primary-500/10 hover:scale-[1.02] cursor-pointer glow-effect"
+                  className="flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-500 disabled:opacity-50 transition-all shadow-md shadow-blue-500/10 cursor-pointer"
                 >
-                  {modalLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+                  {modalLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Plus className="w-3.5 h-3.5" />}
                   <span>Book Appointment</span>
                 </button>
               </div>
@@ -905,15 +900,12 @@ export default function Appointments() {
 
       {/* Modal: Intake / Check-In */}
       {checkInApptId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-955/75 backdrop-blur-sm">
-          <div className="relative w-full max-w-md glass-card rounded-3xl overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200">
-            <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-violet-500 to-indigo-500"></div>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/40 backdrop-blur-sm">
+          <div className="relative w-full max-w-md bg-white rounded-3xl overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200 border border-slate-100">
+            <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-blue-500 via-sky-400 to-indigo-500"></div>
 
-            <div className="flex items-center justify-between p-6 border-b border-slate-800">
-              <div className="flex items-center gap-2">
-                <Camera className="w-5 h-5 text-violet-400" />
-                <h2 className="text-xl font-extrabold text-white tracking-tight">Vehicle Intake Check-In</h2>
-              </div>
+            <div className="flex items-center justify-between p-6 border-b border-slate-100">
+              <h2 className="text-lg font-bold text-slate-900">Vehicle Intake Check-In</h2>
               <button
                 type="button"
                 onClick={() => {
@@ -923,7 +915,7 @@ export default function Appointments() {
                   setCheckInPhotos([]);
                   setCheckInError('');
                 }}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-white transition-colors cursor-pointer"
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-800 hover:bg-slate-50 transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -931,43 +923,43 @@ export default function Appointments() {
 
             <form onSubmit={handleCheckInSubmit} className="p-6 space-y-4">
               {checkInError && (
-                <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-start gap-2.5">
-                  <AlertCircle className="w-4.5 h-4.5 text-rose-400 shrink-0 mt-0.5" />
-                  <span className="text-xs text-rose-300 font-medium leading-relaxed">{checkInError}</span>
+                <div className="p-3 rounded-xl bg-rose-50 border border-rose-100 flex items-start gap-2.5">
+                  <AlertCircle className="w-4.5 h-4.5 text-rose-600 shrink-0 mt-0.5" />
+                  <span className="text-xs text-rose-700 font-bold">{checkInError}</span>
                 </div>
               )}
 
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-300 uppercase tracking-wide">Odometer Mileage In (km) *</label>
+                <label className="text-xs font-extrabold text-slate-500 uppercase tracking-wide">Odometer Mileage In (km) *</label>
                 <input
                   type="number"
                   required
                   placeholder="e.g. 102450"
                   value={checkInMileage}
                   onChange={(e) => setCheckInMileage(e.target.value)}
-                  className="glass-input block w-full rounded-xl py-2.5 px-3.5 text-slate-200 text-sm font-semibold"
+                  className="block w-full bg-slate-50/50 border border-slate-200 hover:border-slate-300 text-slate-800 rounded-xl py-2.5 px-3.5 text-sm font-semibold focus:outline-none focus:bg-white focus:border-blue-500 transition-all"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-300 uppercase tracking-wide">Intake Inspection Notes</label>
+                <label className="text-xs font-extrabold text-slate-500 uppercase tracking-wide">Intake Inspection Notes</label>
                 <textarea
                   placeholder="Describe scratches, existing dents, fuel level, or technician observations..."
                   value={checkInNotes}
                   onChange={(e) => setCheckInNotes(e.target.value)}
                   rows="3"
-                  className="glass-input block w-full rounded-xl py-2.5 px-3.5 text-slate-200 text-sm resize-none"
+                  className="block w-full bg-slate-50/50 border border-slate-200 hover:border-slate-300 text-slate-800 rounded-xl py-2.5 px-3.5 text-sm focus:outline-none focus:bg-white focus:border-blue-500 transition-all resize-none placeholder-slate-400"
                 ></textarea>
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-300 uppercase tracking-wide flex items-center gap-1.5">
-                  <Camera className="w-4 h-4 text-violet-400" />
+                <label className="text-xs font-extrabold text-slate-500 uppercase tracking-wide flex items-center gap-1.5">
+                  <Camera className="w-4 h-4 text-violet-600" />
                   Attach Inspection Photos (Max 5)
                 </label>
-                <div className="relative border border-dashed border-slate-800 rounded-xl p-6 bg-slate-900/20 hover:border-violet-500/30 transition-colors flex flex-col items-center justify-center gap-2">
-                  <ImageIcon className="w-8 h-8 text-slate-600" />
-                  <span className="text-xs text-slate-400 font-semibold uppercase">Select JPG / PNG images</span>
+                <div className="relative border border-dashed border-slate-300 rounded-xl p-6 bg-slate-50/50 hover:border-violet-300 transition-colors flex flex-col items-center justify-center gap-2">
+                  <ImageIcon className="w-8 h-8 text-slate-400" />
+                  <span className="text-xs text-slate-500 font-semibold uppercase">Select JPG / PNG images</span>
                   <input
                     type="file"
                     multiple
@@ -976,14 +968,14 @@ export default function Appointments() {
                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                   />
                   {checkInPhotos.length > 0 && (
-                    <span className="text-xs text-violet-400 font-bold mt-1">
+                    <span className="text-xs text-violet-600 font-bold mt-1">
                       {checkInPhotos.length} file(s) selected
                     </span>
                   )}
                 </div>
               </div>
 
-              <div className="flex gap-3 justify-end pt-4 border-t border-slate-800 mt-6">
+              <div className="flex gap-3 justify-end pt-4 border-t border-slate-100 mt-6">
                 <button
                   type="button"
                   onClick={() => {
@@ -993,23 +985,23 @@ export default function Appointments() {
                     setCheckInPhotos([]);
                     setCheckInError('');
                   }}
-                  className="px-5 h-11 rounded-xl text-sm font-bold text-slate-300 hover:text-white bg-slate-855 transition-colors cursor-pointer"
+                  className="px-4 py-2.5 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={checkInLoading}
-                  className="flex items-center justify-center gap-1.5 px-5 h-11 rounded-xl text-sm font-bold text-white bg-violet-600 hover:bg-violet-500 disabled:opacity-50 transition-all shadow-lg shadow-violet-500/10 hover:scale-[1.02] cursor-pointer"
+                  className="flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-violet-600 hover:bg-violet-500 disabled:opacity-50 transition-all shadow-md shadow-violet-500/10 cursor-pointer"
                 >
                   {checkInLoading ? (
                     <>
-                      <Loader2 className="w-4.5 h-4.5 animate-spin" />
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
                       <span>Checking In...</span>
                     </>
                   ) : (
                     <>
-                      <CheckCircle className="w-4.5 h-4.5" />
+                      <CheckCircle className="w-3.5 h-3.5" />
                       <span>Confirm Intake</span>
                     </>
                   )}

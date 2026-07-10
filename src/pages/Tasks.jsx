@@ -15,7 +15,9 @@ import {
   Calendar,
   Loader2,
   SlidersHorizontal,
-  Check
+  Check,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 
 export default function Tasks() {
@@ -31,6 +33,10 @@ export default function Tasks() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [priorityFilter, setPriorityFilter] = useState('all');
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalTasks, setTotalTasks] = useState(0);
+  const [completedTotal, setCompletedTotal] = useState(0);
 
   // New Task Modal Form
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -45,8 +51,13 @@ export default function Tasks() {
   // Fetch tasks and staff list
   const fetchTasks = async () => {
     try {
-      const res = await axios.get('/api/tasks');
-      setTasks(res.data);
+      const res = await axios.get('/api/tasks', {
+        params: { search, status: statusFilter, priority: priorityFilter, page, limit: 15 }
+      });
+      setTasks(res.data.tasks);
+      setTotalPages(res.data.pages || 1);
+      setTotalTasks(res.data.total || 0);
+      setCompletedTotal(res.data.completedTotal || 0);
     } catch (err) {
       console.error('Error fetching tasks:', err);
     }
@@ -62,13 +73,24 @@ export default function Tasks() {
   };
 
   useEffect(() => {
-    const init = async () => {
-      setLoading(true);
-      await Promise.all([fetchTasks(), fetchStaff()]);
-      setLoading(false);
-    };
-    init();
+    fetchStaff();
   }, []);
+
+  // Reset to page 1 whenever the filter/search criteria change
+  useEffect(() => {
+    setPage(1);
+  }, [search, statusFilter, priorityFilter]);
+
+  // Debounce the search box so we don't fire a request on every keystroke
+  useEffect(() => {
+    setLoading(true);
+    const delay = setTimeout(async () => {
+      await fetchTasks();
+      setLoading(false);
+    }, 350);
+    return () => clearTimeout(delay);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [search, statusFilter, priorityFilter, page]);
 
   // Handle Add Task Submission
   const handleAddTask = async (e) => {
@@ -126,37 +148,24 @@ export default function Tasks() {
     if (!window.confirm('Are you sure you want to delete this task?')) return;
     try {
       await axios.delete(`/api/tasks/${taskId}`);
-      setTasks((prev) => prev.filter((t) => t._id !== taskId));
+      await fetchTasks();
     } catch (err) {
       console.error('Failed to delete task:', err);
     }
   };
 
-  // Compute stats
-  const totalTasks = tasks.length;
-  const completedCount = tasks.filter((t) => t.status === 'completed').length;
-  const completionRate = totalTasks > 0 ? Math.round((completedCount / totalTasks) * 100) : 0;
-
-  // Filter tasks
-  const filteredTasks = tasks.filter((task) => {
-    const matchesSearch =
-      task.title.toLowerCase().includes(search.toLowerCase()) ||
-      (task.description && task.description.toLowerCase().includes(search.toLowerCase())) ||
-      (task.assignedTo?.name && task.assignedTo.name.toLowerCase().includes(search.toLowerCase()));
-
-    const matchesStatus = statusFilter === 'all' || task.status === statusFilter;
-    const matchesPriority = priorityFilter === 'all' || task.priority === priorityFilter;
-
-    return matchesSearch && matchesStatus && matchesPriority;
-  });
+  // Stats and filtering now come from the server (see fetchTasks), so
+  // `tasks` already holds the current page's matching results, and
+  // `totalTasks`/`completedTotal` reflect the full filtered dataset.
+  const completionRate = totalTasks > 0 ? Math.round((completedTotal / totalTasks) * 100) : 0;
 
   return (
     <div className="space-y-6">
       {/* HEADER */}
       <div className="flex flex-col md:flex-row md:items-center justify-between pb-5 border-b border-slate-200 gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2.5">
-            <ClipboardList className="w-8 h-8 text-primary-600" />
+          <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2.5">
+            <ClipboardList className="w-7 h-7 text-primary-600" />
             <span>To-Do List & Tasks</span>
           </h1>
           <p className="text-sm text-slate-500 mt-1.5 font-medium">
@@ -181,7 +190,7 @@ export default function Tasks() {
           <div>
             <h3 className="text-sm font-bold text-slate-900">Overall Progress</h3>
             <p className="text-xs text-slate-500 mt-0.5">
-              {completedCount} of {totalTasks} tasks completed ({completionRate}%)
+              {completedTotal} of {totalTasks} tasks completed ({completionRate}%)
             </p>
           </div>
           {/* Progress bar */}
@@ -195,7 +204,7 @@ export default function Tasks() {
       </div>
 
       {/* FILTERS */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-5 bg-white border border-slate-205 rounded-3xl shadow-sm">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-5 bg-white border border-slate-200 rounded-3xl shadow-sm">
         {/* Search Input */}
         <div className="space-y-1.5 flex flex-col justify-between">
           <label className="text-xs font-extrabold text-slate-500 uppercase tracking-widest flex items-center gap-1.5 mb-0.5">
@@ -220,7 +229,7 @@ export default function Tasks() {
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="bg-white border border-slate-200 text-slate-850 rounded-xl px-3.5 h-11 text-sm font-semibold focus:ring-2 focus:ring-blue-100 focus:border-blue-500 outline-none cursor-pointer hover:border-slate-300 transition-colors"
+            className="bg-white border border-slate-200 text-slate-800 rounded-xl px-3.5 h-11 text-sm font-semibold focus:ring-2 focus:ring-blue-100 focus:border-blue-500 outline-none cursor-pointer hover:border-slate-300 transition-colors"
           >
             <option value="all">All Statuses</option>
             <option value="pending">Pending</option>
@@ -237,7 +246,7 @@ export default function Tasks() {
           <select
             value={priorityFilter}
             onChange={(e) => setPriorityFilter(e.target.value)}
-            className="bg-white border border-slate-200 text-slate-850 rounded-xl px-3.5 h-11 text-sm font-semibold focus:ring-2 focus:ring-blue-100 focus:border-blue-500 outline-none cursor-pointer hover:border-slate-300 transition-colors"
+            className="bg-white border border-slate-200 text-slate-800 rounded-xl px-3.5 h-11 text-sm font-semibold focus:ring-2 focus:ring-blue-100 focus:border-blue-500 outline-none cursor-pointer hover:border-slate-300 transition-colors"
           >
             <option value="all">All Priorities</option>
             <option value="high">High Priority</option>
@@ -253,14 +262,14 @@ export default function Tasks() {
           <Loader2 className="w-8 h-8 text-blue-600 animate-spin mx-auto" />
           <p className="text-slate-500 text-xs font-medium mt-3">Loading task logs...</p>
         </div>
-      ) : filteredTasks.length === 0 ? (
-        <div className="p-8 rounded-2xl bg-white border border-slate-205 py-16 text-center shadow-sm">
-          <ClipboardList className="w-10 h-10 text-slate-350 mx-auto mb-3" />
+      ) : tasks.length === 0 ? (
+        <div className="p-8 rounded-2xl bg-white border border-slate-200 py-16 text-center shadow-sm">
+          <ClipboardList className="w-10 h-10 text-slate-300 mx-auto mb-3" />
           <p className="text-slate-500 text-xs font-medium">No tasks match your selected filter criteria.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredTasks.map((task) => {
+          {tasks.map((task) => {
             const isCompleted = task.status === 'completed';
             const isOverdue = new Date(task.dueDate) < new Date() && !isCompleted;
 
@@ -269,10 +278,10 @@ export default function Tasks() {
                 key={task._id}
                 className={`p-6 rounded-3xl border transition-all bg-white shadow-sm hover:shadow-md duration-300 ${
                   isCompleted
-                    ? 'border-emerald-250 bg-emerald-50/10'
+                    ? 'border-emerald-200 bg-emerald-50/10'
                     : isOverdue
-                    ? 'border-rose-250 bg-rose-50/10'
-                    : 'border-slate-205 hover:border-slate-350'
+                    ? 'border-rose-200 bg-rose-50/10'
+                    : 'border-slate-200 hover:border-slate-300'
                 }`}
               >
                 <div className="flex gap-4">
@@ -309,20 +318,20 @@ export default function Tasks() {
                     <div className="space-y-1.5">
                       <h3
                         className={`text-base font-extrabold tracking-tight transition-all ${
-                          isCompleted ? 'text-slate-450 line-through' : 'text-slate-900'
+                          isCompleted ? 'text-slate-400 line-through' : 'text-slate-900'
                         }`}
                       >
                         {task.title}
                       </h3>
                       {task.description && (
-                        <p className="text-sm text-slate-650 leading-relaxed font-semibold">
+                        <p className="text-sm text-slate-600 leading-relaxed font-semibold">
                           {task.description}
                         </p>
                       )}
                     </div>
 
                     <div className="pt-4 border-t border-slate-100 mt-4 flex items-center justify-between gap-3">
-                      <div className="space-y-1.5 text-slate-550 font-bold">
+                      <div className="space-y-1.5 text-slate-500 font-bold">
                         <div className="flex items-center gap-1.5 text-xs">
                           <User className="w-4 h-4 text-slate-400" />
                           <span>{task.assignedTo?.name || 'Unassigned'}</span>
@@ -353,11 +362,37 @@ export default function Tasks() {
         </div>
       )}
 
+      {!loading && totalPages > 1 && (
+        <div className="flex items-center justify-between bg-transparent pt-2 px-2">
+          <span className="text-sm font-semibold text-slate-500">
+            Page {page} of {totalPages}
+          </span>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => setPage((p) => Math.max(p - 1, 1))}
+              disabled={page === 1}
+              className="p-2.5 rounded-xl bg-white border border-slate-200 text-slate-500 hover:text-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+            >
+              <ChevronLeft className="w-4.5 h-4.5" />
+            </button>
+            <button
+              type="button"
+              onClick={() => setPage((p) => Math.min(p + 1, totalPages))}
+              disabled={page === totalPages}
+              className="p-2.5 rounded-xl bg-white border border-slate-200 text-slate-500 hover:text-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+            >
+              <ChevronRight className="w-4.5 h-4.5" />
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* MODAL: CREATE TASK */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-955/75 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/75 backdrop-blur-sm">
           <div className="relative w-full max-w-md bg-white rounded-3xl overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200 border border-slate-200">
-            <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-blue-500 to-indigo-650"></div>
+            <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-blue-500 to-indigo-600"></div>
 
             <div className="flex items-center justify-between p-6 border-b border-slate-100">
               <div className="flex items-center gap-2">
@@ -391,7 +426,7 @@ export default function Tasks() {
                   placeholder="e.g. Inspect brake pads / Replace alternator"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="block w-full rounded-xl h-11 px-3.5 text-slate-800 text-sm font-semibold border border-slate-205 focus:ring-2 focus:ring-blue-100 focus:border-blue-500 outline-none"
+                  className="block w-full rounded-xl h-11 px-3.5 text-slate-800 text-sm font-semibold border border-slate-200 focus:ring-2 focus:ring-blue-100 focus:border-blue-500 outline-none"
                 />
               </div>
 
@@ -402,7 +437,7 @@ export default function Tasks() {
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   rows="3"
-                  className="block w-full rounded-xl py-3 px-3.5 text-slate-800 text-sm border border-slate-205 focus:ring-2 focus:ring-blue-100 focus:border-blue-500 outline-none resize-none"
+                  className="block w-full rounded-xl py-3 px-3.5 text-slate-800 text-sm border border-slate-200 focus:ring-2 focus:ring-blue-100 focus:border-blue-500 outline-none resize-none"
                 ></textarea>
               </div>
 
@@ -412,7 +447,7 @@ export default function Tasks() {
                   <select
                     value={priority}
                     onChange={(e) => setPriority(e.target.value)}
-                    className="block w-full rounded-xl h-11 px-3.5 text-slate-800 text-sm font-semibold border border-slate-205 focus:ring-2 focus:ring-blue-100 focus:border-blue-500 outline-none cursor-pointer"
+                    className="block w-full rounded-xl h-11 px-3.5 text-slate-800 text-sm font-semibold border border-slate-200 focus:ring-2 focus:ring-blue-100 focus:border-blue-500 outline-none cursor-pointer"
                   >
                     <option value="high">High Priority</option>
                     <option value="medium">Medium Priority</option>
@@ -427,7 +462,7 @@ export default function Tasks() {
                     required
                     value={dueDate}
                     onChange={(e) => setDueDate(e.target.value)}
-                    className="block w-full rounded-xl h-11 px-3.5 text-slate-800 text-sm font-semibold border border-slate-205 focus:ring-2 focus:ring-blue-100 focus:border-blue-500 outline-none"
+                    className="block w-full rounded-xl h-11 px-3.5 text-slate-800 text-sm font-semibold border border-slate-200 focus:ring-2 focus:ring-blue-100 focus:border-blue-500 outline-none"
                   />
                 </div>
               </div>
@@ -438,7 +473,7 @@ export default function Tasks() {
                   required
                   value={assignedTo}
                   onChange={(e) => setAssignedTo(e.target.value)}
-                  className="block w-full rounded-xl h-11 px-3.5 text-slate-800 text-sm font-semibold border border-slate-205 focus:ring-2 focus:ring-blue-100 focus:border-blue-500 outline-none cursor-pointer"
+                  className="block w-full rounded-xl h-11 px-3.5 text-slate-800 text-sm font-semibold border border-slate-200 focus:ring-2 focus:ring-blue-100 focus:border-blue-500 outline-none cursor-pointer"
                 >
                   <option value="">Select employee...</option>
                   {staffList.map((staff) => (

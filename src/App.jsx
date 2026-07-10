@@ -1,24 +1,29 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import Layout from './components/Layout';
+import ErrorBoundary from './components/ErrorBoundary';
+import PageLoader from './components/PageLoader';
 
-// Pages
+// Login stays eagerly loaded since it's the entry point for unauthenticated
+// sessions; every other page is code-split and fetched on demand.
 import Login from './pages/Login';
-import Dashboard from './pages/Dashboard';
-import Customers from './pages/Customers';
-import CustomerProfile from './pages/CustomerProfile';
-import Inventory from './pages/Inventory';
-import Appointments from './pages/Appointments';
-import Servicing from './pages/Servicing';
-import Invoices from './pages/Invoices';
-import Loyalty from './pages/Loyalty';
-import Finance from './pages/Finance';
-import Staff from './pages/Staff';
-import Tasks from './pages/Tasks';
-import Notifications from './pages/Notifications';
-import AuditLogs from './pages/AuditLogs';
+
+// Pages (lazy-loaded per-route to keep the initial bundle small)
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const Customers = lazy(() => import('./pages/Customers'));
+const CustomerProfile = lazy(() => import('./pages/CustomerProfile'));
+const Inventory = lazy(() => import('./pages/Inventory'));
+const Appointments = lazy(() => import('./pages/Appointments'));
+const Servicing = lazy(() => import('./pages/Servicing'));
+const Invoices = lazy(() => import('./pages/Invoices'));
+const Loyalty = lazy(() => import('./pages/Loyalty'));
+const Finance = lazy(() => import('./pages/Finance'));
+const Staff = lazy(() => import('./pages/Staff'));
+const Tasks = lazy(() => import('./pages/Tasks'));
+const Notifications = lazy(() => import('./pages/Notifications'));
+const AuditLogs = lazy(() => import('./pages/AuditLogs'));
 
 // Elegant placeholder for unbuilt modules
 function ModulePlaceholder({ name, step }) {
@@ -44,6 +49,8 @@ export default function App() {
   return (
     <AuthProvider>
       <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+        <ErrorBoundary>
+        <Suspense fallback={<PageLoader />}>
         <Routes>
           {/* Public Auth Route */}
           <Route path="/login" element={<Login />} />
@@ -182,6 +189,8 @@ export default function App() {
             <Route path="*" element={<Navigate to="/" replace />} />
           </Route>
         </Routes>
+        </Suspense>
+        </ErrorBoundary>
       </Router>
     </AuthProvider>
   );

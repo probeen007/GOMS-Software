@@ -150,7 +150,7 @@ export default function Topbar({ onToggleSidebar }) {
           {isOpen && (
             <div className="absolute right-0 mt-3 top-full w-80 sm:w-96 bg-white border border-slate-200 shadow-xl rounded-2xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200 z-50">
               {/* Dropdown Header */}
-              <div className="flex items-center justify-between p-4 bg-slate-50 border-b border-slate-150">
+              <div className="flex items-center justify-between p-4 bg-slate-50 border-b border-slate-100">
                 <div>
                   <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Notifications</h3>
                   {unreadCount > 0 && (
@@ -177,9 +177,9 @@ export default function Topbar({ onToggleSidebar }) {
               <div className="max-h-80 overflow-y-auto divide-y divide-slate-100">
                 {notifications.length === 0 ? (
                   <div className="flex flex-col items-center justify-center p-8 text-center bg-slate-50/50">
-                    <BellOff className="w-7 h-7 text-slate-350 mb-2" />
+                    <BellOff className="w-7 h-7 text-slate-300 mb-2" />
                     <p className="text-xs font-bold text-slate-700">All caught up!</p>
-                    <p className="text-[10px] text-slate-450 mt-0.5">No notifications to display.</p>
+                    <p className="text-[10px] text-slate-400 mt-0.5">No notifications to display.</p>
                   </div>
                 ) : (
                   notifications.slice(0, 5).map((noti) => {
@@ -223,7 +223,7 @@ export default function Topbar({ onToggleSidebar }) {
                             {noti.message}
                           </p>
                           <div className="flex items-center justify-between mt-1.5">
-                            <span className="text-[9px] text-slate-450 font-semibold">
+                            <span className="text-[9px] text-slate-400 font-semibold">
                               {formatRelativeTime(noti.createdAt)}
                             </span>
                             {noti.link && (
@@ -241,11 +241,11 @@ export default function Topbar({ onToggleSidebar }) {
               </div>
 
               {/* View All Footer */}
-              <div className="p-3 bg-slate-50 text-center border-t border-slate-150">
+              <div className="p-3 bg-slate-50 text-center border-t border-slate-100">
                 <Link
                   to="/notifications"
                   onClick={() => setIsOpen(false)}
-                  className="inline-block text-[10px] font-bold text-blue-600 hover:text-blue-550 transition-colors uppercase tracking-wider"
+                  className="inline-block text-[10px] font-bold text-blue-600 hover:text-blue-500 transition-colors uppercase tracking-wider"
                 >
                   View All Notifications
                 </Link>

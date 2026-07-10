@@ -119,7 +119,7 @@ export default function Sidebar({ isOpen, onClose }) {
           </h1>
         )}
         {isCollapsed && (
-          <span className="font-black text-lg text-blue-650 tracking-wider">PM</span>
+          <span className="font-bold text-lg text-blue-600 tracking-wider">PM</span>
         )}
         <button
           onClick={toggleCollapse}
@@ -201,7 +201,7 @@ export default function Sidebar({ isOpen, onClose }) {
           {!isCollapsed && (
             <div className="min-w-0 flex-1 transition-all duration-300">
               <p className="text-xs font-bold text-slate-800 truncate">{user.name}</p>
-              <p className="text-[10px] text-blue-650 font-bold uppercase tracking-wider mt-0.5">{user.role}</p>
+              <p className="text-[10px] text-blue-600 font-bold uppercase tracking-wider mt-0.5">{user.role}</p>
             </div>
           )}
         </div>
