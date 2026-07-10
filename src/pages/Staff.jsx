@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
+import { formatNepaliDate } from '../utils/nepaliDate';
 import {
   Users,
   UserPlus,
@@ -401,7 +402,7 @@ export default function Staff() {
                           <div>
                             <div className="text-xs font-bold text-slate-200">{member.name}</div>
                             <div className="text-[10px] text-slate-500 font-semibold tracking-wide mt-0.5">
-                              Joined: {new Date(member.createdAt).toLocaleDateString()}
+                              Joined: {formatNepaliDate(member.createdAt)}
                             </div>
                           </div>
                         </div>

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
+import { formatNepaliDate } from '../utils/nepaliDate';
 import {
   ArrowLeft,
   Phone,
@@ -268,7 +269,7 @@ export default function CustomerProfile() {
                       <div>
                         <p className="font-bold text-slate-800 capitalize">{txn.transactionType}</p>
                         <p className="text-xs text-slate-500 mt-0.5">{txn.notes}</p>
-                        <p className="text-[10px] text-slate-400 mt-0.5">{new Date(txn.createdAt).toLocaleDateString()}</p>
+                        <p className="text-[10px] text-slate-400 mt-0.5">{formatNepaliDate(txn.createdAt)}</p>
                       </div>
                       <span className={`font-mono font-black text-sm shrink-0 pl-2 ${txn.points > 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
                         {txn.points > 0 ? `+${txn.points}` : txn.points}

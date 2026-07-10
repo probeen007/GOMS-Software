@@ -2,15 +2,104 @@ import express from 'express';
 import { body, validationResult } from 'express-validator';
 import Invoice from '../models/Invoice.js';
 import Payment from '../models/Payment.js';
-import JobCard from '../models/JobCard.js';
+import Servicing from '../models/Servicing.js';
 import Customer from '../models/Customer.js';
 import Vehicle from '../models/Vehicle.js';
 import LoyaltyLedger from '../models/LoyaltyLedger.js';
 import { authenticate, authorize } from '../middleware/auth.js';
 import { createNotification } from '../utils/notifier.js';
 import { logAction } from '../utils/logger.js';
+import { formatNepaliDate, formatNepaliDateTime } from '../utils/nepaliDate.js';
+import { escapeHtml } from '../utils/htmlEscape.js';
+import { isWithinSupportedDateRange } from '../utils/dateRange.js';
 
 const router = express.Router();
+
+// @route   POST /api/invoices/generate
+// @desc    Generate an invoice (VAT or Non-VAT) from a closed, unbilled servicing record
+// @access  Private (admin, receptionist, accountant)
+router.post(
+  '/generate',
+  authenticate,
+  authorize('admin', 'receptionist', 'accountant'),
+  [
+    body('servicingId').notEmpty().withMessage('Servicing record ID is required'),
+    body('invoiceType').isIn(['vat', 'non-vat']).withMessage('Invoice type must be vat or non-vat')
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { servicingId, invoiceType } = req.body;
+
+    try {
+      const servicing = await Servicing.findById(servicingId);
+      if (!servicing) {
+        return res.status(404).json({ message: 'Servicing record not found' });
+      }
+
+      if (servicing.status !== 'closed') {
+        return res.status(400).json({ message: 'Servicing record must be closed before generating an invoice' });
+      }
+
+      if (servicing.invoiceId) {
+        return res.status(400).json({ message: 'This servicing record has already been invoiced' });
+      }
+
+      const subtotal = servicing.subtotal;
+      const discount = servicing.discount || 0;
+      const taxedBase = Math.max(0, subtotal - discount);
+      const vat = invoiceType === 'vat' ? taxedBase * 0.13 : 0;
+      const total = taxedBase + vat;
+
+      const invoice = new Invoice({
+        servicingId: servicing._id,
+        customerId: servicing.customerId,
+        vehicleId: servicing.vehicleId,
+        invoiceType,
+        subtotal,
+        discount,
+        vat,
+        total,
+        amountPaid: 0,
+        amountDue: total,
+        status: 'unpaid'
+      });
+      await invoice.save();
+
+      servicing.invoiceId = invoice._id;
+      await servicing.save();
+
+      const customer = await Customer.findById(servicing.customerId);
+
+      await createNotification({
+        recipientRoles: ['admin', 'accountant'],
+        title: 'New Invoice Generated',
+        message: `${invoiceType === 'vat' ? 'VAT' : 'Non-VAT'} invoice generated for ${customer?.name || 'Customer'} (Total: Rs. ${invoice.total.toFixed(2)})`,
+        type: 'payment',
+        link: '/invoices'
+      });
+
+      await logAction({
+        req,
+        action: 'invoice_generated',
+        module: 'invoices',
+        details: `Generated ${invoiceType.toUpperCase()} Invoice #${invoice.invoiceNo} from Servicing record #${servicing._id.toString().substring(18)} for client ${customer?.name || 'Customer'}. Total: Rs. ${invoice.total.toFixed(2)}`
+      });
+
+      const populated = await Invoice.findById(invoice._id)
+        .populate('customerId', 'name phone email')
+        .populate('vehicleId', 'plateNo make model');
+
+      res.status(201).json(populated);
+    } catch (err) {
+      console.error('Generate invoice error:', err.message);
+      res.status(500).json({ message: 'Server error' });
+    }
+  }
+);
 
 // @route   GET /api/invoices
 // @desc    Get all invoices
@@ -88,7 +177,7 @@ router.get('/:id', authenticate, authorize('admin', 'receptionist', 'accountant'
       .populate('customerId', 'name phone email address loyaltyPoints')
       .populate('vehicleId', 'plateNo make model year colour')
       .populate({
-        path: 'jobCardId',
+        path: 'servicingId',
         select: 'parts labour findings'
       });
 
@@ -118,7 +207,12 @@ router.post(
   [
     body('amount').isFloat({ min: 0.01 }).withMessage('Payment amount must be greater than zero'),
     body('method').isIn(['cash', 'card', 'fonepay', 'bank-transfer']).withMessage('Invalid payment method'),
-    body('reference').optional().trim()
+    body('reference').optional().trim(),
+    body('nextServiceDate')
+      .optional({ checkFalsy: true })
+      .isISO8601().withMessage('Next service date must be a valid date')
+      .bail()
+      .custom(isWithinSupportedDateRange).withMessage('Next service date is out of the supported range')
   ],
   async (req, res) => {
     const errors = validationResult(req);
@@ -181,7 +275,7 @@ router.post(
         req,
         action: 'invoice_payment',
         module: 'invoices',
-        details: `Payment of Rs. ${pAmt.toFixed(2)} recorded for Invoice #${invoice.invoiceNo}. Status: ${invoice.status.toUpperCase()}.${req.body.nextServiceDate ? ` Next service scheduled: ${new Date(req.body.nextServiceDate).toLocaleDateString()}.` : ''}${req.body.sendWhatsApp ? ' WhatsApp reminder simulated.' : ''}`
+        details: `Payment of Rs. ${pAmt.toFixed(2)} recorded for Invoice #${invoice.invoiceNo}. Status: ${invoice.status.toUpperCase()}.${req.body.nextServiceDate ? ` Next service scheduled: ${formatNepaliDate(req.body.nextServiceDate)}.` : ''}${req.body.sendWhatsApp ? ' WhatsApp reminder simulated.' : ''}`
       });
 
       // Auto-trigger loyalty points if invoice becomes fully paid
@@ -389,7 +483,7 @@ router.get('/:id/pdf', authenticate, authorize('admin', 'receptionist', 'account
       .populate('customerId', 'name phone email address')
       .populate('vehicleId', 'plateNo make model year colour')
       .populate({
-        path: 'jobCardId',
+        path: 'servicingId',
         select: 'parts labour'
       });
 
@@ -439,25 +533,25 @@ router.get('/:id/pdf', authenticate, authorize('admin', 'receptionist', 'account
             <div style="font-size: 12px; color: #666;">Kathmandu, Nepal | Phone: +977-1-4444444</div>
           </div>
           <div class="title">
-            <h2 style="margin: 0; color: #10b981;">OFFICIAL TAX INVOICE</h2>
+            <h2 style="margin: 0; color: #10b981;">${invoice.invoiceType === 'vat' ? 'OFFICIAL TAX INVOICE (VAT)' : 'OFFICIAL INVOICE (NON-VAT)'}</h2>
             <div style="font-size: 13px; color: #555; margin-top: 5px;">Invoice No: ${invoice.invoiceNo}</div>
-            <div style="font-size: 12px; color: #888;">Date: ${new Date(invoice.createdAt).toLocaleDateString()}</div>
+            <div style="font-size: 12px; color: #888;">Date: ${formatNepaliDate(invoice.createdAt)}</div>
           </div>
         </div>
 
         <div class="grid">
           <div>
             <div class="section-title">Invoiced To</div>
-            <strong>Name:</strong> ${invoice.customerId?.name || 'N/A'}<br>
-            <strong>Phone:</strong> ${invoice.customerId?.phone || 'N/A'}<br>
-            <strong>Email:</strong> ${invoice.customerId?.email || 'N/A'}<br>
-            <strong>Address:</strong> ${invoice.customerId?.address || 'N/A'}
+            <strong>Name:</strong> ${escapeHtml(invoice.customerId?.name) || 'N/A'}<br>
+            <strong>Phone:</strong> ${escapeHtml(invoice.customerId?.phone) || 'N/A'}<br>
+            <strong>Email:</strong> ${escapeHtml(invoice.customerId?.email) || 'N/A'}<br>
+            <strong>Address:</strong> ${escapeHtml(invoice.customerId?.address) || 'N/A'}
           </div>
           <div>
             <div class="section-title">Vehicle & Reference Details</div>
-            <strong>Job Card ID:</strong> ${invoice.jobCardId?._id || 'N/A'}<br>
-            <strong>Make / Model:</strong> ${invoice.vehicleId?.make} ${invoice.vehicleId?.model}<br>
-            <strong>Plate No:</strong> ${invoice.vehicleId?.plateNo || 'N/A'}
+            <strong>Servicing Record ID:</strong> ${invoice.servicingId?._id || 'N/A'}<br>
+            <strong>Make / Model:</strong> ${escapeHtml(invoice.vehicleId?.make)} ${escapeHtml(invoice.vehicleId?.model)}<br>
+            <strong>Plate No:</strong> ${escapeHtml(invoice.vehicleId?.plateNo) || 'N/A'}
           </div>
         </div>
 
@@ -473,18 +567,18 @@ router.get('/:id/pdf', authenticate, authorize('admin', 'receptionist', 'account
             </tr>
           </thead>
           <tbody>
-            ${invoice.jobCardId?.parts.map(p => `
+            ${invoice.servicingId?.parts.map(p => `
               <tr>
-                <td>${p.name}</td>
+                <td>${escapeHtml(p.name)}</td>
                 <td><span style="font-size: 10px; color: #888; text-transform: uppercase;">Part</span></td>
                 <td style="text-align: center;">${p.qty}</td>
                 <td style="text-align: right;">Rs. ${p.unitPrice.toFixed(2)}</td>
                 <td style="text-align: right;">Rs. ${p.total.toFixed(2)}</td>
               </tr>
             `).join('') || ''}
-            ${invoice.jobCardId?.labour.map(l => `
+            ${invoice.servicingId?.labour.map(l => `
               <tr>
-                <td>${l.name}</td>
+                <td>${escapeHtml(l.name)}</td>
                 <td><span style="font-size: 10px; color: #888; text-transform: uppercase;">Labour</span></td>
                 <td style="text-align: center;">${l.hours} hrs</td>
                 <td style="text-align: right;">Rs. ${l.unitPrice.toFixed(2)}</td>
@@ -503,10 +597,11 @@ router.get('/:id/pdf', authenticate, authorize('admin', 'receptionist', 'account
             <span>Discount Applied:</span>
             <strong>-Rs. ${invoice.discount.toFixed(2)}</strong>
           </div>
+          ${invoice.invoiceType === 'vat' ? `
           <div>
             <span>VAT (13%):</span>
             <strong>Rs. ${invoice.vat.toFixed(2)}</strong>
-          </div>
+          </div>` : ''}
           <div class="grand-total">
             <span>Total Payable:</span>
             <span>Rs. ${invoice.total.toFixed(2)}</span>
@@ -535,9 +630,9 @@ router.get('/:id/pdf', authenticate, authorize('admin', 'receptionist', 'account
             <tbody>
               ${payments.map(p => `
                 <tr>
-                  <td>${new Date(p.createdAt).toLocaleString()}</td>
-                  <td><span style="text-transform: uppercase; font-size: 11px;">${p.method}</span></td>
-                  <td>${p.reference || 'N/A'}</td>
+                  <td>${formatNepaliDateTime(p.createdAt)}</td>
+                  <td><span style="text-transform: uppercase; font-size: 11px;">${escapeHtml(p.method)}</span></td>
+                  <td>${escapeHtml(p.reference) || 'N/A'}</td>
                   <td style="text-align: right; font-weight: bold;">Rs. ${p.amount.toFixed(2)}</td>
                 </tr>
               `).join('')}

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
+import { formatNepaliDate } from '../utils/nepaliDate';
 import {
   ClipboardList,
   Plus,
@@ -329,7 +330,7 @@ export default function Tasks() {
                         <div className="flex items-center gap-1.5 text-xs">
                           <Calendar className="w-4 h-4 text-slate-400" />
                           <span className={isOverdue ? 'text-rose-600 font-bold' : ''}>
-                            {new Date(task.dueDate).toLocaleDateString()} 
+                            {formatNepaliDate(task.dueDate)}
                             {isOverdue && ' (Overdue)'}
                           </span>
                         </div>

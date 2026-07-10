@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
+import { formatNepaliDate, formatNepaliDateTime } from '../utils/nepaliDate';
 import {
   Calendar,
   Clock,
@@ -127,7 +128,7 @@ export default function Appointments() {
   const getMessageTemplate = (rem) => {
     const clientName = rem.customerId?.name || 'Customer';
     const vehicle = `${rem.vehicleId?.make || ''} ${rem.vehicleId?.model || ''} (${rem.vehicleId?.plateNo || ''})`;
-    const dateStr = new Date(rem.nextServiceDate).toLocaleDateString([], { month: 'long', day: 'numeric', year: 'numeric' });
+    const dateStr = formatNepaliDate(rem.nextServiceDate);
     return `Hi ${clientName}, this is a reminder from PM Automobiles. Your vehicle ${vehicle} is due for its next periodic service on ${dateStr}. Please book an appointment or visit us. Thank you!`;
   };
 
@@ -438,13 +439,7 @@ export default function Appointments() {
           ) : (
             <div className="grid grid-cols-1 gap-5">
               {appointments.map((appt) => {
-                const formattedDate = new Date(appt.dateTime).toLocaleString([], {
-                  month: 'short',
-                  day: 'numeric',
-                  year: 'numeric',
-                  hour: '2-digit',
-                  minute: '2-digit'
-                });
+                const formattedDate = formatNepaliDateTime(appt.dateTime);
 
                 return (
                   <div
@@ -623,11 +618,7 @@ export default function Appointments() {
                 const message = getMessageTemplate(rem);
                 const isUrgent = daysLeft <= 1;
 
-                const reminderDateStr = new Date(rem.nextServiceDate).toLocaleDateString([], {
-                  month: 'short',
-                  day: 'numeric',
-                  year: 'numeric'
-                });
+                const reminderDateStr = formatNepaliDate(rem.nextServiceDate);
 
                 return (
                   <div

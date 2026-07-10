@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
+import { formatNepaliDateTime } from '../utils/nepaliDate';
 import {
   Bell,
   CheckSquare,
@@ -21,7 +22,7 @@ export default function Notifications() {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all'); // 'all', 'unread', 'read'
-  const [typeFilter, setTypeFilter] = useState('all'); // 'all', 'appointment', 'quotation', 'job-card', 'inventory', 'payment'
+  const [typeFilter, setTypeFilter] = useState('all'); // 'all', 'appointment', 'servicing', 'inventory', 'payment'
   const [bulkLoading, setBulkLoading] = useState(false);
 
   const fetchNotifications = async () => {
@@ -74,11 +75,8 @@ export default function Notifications() {
     }
   };
 
-  // Format date/time to local display
-  const formatDateTime = (dateString) => {
-    const d = new Date(dateString);
-    return `${d.toLocaleDateString()} at ${d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
-  };
+  // Format date/time to Nepali BS display
+  const formatDateTime = (dateString) => formatNepaliDateTime(dateString);
 
   // Filtered Notifications List
   const filteredNotifications = notifications.filter((noti) => {
@@ -101,7 +99,7 @@ export default function Notifications() {
         <div>
           <h1 className="text-2xl font-bold text-white">Notifications Ledger</h1>
           <p className="text-slate-400 text-xs mt-1 font-medium">
-            View workshop alerts, appointment updates, quotation responses, and payments.
+            View workshop alerts, appointment updates, servicing status, and payments.
           </p>
         </div>
 
@@ -162,8 +160,7 @@ export default function Notifications() {
           >
             <option value="all">All Categories</option>
             <option value="appointment">Appointments</option>
-            <option value="quotation">Quotations</option>
-            <option value="job-card">Job Cards</option>
+            <option value="servicing">Servicing</option>
             <option value="inventory">Inventory Alerts</option>
             <option value="payment">Billing & Payments</option>
             <option value="system">System Updates</option>

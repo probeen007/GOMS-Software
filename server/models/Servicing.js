@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-const jobCardPartSchema = new mongoose.Schema({
+const servicingPartSchema = new mongoose.Schema({
   partId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'InventoryStock',
@@ -28,7 +28,7 @@ const jobCardPartSchema = new mongoose.Schema({
   }
 }, { _id: false });
 
-const jobCardLabourSchema = new mongoose.Schema({
+const servicingLabourSchema = new mongoose.Schema({
   name: {
     type: String,
     required: true
@@ -51,13 +51,8 @@ const jobCardLabourSchema = new mongoose.Schema({
   }
 }, { _id: false });
 
-const jobCardSchema = new mongoose.Schema(
+const servicingSchema = new mongoose.Schema(
   {
-    quotationId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Quotation',
-      default: null
-    },
     customerId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Customer',
@@ -71,6 +66,11 @@ const jobCardSchema = new mongoose.Schema(
     appointmentId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Appointment',
+      default: null
+    },
+    invoiceId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Invoice',
       default: null
     },
     status: {
@@ -88,8 +88,8 @@ const jobCardSchema = new mongoose.Schema(
       trim: true,
       default: ''
     },
-    parts: [jobCardPartSchema],
-    labour: [jobCardLabourSchema],
+    parts: [servicingPartSchema],
+    labour: [servicingLabourSchema],
     subtotal: {
       type: Number,
       required: true,
@@ -121,9 +121,9 @@ const jobCardSchema = new mongoose.Schema(
 );
 
 // Indexes
-jobCardSchema.index({ status: 1 });
-jobCardSchema.index({ customerId: 1 });
+servicingSchema.index({ status: 1 });
+servicingSchema.index({ customerId: 1 });
 
-const JobCard = mongoose.model('JobCard', jobCardSchema);
+const Servicing = mongoose.model('Servicing', servicingSchema);
 
-export default JobCard;
+export default Servicing;

@@ -135,9 +135,9 @@ router.post(
   authorize('admin', 'receptionist'),
   [
     body('plateNo').notEmpty().withMessage('License plate number is required').trim().toUpperCase(),
-    body('make').notEmpty().withMessage('Vehicle make is required').trim(),
+    body('make').optional({ checkFalsy: true }).trim(),
     body('model').notEmpty().withMessage('Vehicle model is required').trim(),
-    body('year').isNumeric().withMessage('Valid year is required'),
+    body('year').optional({ checkFalsy: true }).isNumeric().withMessage('Year must be a number'),
     body('vin').optional().trim().toUpperCase(),
     body('colour').optional().trim()
   ],

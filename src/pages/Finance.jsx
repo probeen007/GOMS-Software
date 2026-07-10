@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
+import { formatNepaliDate } from '../utils/nepaliDate';
 import {
   TrendingUp,
   TrendingDown,
@@ -13,7 +14,11 @@ import {
   X,
   FileText,
   PieChart as PieIcon,
-  Activity
+  Activity,
+  Receipt,
+  FileSpreadsheet,
+  BarChart3,
+  LayoutGrid
 } from 'lucide-react';
 import {
   AreaChart,
@@ -44,6 +49,7 @@ export default function Finance() {
   const defaultEndDate = () => new Date().toISOString().split('T')[0];
 
   // State
+  const [activeTab, setActiveTab] = useState('overview');
   const [startDate, setStartDate] = useState(defaultStartDate());
   const [endDate, setEndDate] = useState(defaultEndDate());
   const [summary, setSummary] = useState({ totalIncome: 0, totalExpenditure: 0, netProfit: 0 });
@@ -51,6 +57,12 @@ export default function Finance() {
   const [expenditures, setExpenditures] = useState([]);
   const [outstandingDues, setOutstandingDues] = useState(0);
   const [loading, setLoading] = useState(true);
+
+  // VAT / Non-VAT / Summary report tabs
+  const [vatReport, setVatReport] = useState({ invoices: [], totals: { subtotal: 0, vat: 0, total: 0 }, count: 0 });
+  const [nonVatReport, setNonVatReport] = useState({ invoices: [], totals: { subtotal: 0, total: 0 }, count: 0 });
+  const [summaryReport, setSummaryReport] = useState(null);
+  const [reportLoading, setReportLoading] = useState(false);
 
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -88,8 +100,53 @@ export default function Finance() {
   };
 
   useEffect(() => {
-    fetchFinanceData();
-  }, [startDate, endDate]);
+    if (activeTab === 'overview') {
+      fetchFinanceData();
+    }
+  }, [startDate, endDate, activeTab]);
+
+  const fetchVatReport = async () => {
+    setReportLoading(true);
+    try {
+      const res = await axios.get('/api/finance/vat-report', { params: { startDate, endDate } });
+      setVatReport(res.data);
+    } catch (err) {
+      console.error('Fetch VAT report error:', err);
+    } finally {
+      setReportLoading(false);
+    }
+  };
+
+  const fetchNonVatReport = async () => {
+    setReportLoading(true);
+    try {
+      const res = await axios.get('/api/finance/non-vat-report', { params: { startDate, endDate } });
+      setNonVatReport(res.data);
+    } catch (err) {
+      console.error('Fetch Non-VAT report error:', err);
+    } finally {
+      setReportLoading(false);
+    }
+  };
+
+  const fetchSummaryReport = async () => {
+    setReportLoading(true);
+    try {
+      const res = await axios.get('/api/finance/summary-report', { params: { startDate, endDate } });
+      setSummaryReport(res.data);
+    } catch (err) {
+      console.error('Fetch summary report error:', err);
+    } finally {
+      setReportLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'vat') fetchVatReport();
+    else if (activeTab === 'non-vat') fetchNonVatReport();
+    else if (activeTab === 'summary') fetchSummaryReport();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab, startDate, endDate]);
 
   // Handle Add Expenditure Submit
   const handleAddExpenditure = async (e) => {
@@ -166,43 +223,70 @@ export default function Finance() {
           </p>
         </div>
 
-        <button
-          type="button"
-          onClick={() => setIsModalOpen(true)}
-          className="flex items-center justify-center gap-2 px-5 h-11 rounded-xl text-sm font-bold text-white bg-primary-600 hover:bg-primary-500 transition-all duration-200 shadow-lg shadow-primary-500/10 hover-lift glow-effect cursor-pointer"
-        >
-          <Plus className="w-5 h-5" />
-          <span>Add Expenditure</span>
-        </button>
+        {activeTab === 'overview' && (
+          <button
+            type="button"
+            onClick={() => setIsModalOpen(true)}
+            className="flex items-center justify-center gap-2 px-5 h-11 rounded-xl text-sm font-bold text-white bg-primary-600 hover:bg-primary-500 transition-all duration-200 shadow-lg shadow-primary-500/10 hover-lift glow-effect cursor-pointer"
+          >
+            <Plus className="w-5 h-5" />
+            <span>Add Expenditure</span>
+          </button>
+        )}
       </div>
 
+      {/* Report Tabs */}
+      <div className="flex flex-wrap gap-2 p-1.5 bg-slate-900/40 border border-slate-800 rounded-2xl w-fit">
+        {[
+          { id: 'overview', label: 'Overview', icon: LayoutGrid },
+          { id: 'vat', label: 'VAT Report', icon: Receipt },
+          { id: 'non-vat', label: 'Non-VAT Report', icon: FileSpreadsheet },
+          { id: 'summary', label: 'Summary Report', icon: BarChart3 }
+        ].map((tab) => {
+          const Icon = tab.icon;
+          return (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex items-center gap-2 px-4 h-10 rounded-xl text-sm font-bold transition-all cursor-pointer ${activeTab === tab.id ? 'bg-primary-600 text-white shadow-md' : 'text-slate-400 hover:text-white hover:bg-slate-850'}`}
+            >
+              <Icon className="w-4 h-4" />
+              <span>{tab.label}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Date Filter Panel (shared across tabs) */}
+      <div className="p-4 bg-slate-900/40 border border-slate-800 rounded-3xl flex flex-wrap gap-4 items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Calendar className="w-5 h-5 text-slate-450" />
+          <span className="text-xs font-extrabold text-slate-400 uppercase tracking-widest">
+            Report Date Range
+          </span>
+        </div>
+        <div className="flex items-center gap-3">
+          <input
+            type="date"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+            className="glass-input px-3.5 h-10 rounded-xl text-sm text-slate-205 focus:outline-none"
+          />
+          <span className="text-slate-500 text-xs font-bold uppercase tracking-widest">to</span>
+          <input
+            type="date"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+            className="glass-input px-3.5 h-10 rounded-xl text-sm text-slate-205 focus:outline-none"
+          />
+        </div>
+      </div>
+
+      {activeTab === 'overview' && (
+      <>
       {/* Date Filters & KPI Grid */}
       <div className="space-y-4">
-        {/* Date Filter Panel */}
-        <div className="p-4 bg-slate-900/40 border border-slate-800 rounded-3xl flex flex-wrap gap-4 items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Calendar className="w-5 h-5 text-slate-450" />
-            <span className="text-xs font-extrabold text-slate-400 uppercase tracking-widest">
-              Cash Flow Date Range
-            </span>
-          </div>
-          <div className="flex items-center gap-3">
-            <input
-              type="date"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-              className="glass-input px-3.5 h-10 rounded-xl text-sm text-slate-205 focus:outline-none"
-            />
-            <span className="text-slate-500 text-xs font-bold uppercase tracking-widest">to</span>
-            <input
-              type="date"
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-              className="glass-input px-3.5 h-10 rounded-xl text-sm text-slate-205 focus:outline-none"
-            />
-          </div>
-        </div>
-
         {/* KPI Scorecard Grid */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {/* Total Revenue */}
@@ -370,7 +454,7 @@ export default function Finance() {
                   <tbody className="divide-y divide-slate-850 text-slate-300">
                     {expenditures.map((exp) => (
                       <tr key={exp._id} className="hover:bg-slate-900/30 transition-colors text-sm">
-                        <td className="py-3.5 px-4 whitespace-nowrap font-medium">{new Date(exp.date).toLocaleDateString()}</td>
+                        <td className="py-3.5 px-4 whitespace-nowrap font-medium">{formatNepaliDate(exp.date)}</td>
                         <td className="py-3.5 px-4 whitespace-nowrap">
                           <span className="inline-flex px-2.5 py-1 rounded-xl bg-slate-800 border border-slate-700 text-xs font-bold text-slate-300">
                             {exp.category}
@@ -400,7 +484,173 @@ export default function Finance() {
             )}
           </div>
         </div>
-      )}      {/* Modal: Add Manual Expenditure */}
+      )}
+      </>
+      )}
+
+      {activeTab === 'vat' && (
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="p-6 bg-slate-900/40 border border-slate-800 rounded-3xl">
+              <span className="text-xs font-extrabold text-slate-500 uppercase tracking-widest block mb-1">Taxable Subtotal</span>
+              <p className="text-2xl font-black text-white font-mono">Rs. {vatReport.totals.subtotal.toFixed(2)}</p>
+            </div>
+            <div className="p-6 bg-slate-900/40 border border-slate-800 rounded-3xl">
+              <span className="text-xs font-extrabold text-slate-500 uppercase tracking-widest block mb-1">VAT Collected (13%)</span>
+              <p className="text-2xl font-black text-indigo-400 font-mono">Rs. {vatReport.totals.vat.toFixed(2)}</p>
+            </div>
+            <div className="p-6 bg-slate-900/40 border border-slate-800 rounded-3xl">
+              <span className="text-xs font-extrabold text-slate-500 uppercase tracking-widest block mb-1">VAT Invoice Total</span>
+              <p className="text-2xl font-black text-emerald-400 font-mono">Rs. {vatReport.totals.total.toFixed(2)}</p>
+            </div>
+          </div>
+
+          <div className="p-6 bg-slate-900/40 border border-slate-800 rounded-3xl shadow-xl space-y-4">
+            <div className="flex justify-between items-center pb-3 border-b border-slate-850">
+              <h3 className="text-base font-extrabold text-white flex items-center gap-2 tracking-tight">
+                <Receipt className="w-5 h-5 text-indigo-400" />
+                <span>VAT Invoices ({vatReport.count})</span>
+              </h3>
+            </div>
+            {reportLoading ? (
+              <div className="py-12 text-center"><Loader2 className="w-6 h-6 text-indigo-400 animate-spin mx-auto" /></div>
+            ) : vatReport.invoices.length === 0 ? (
+              <p className="text-sm text-slate-500 italic text-center py-8">No VAT invoices in this date range.</p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-slate-800 text-left text-sm">
+                  <thead>
+                    <tr className="text-slate-450 uppercase font-extrabold tracking-widest text-xs">
+                      <th className="py-3.5 px-4">Invoice No</th>
+                      <th className="py-3.5 px-4">Date</th>
+                      <th className="py-3.5 px-4">Customer</th>
+                      <th className="py-3.5 px-4 text-right">Subtotal</th>
+                      <th className="py-3.5 px-4 text-right">VAT</th>
+                      <th className="py-3.5 px-4 text-right">Total</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-850 text-slate-300">
+                    {vatReport.invoices.map((inv) => (
+                      <tr key={inv._id} className="hover:bg-slate-900/30 transition-colors">
+                        <td className="py-3.5 px-4 font-mono font-bold">{inv.invoiceNo}</td>
+                        <td className="py-3.5 px-4">{formatNepaliDate(inv.createdAt)}</td>
+                        <td className="py-3.5 px-4">{inv.customerId?.name}</td>
+                        <td className="py-3.5 px-4 text-right font-mono">Rs. {inv.subtotal.toFixed(2)}</td>
+                        <td className="py-3.5 px-4 text-right font-mono text-indigo-400">Rs. {inv.vat.toFixed(2)}</td>
+                        <td className="py-3.5 px-4 text-right font-mono font-bold">Rs. {inv.total.toFixed(2)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'non-vat' && (
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="p-6 bg-slate-900/40 border border-slate-800 rounded-3xl">
+              <span className="text-xs font-extrabold text-slate-500 uppercase tracking-widest block mb-1">Non-VAT Subtotal</span>
+              <p className="text-2xl font-black text-white font-mono">Rs. {nonVatReport.totals.subtotal.toFixed(2)}</p>
+            </div>
+            <div className="p-6 bg-slate-900/40 border border-slate-800 rounded-3xl">
+              <span className="text-xs font-extrabold text-slate-500 uppercase tracking-widest block mb-1">Non-VAT Invoice Total</span>
+              <p className="text-2xl font-black text-emerald-400 font-mono">Rs. {nonVatReport.totals.total.toFixed(2)}</p>
+            </div>
+          </div>
+
+          <div className="p-6 bg-slate-900/40 border border-slate-800 rounded-3xl shadow-xl space-y-4">
+            <div className="flex justify-between items-center pb-3 border-b border-slate-850">
+              <h3 className="text-base font-extrabold text-white flex items-center gap-2 tracking-tight">
+                <FileSpreadsheet className="w-5 h-5 text-slate-400" />
+                <span>Non-VAT Invoices ({nonVatReport.count})</span>
+              </h3>
+            </div>
+            {reportLoading ? (
+              <div className="py-12 text-center"><Loader2 className="w-6 h-6 text-slate-400 animate-spin mx-auto" /></div>
+            ) : nonVatReport.invoices.length === 0 ? (
+              <p className="text-sm text-slate-500 italic text-center py-8">No Non-VAT invoices in this date range.</p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-slate-800 text-left text-sm">
+                  <thead>
+                    <tr className="text-slate-450 uppercase font-extrabold tracking-widest text-xs">
+                      <th className="py-3.5 px-4">Invoice No</th>
+                      <th className="py-3.5 px-4">Date</th>
+                      <th className="py-3.5 px-4">Customer</th>
+                      <th className="py-3.5 px-4 text-right">Subtotal</th>
+                      <th className="py-3.5 px-4 text-right">Total</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-850 text-slate-300">
+                    {nonVatReport.invoices.map((inv) => (
+                      <tr key={inv._id} className="hover:bg-slate-900/30 transition-colors">
+                        <td className="py-3.5 px-4 font-mono font-bold">{inv.invoiceNo}</td>
+                        <td className="py-3.5 px-4">{formatNepaliDate(inv.createdAt)}</td>
+                        <td className="py-3.5 px-4">{inv.customerId?.name}</td>
+                        <td className="py-3.5 px-4 text-right font-mono">Rs. {inv.subtotal.toFixed(2)}</td>
+                        <td className="py-3.5 px-4 text-right font-mono font-bold">Rs. {inv.total.toFixed(2)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'summary' && (
+        <div className="space-y-6">
+          {reportLoading || !summaryReport ? (
+            <div className="py-12 text-center"><Loader2 className="w-6 h-6 text-primary-400 animate-spin mx-auto" /></div>
+          ) : (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="p-6 bg-slate-900/40 border border-slate-800 rounded-3xl">
+                  <span className="text-xs font-extrabold text-slate-500 uppercase tracking-widest block mb-1">Total Income</span>
+                  <p className="text-2xl font-black text-emerald-400 font-mono">Rs. {summaryReport.totalIncome.toFixed(2)}</p>
+                </div>
+                <div className="p-6 bg-slate-900/40 border border-slate-800 rounded-3xl">
+                  <span className="text-xs font-extrabold text-slate-500 uppercase tracking-widest block mb-1">Total Expenditure</span>
+                  <p className="text-2xl font-black text-rose-455 font-mono">Rs. {summaryReport.totalExpenditure.toFixed(2)}</p>
+                </div>
+                <div className="p-6 bg-slate-900/40 border border-slate-800 rounded-3xl">
+                  <span className="text-xs font-extrabold text-slate-500 uppercase tracking-widest block mb-1">Net Profit</span>
+                  <p className={`text-2xl font-black font-mono ${summaryReport.netProfit >= 0 ? 'text-indigo-400' : 'text-rose-450'}`}>Rs. {summaryReport.netProfit.toFixed(2)}</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="p-6 bg-slate-900/40 border border-slate-800 rounded-3xl space-y-3">
+                  <h3 className="text-sm font-extrabold text-white uppercase tracking-wider flex items-center gap-2">
+                    <Receipt className="w-4.5 h-4.5 text-indigo-400" /> VAT Invoices
+                  </h3>
+                  <div className="flex justify-between text-sm text-slate-400"><span>Invoice Count:</span><strong className="text-white">{summaryReport.vatInvoiceCount}</strong></div>
+                  <div className="flex justify-between text-sm text-slate-400"><span>Invoice Total:</span><strong className="font-mono text-white">Rs. {summaryReport.vatInvoiceTotal.toFixed(2)}</strong></div>
+                  <div className="flex justify-between text-sm text-slate-400"><span>VAT Collected:</span><strong className="font-mono text-indigo-400">Rs. {summaryReport.vatCollected.toFixed(2)}</strong></div>
+                </div>
+                <div className="p-6 bg-slate-900/40 border border-slate-800 rounded-3xl space-y-3">
+                  <h3 className="text-sm font-extrabold text-white uppercase tracking-wider flex items-center gap-2">
+                    <FileSpreadsheet className="w-4.5 h-4.5 text-slate-400" /> Non-VAT Invoices
+                  </h3>
+                  <div className="flex justify-between text-sm text-slate-400"><span>Invoice Count:</span><strong className="text-white">{summaryReport.nonVatInvoiceCount}</strong></div>
+                  <div className="flex justify-between text-sm text-slate-400"><span>Invoice Total:</span><strong className="font-mono text-white">Rs. {summaryReport.nonVatInvoiceTotal.toFixed(2)}</strong></div>
+                </div>
+              </div>
+
+              <div className="p-6 bg-sky-950/10 border border-sky-900/20 rounded-3xl flex items-center justify-between">
+                <span className="text-sm font-extrabold text-sky-400 uppercase tracking-wider">Outstanding Dues (Unpaid, in range)</span>
+                <span className="text-2xl font-black text-sky-400 font-mono">Rs. {summaryReport.outstandingDues.toFixed(2)}</span>
+              </div>
+            </>
+          )}
+        </div>
+      )}
+
+      {/* Modal: Add Manual Expenditure */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-955/75 backdrop-blur-sm">
           <div className="relative w-full max-w-md glass-card rounded-3xl overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200">

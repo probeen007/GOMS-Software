@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { formatNepaliDateTime } from '../utils/nepaliDate';
 import {
   FileText,
   Search,
@@ -82,10 +83,7 @@ export default function AuditLogs() {
     setPage(1);
   };
 
-  const formatDateTime = (dateString) => {
-    const d = new Date(dateString);
-    return `${d.toLocaleDateString()} ${d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`;
-  };
+  const formatDateTime = (dateString) => formatNepaliDateTime(dateString);
 
   return (
     <div className="space-y-6">
@@ -171,8 +169,7 @@ export default function AuditLogs() {
                 <option value="customers">Customers & Vehicles</option>
                 <option value="inventory">Inventory & Purchases</option>
                 <option value="appointments">Appointments</option>
-                <option value="quotations">Quotations</option>
-                <option value="job-cards">Job Cards</option>
+                <option value="servicing">Servicing</option>
                 <option value="invoices">Invoices & Payments</option>
                 <option value="loyalty">Loyalty System</option>
                 <option value="finance">Finance Ledger</option>
@@ -304,9 +301,7 @@ export default function AuditLogs() {
                             ? 'bg-emerald-500/5 text-emerald-450 border-emerald-500/10'
                             : log.module === 'appointments'
                             ? 'bg-teal-500/5 text-teal-400 border-teal-500/10'
-                            : log.module === 'quotations'
-                            ? 'bg-indigo-500/5 text-indigo-400 border-indigo-500/10'
-                            : log.module === 'job-cards'
+                            : log.module === 'servicing'
                             ? 'bg-amber-500/5 text-amber-400 border-amber-500/10'
                             : log.module === 'loyalty'
                             ? 'bg-fuchsia-500/5 text-fuchsia-400 border-fuchsia-500/10'

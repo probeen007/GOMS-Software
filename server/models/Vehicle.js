@@ -15,8 +15,8 @@ const vehicleSchema = new mongoose.Schema(
     },
     make: {
       type: String,
-      required: [true, 'Vehicle make/brand is required'],
-      trim: true
+      trim: true,
+      default: ''
     },
     model: {
       type: String,
@@ -25,7 +25,7 @@ const vehicleSchema = new mongoose.Schema(
     },
     year: {
       type: Number,
-      required: [true, 'Vehicle manufacture year is required']
+      default: () => new Date().getFullYear()
     },
     vin: {
       type: String,

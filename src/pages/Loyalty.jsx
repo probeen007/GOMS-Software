@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { formatNepaliDate } from '../utils/nepaliDate';
 import {
   Award,
   Search,
@@ -239,7 +240,7 @@ export default function Loyalty() {
                       <div className="space-y-0.5">
                         <p className="font-bold text-slate-205 capitalize">{txn.transactionType}</p>
                         <p className="text-xs text-slate-450 leading-relaxed">{txn.notes}</p>
-                        <p className="text-[10px] text-slate-600 font-medium">{new Date(txn.createdAt).toLocaleDateString()}</p>
+                        <p className="text-[10px] text-slate-600 font-medium">{formatNepaliDate(txn.createdAt)}</p>
                       </div>
                       <span className={`font-mono font-black shrink-0 text-sm ml-3 ${txn.points > 0 ? 'text-emerald-450' : 'text-rose-455'}`}>
                         {txn.points > 0 ? `+${txn.points}` : txn.points}

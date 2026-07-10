@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
+import { formatNepaliTime } from '../utils/nepaliDate';
 import {
   Users,
   Calendar,
@@ -78,8 +79,8 @@ export default function Dashboard() {
       }
 
       if (user.role === 'admin' || user.role === 'technician') {
-        const jobRes = await axios.get('/api/job-cards');
-        setJobCards(jobRes.data.filter((jc) => jc.status === 'open').slice(0, 5));
+        const servicingRes = await axios.get('/api/servicing');
+        setJobCards(servicingRes.data.filter((jc) => jc.status === 'open').slice(0, 5));
       }
 
       const notiRes = await axios.get('/api/notifications');
@@ -464,7 +465,7 @@ export default function Dashboard() {
                   </div>
                 ) : (
                   appointments.map((appt) => {
-                    const apptTime = new Date(appt.dateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    const apptTime = formatNepaliTime(appt.dateTime);
                     return (
                       <div
                         key={appt._id}
@@ -541,16 +542,16 @@ export default function Dashboard() {
             </div>
           )}
 
-          {/* C. TECHNICIAN VIEW: ASSIGNED JOB CARDS LIST */}
+          {/* C. TECHNICIAN VIEW: ASSIGNED SERVICING RECORDS LIST */}
           {(user.role === 'admin' || user.role === 'technician') && (
             <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
               <div className="flex items-center justify-between">
                 <div>
                   <h2 className="text-base font-bold text-slate-900 uppercase tracking-wider">Your Assigned Work Orders</h2>
-                  <p className="text-xs text-slate-500 mt-0.5">Active servicing checklists and job cards assigned to you</p>
+                  <p className="text-xs text-slate-500 mt-0.5">Active servicing checklists assigned to you</p>
                 </div>
-                <Link to="/job-cards" className="text-xs font-bold text-blue-600 hover:underline flex items-center gap-0.5">
-                  <span>Open Job Cards Center</span>
+                <Link to="/servicing" className="text-xs font-bold text-blue-600 hover:underline flex items-center gap-0.5">
+                  <span>Open Servicing Center</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </Link>
               </div>
@@ -559,7 +560,7 @@ export default function Dashboard() {
                 {jobCards.length === 0 ? (
                   <div className="text-center py-8 bg-slate-50 rounded-xl border border-slate-200">
                     <ClipboardList className="w-7 h-7 text-slate-400 mx-auto mb-2" />
-                    <p className="text-xs font-semibold text-slate-500">All caught up! No active job cards allocated.</p>
+                    <p className="text-xs font-semibold text-slate-500">All caught up! No active servicing records allocated.</p>
                   </div>
                 ) : (
                   jobCards.map((jc) => (
@@ -569,7 +570,7 @@ export default function Dashboard() {
                     >
                       <div>
                         <div className="text-sm font-bold text-slate-800 flex items-center gap-2">
-                          <span>Card ID: #{jc._id.toString().substring(18)}</span>
+                          <span>Record ID: #{jc._id.toString().substring(18)}</span>
                           <span className="inline-flex px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-amber-50 text-amber-600 border border-amber-100">
                             {jc.status}
                           </span>
@@ -580,7 +581,7 @@ export default function Dashboard() {
                         </p>
                       </div>
                       <Link
-                        to={`/job-cards`}
+                        to={`/servicing`}
                         className="px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-xs font-bold text-white transition-colors cursor-pointer text-center inline-block"
                       >
                         Manage Worksheet
@@ -675,14 +676,14 @@ export default function Dashboard() {
                     </div>
                   </Link>
                   <Link
-                    to="/job-cards"
+                    to="/servicing"
                     className="p-3 rounded-xl border border-slate-100 bg-slate-50/50 hover:bg-white hover:border-blue-200 hover:shadow-md hover:shadow-blue-900/5 transition-all flex items-center gap-4 group text-left"
                   >
                     <div className="p-3 rounded-xl bg-blue-50 text-blue-600 group-hover:bg-blue-100 transition-all shrink-0">
                       <ClipboardList className="w-6 h-6" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <span className="font-bold text-base text-slate-800 group-hover:text-blue-600 transition-colors block">Service Cards</span>
+                      <span className="font-bold text-base text-slate-800 group-hover:text-blue-600 transition-colors block">Servicing</span>
                       <span className="text-sm text-slate-450 block mt-0.5">Active work orders</span>
                     </div>
                   </Link>

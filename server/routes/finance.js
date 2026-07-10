@@ -7,10 +7,11 @@ import Customer from '../models/Customer.js';
 import Vehicle from '../models/Vehicle.js';
 import InventoryStock from '../models/InventoryStock.js';
 import Appointment from '../models/Appointment.js';
-import JobCard from '../models/JobCard.js';
+import Servicing from '../models/Servicing.js';
 import Attendance from '../models/Attendance.js';
 import { authenticate, authorize } from '../middleware/auth.js';
 import { logAction } from '../utils/logger.js';
+import { isWithinSupportedDateRange } from '../utils/dateRange.js';
 
 const router = express.Router();
 
@@ -111,7 +112,12 @@ router.post(
     body('category').notEmpty().withMessage('Category is required').trim(),
     body('amount').isFloat({ min: 0.01 }).withMessage('Amount must be positive'),
     body('note').optional().trim(),
-    body('date').optional().isISO8601().toDate().withMessage('Invalid date format')
+    body('date')
+      .optional()
+      .isISO8601().withMessage('Invalid date format')
+      .bail()
+      .custom(isWithinSupportedDateRange).withMessage('Expenditure date is out of the supported range')
+      .toDate()
   ],
   async (req, res) => {
     const errors = validationResult(req);
@@ -226,8 +232,8 @@ router.get('/summary', authenticate, authorize('admin', 'receptionist', 'account
     });
     const totalOutstanding = invoices.reduce((sum, inv) => sum + inv.amountDue, 0);
 
-    // 4. Vehicles Serviced (Closed Job Cards within the timeframe)
-    const vehiclesServiced = await JobCard.countDocuments({
+    // 4. Vehicles Serviced (Closed Servicing records within the timeframe)
+    const vehiclesServiced = await Servicing.countDocuments({
       status: 'closed',
       closedAt: { $gte: start, $lte: end }
     });
@@ -235,8 +241,8 @@ router.get('/summary', authenticate, authorize('admin', 'receptionist', 'account
     // 5. Total Customers (Active customer database)
     const totalCustomers = await Customer.countDocuments({ deletedAt: null });
 
-    // 6. Pending Services (Job Cards currently in progress / open)
-    const pendingServices = await JobCard.countDocuments({
+    // 6. Pending Services (Servicing records currently in progress / open)
+    const pendingServices = await Servicing.countDocuments({
       status: 'open',
       createdAt: { $gte: start, $lte: end }
     });
@@ -257,7 +263,7 @@ router.get('/summary', authenticate, authorize('admin', 'receptionist', 'account
     });
 
     // 9. Completed Services (Successfully completed/closed job cards in range)
-    const completedServices = await JobCard.countDocuments({
+    const completedServices = await Servicing.countDocuments({
       status: 'closed',
       closedAt: { $gte: start, $lte: end }
     });
@@ -278,6 +284,121 @@ router.get('/summary', authenticate, authorize('admin', 'receptionist', 'account
     });
   } catch (err) {
     console.error('Fetch analytics summary error:', err.message);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Shared helper to resolve a date range, defaulting to the last 30 days
+const resolveDateRange = (query) => {
+  const { startDate, endDate } = query;
+  const end = endDate ? new Date(endDate) : new Date();
+  const start = startDate ? new Date(startDate) : new Date();
+  if (!startDate) {
+    start.setDate(end.getDate() - 30);
+  }
+  start.setHours(0, 0, 0, 0);
+  end.setHours(23, 59, 59, 999);
+  return { start, end };
+};
+
+// @route   GET /api/finance/vat-report
+// @desc    VAT invoices issued in the given date range, with totals
+// @access  Private (admin, accountant)
+router.get('/vat-report', authenticate, authorize('admin', 'accountant'), async (req, res) => {
+  try {
+    const { start, end } = resolveDateRange(req.query);
+
+    const invoices = await Invoice.find({
+      invoiceType: 'vat',
+      createdAt: { $gte: start, $lte: end }
+    })
+      .populate('customerId', 'name phone')
+      .populate('vehicleId', 'plateNo make model')
+      .sort({ createdAt: -1 });
+
+    const totals = invoices.reduce(
+      (acc, inv) => {
+        acc.subtotal += inv.subtotal;
+        acc.vat += inv.vat;
+        acc.total += inv.total;
+        return acc;
+      },
+      { subtotal: 0, vat: 0, total: 0 }
+    );
+
+    res.json({ invoices, totals, count: invoices.length });
+  } catch (err) {
+    console.error('Fetch VAT report error:', err.message);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// @route   GET /api/finance/non-vat-report
+// @desc    Non-VAT invoices issued in the given date range, with totals
+// @access  Private (admin, accountant)
+router.get('/non-vat-report', authenticate, authorize('admin', 'accountant'), async (req, res) => {
+  try {
+    const { start, end } = resolveDateRange(req.query);
+
+    const invoices = await Invoice.find({
+      invoiceType: 'non-vat',
+      createdAt: { $gte: start, $lte: end }
+    })
+      .populate('customerId', 'name phone')
+      .populate('vehicleId', 'plateNo make model')
+      .sort({ createdAt: -1 });
+
+    const totals = invoices.reduce(
+      (acc, inv) => {
+        acc.subtotal += inv.subtotal;
+        acc.total += inv.total;
+        return acc;
+      },
+      { subtotal: 0, total: 0 }
+    );
+
+    res.json({ invoices, totals, count: invoices.length });
+  } catch (err) {
+    console.error('Fetch Non-VAT report error:', err.message);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// @route   GET /api/finance/summary-report
+// @desc    Consolidated financial summary: income, expenditure, VAT/Non-VAT split, outstanding dues
+// @access  Private (admin, accountant)
+router.get('/summary-report', authenticate, authorize('admin', 'accountant'), async (req, res) => {
+  try {
+    const { start, end } = resolveDateRange(req.query);
+
+    const [payments, expenditures, vatInvoices, nonVatInvoices, outstandingInvoices] = await Promise.all([
+      Payment.find({ createdAt: { $gte: start, $lte: end } }),
+      Expenditure.find({ date: { $gte: start, $lte: end } }),
+      Invoice.find({ invoiceType: 'vat', createdAt: { $gte: start, $lte: end } }),
+      Invoice.find({ invoiceType: 'non-vat', createdAt: { $gte: start, $lte: end } }),
+      Invoice.find({ status: { $ne: 'paid' }, createdAt: { $gte: start, $lte: end } })
+    ]);
+
+    const totalIncome = payments.reduce((sum, p) => sum + p.amount, 0);
+    const totalExpenditure = expenditures.reduce((sum, e) => sum + e.amount, 0);
+    const vatInvoiceTotal = vatInvoices.reduce((sum, inv) => sum + inv.total, 0);
+    const vatCollected = vatInvoices.reduce((sum, inv) => sum + inv.vat, 0);
+    const nonVatInvoiceTotal = nonVatInvoices.reduce((sum, inv) => sum + inv.total, 0);
+    const outstandingDues = outstandingInvoices.reduce((sum, inv) => sum + inv.amountDue, 0);
+
+    res.json({
+      totalIncome,
+      totalExpenditure,
+      netProfit: totalIncome - totalExpenditure,
+      vatInvoiceCount: vatInvoices.length,
+      vatInvoiceTotal,
+      vatCollected,
+      nonVatInvoiceCount: nonVatInvoices.length,
+      nonVatInvoiceTotal,
+      outstandingDues
+    });
+  } catch (err) {
+    console.error('Fetch summary report error:', err.message);
     res.status(500).json({ message: 'Server error' });
   }
 });

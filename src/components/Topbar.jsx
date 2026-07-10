@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { Menu, Bell, LogOut, CheckSquare, BellOff, ExternalLink, Loader2 } from 'lucide-react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
+import { formatNepaliDate } from '../utils/nepaliDate';
 
 export default function Topbar({ onToggleSidebar }) {
   const { user, logout } = useAuth();
@@ -25,8 +26,7 @@ export default function Topbar({ onToggleSidebar }) {
     if (path.startsWith('/customers')) return 'Customers & Vehicles';
     if (path.startsWith('/inventory')) return 'Inventory & Parts';
     if (path.startsWith('/appointments')) return 'Appointments';
-    if (path.startsWith('/quotations')) return 'Quotations';
-    if (path.startsWith('/job-cards')) return 'Job Cards';
+    if (path.startsWith('/servicing')) return 'Servicing';
     if (path.startsWith('/invoices')) return 'Invoices & Payments';
     if (path.startsWith('/loyalty')) return 'Loyalty Ledger';
     if (path.startsWith('/finance')) return 'Financial Cash Flow';
@@ -103,7 +103,7 @@ export default function Topbar({ onToggleSidebar }) {
     if (diffMins < 1) return 'Just now';
     if (diffMins < 60) return `${diffMins}m ago`;
     if (diffHours < 24) return `${diffHours}h ago`;
-    return past.toLocaleDateString();
+    return formatNepaliDate(past);
   };
 
   return (

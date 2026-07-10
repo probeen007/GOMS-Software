@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
+import { formatNepaliDate, formatNepaliDateTime } from '../utils/nepaliDate';
 import {
   FileText,
   Search,
@@ -17,7 +18,8 @@ import {
   TrendingDown,
   Receipt,
   Plus,
-  Filter
+  Filter,
+  Sparkles
 } from 'lucide-react';
 
 export default function Invoices() {
@@ -55,6 +57,15 @@ export default function Invoices() {
   const [redeemLoading, setRedeemLoading] = useState(false);
   const [redeemError, setRedeemError] = useState('');
 
+  // Generate Invoice Modal State
+  const [isGenerateModalOpen, setIsGenerateModalOpen] = useState(false);
+  const [unbilledRecords, setUnbilledRecords] = useState([]);
+  const [unbilledLoading, setUnbilledLoading] = useState(false);
+  const [selectedServicingId, setSelectedServicingId] = useState('');
+  const [generateInvoiceType, setGenerateInvoiceType] = useState('vat');
+  const [generateLoading, setGenerateLoading] = useState(false);
+  const [generateError, setGenerateError] = useState('');
+
   const fetchInvoices = async () => {
     setLoading(true);
     try {
@@ -85,6 +96,53 @@ export default function Invoices() {
   useEffect(() => {
     fetchInvoices();
   }, [statusFilter]);
+
+  const fetchUnbilledRecords = async () => {
+    setUnbilledLoading(true);
+    try {
+      const response = await axios.get('/api/servicing/unbilled');
+      setUnbilledRecords(response.data);
+    } catch (err) {
+      console.error('Fetch unbilled servicing records error:', err);
+    } finally {
+      setUnbilledLoading(false);
+    }
+  };
+
+  const openGenerateModal = () => {
+    setIsGenerateModalOpen(true);
+    setSelectedServicingId('');
+    setGenerateInvoiceType('vat');
+    setGenerateError('');
+    fetchUnbilledRecords();
+  };
+
+  const handleGenerateInvoice = async (e) => {
+    e.preventDefault();
+    if (!selectedServicingId) {
+      setGenerateError('Select a completed servicing record to invoice');
+      return;
+    }
+
+    setGenerateLoading(true);
+    setGenerateError('');
+
+    try {
+      const response = await axios.post('/api/invoices/generate', {
+        servicingId: selectedServicingId,
+        invoiceType: generateInvoiceType
+      });
+      setIsGenerateModalOpen(false);
+      setSelectedServicingId('');
+      await fetchInvoices();
+      fetchInvoiceDetail(response.data._id);
+    } catch (err) {
+      console.error(err);
+      setGenerateError(err.response?.data?.message || 'Failed to generate invoice');
+    } finally {
+      setGenerateLoading(false);
+    }
+  };
 
   // Handle Payment Submit
   // Helper to construct WhatsApp link for Nepal phone numbers
@@ -123,7 +181,7 @@ export default function Invoices() {
         
         let message = `Hi ${customer?.name || 'Customer'}, we have received your payment of Rs. ${parseFloat(payAmount).toFixed(2)} (${payMethod}) for Invoice #${invoiceNo}.`;
         if (nextServiceDate) {
-          const dateStr = new Date(nextServiceDate).toLocaleDateString([], { month: 'long', day: 'numeric', year: 'numeric' });
+          const dateStr = formatNepaliDate(nextServiceDate);
           message += ` Your next service for ${vehicleStr} is scheduled on ${dateStr}. Thank you!`;
         } else {
           message += ` Thank you for your business!`;
@@ -224,6 +282,16 @@ export default function Invoices() {
               Manage tax bills, record payments, and trace transaction records.
             </p>
           </div>
+          {isStaff && (
+            <button
+              type="button"
+              onClick={openGenerateModal}
+              className="flex items-center justify-center gap-2 px-5 h-11 bg-emerald-600 hover:bg-emerald-500 rounded-xl text-sm font-bold text-white transition-all shadow-lg shadow-emerald-500/10 hover:scale-[1.02] cursor-pointer"
+            >
+              <Sparkles className="w-5 h-5" />
+              <span>Generate</span>
+            </button>
+          )}
         </div>
 
         {/* Search & Filter widgets */}
@@ -284,7 +352,7 @@ export default function Invoices() {
             </div>
             <h3 className="text-base font-bold text-white">No invoices logged</h3>
             <p className="text-slate-400 text-xs mt-1 max-w-sm font-medium">
-              {searchTerm ? "No invoices match your search criteria." : "Invoices are automatically generated in the ledger when job cards are closed by workshops."}
+              {searchTerm ? "No invoices match your search criteria." : "Use the Generate button to create an invoice from a closed servicing record."}
             </p>
           </div>
         ) : (
@@ -298,6 +366,9 @@ export default function Invoices() {
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-mono font-bold text-slate-450 bg-slate-800/60 px-2 py-0.5 rounded">{inv.invoiceNo}</span>
+                    <span className={`inline-flex px-2 py-0.5 rounded text-xs font-black uppercase tracking-wider border ${inv.invoiceType === 'vat' ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20' : 'bg-slate-800 text-slate-400 border-slate-700'}`}>
+                      {inv.invoiceType === 'vat' ? 'VAT' : 'Non-VAT'}
+                    </span>
                     <span className={`inline-flex px-2.5 py-0.5 rounded text-xs font-black uppercase tracking-wider border ${inv.status === 'paid' ? 'bg-emerald-500/10 text-emerald-450 border-emerald-500/20' : inv.status === 'partially-paid' ? 'bg-amber-500/10 text-amber-450 border-amber-500/20' : inv.status === 'credited' ? 'bg-sky-500/10 text-sky-400 border-sky-500/20' : 'bg-rose-500/10 text-rose-455 border-rose-500/20'}`}>
                       {inv.status}
                     </span>
@@ -335,12 +406,17 @@ export default function Invoices() {
                 <span className="text-xs font-mono text-emerald-455 font-bold bg-emerald-950/45 px-2.5 py-0.5 border border-emerald-500/25 rounded">
                   {selectedInvoiceData.invoice.invoiceNo}
                 </span>
-                <span className={`text-xs font-black uppercase tracking-wider px-2.5 py-0.5 rounded border ${selectedInvoiceData.invoice.status === 'paid' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/10' : selectedInvoiceData.invoice.status === 'partially-paid' ? 'bg-amber-500/10 text-amber-400 border-amber-500/10' : 'bg-rose-500/10 text-rose-455 border-rose-500/10'}`}>
-                  {selectedInvoiceData.invoice.status}
-                </span>
+                <div className="flex items-center gap-1.5">
+                  <span className={`text-xs font-black uppercase tracking-wider px-2.5 py-0.5 rounded border ${selectedInvoiceData.invoice.invoiceType === 'vat' ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/10' : 'bg-slate-800 text-slate-400 border-slate-700'}`}>
+                    {selectedInvoiceData.invoice.invoiceType === 'vat' ? 'VAT' : 'Non-VAT'}
+                  </span>
+                  <span className={`text-xs font-black uppercase tracking-wider px-2.5 py-0.5 rounded border ${selectedInvoiceData.invoice.status === 'paid' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/10' : selectedInvoiceData.invoice.status === 'partially-paid' ? 'bg-amber-500/10 text-amber-400 border-amber-500/10' : 'bg-rose-500/10 text-rose-455 border-rose-500/10'}`}>
+                    {selectedInvoiceData.invoice.status}
+                  </span>
+                </div>
               </div>
               <h3 className="text-lg font-black text-white mt-2">{selectedInvoiceData.invoice.customerId?.name}</h3>
-              <p className="text-xs text-slate-400 font-medium">Date: <strong className="text-slate-205">{new Date(selectedInvoiceData.invoice.createdAt).toLocaleDateString()}</strong></p>
+              <p className="text-xs text-slate-400 font-medium">Date: <strong className="text-slate-205">{formatNepaliDate(selectedInvoiceData.invoice.createdAt)}</strong></p>
             </div>
 
             {/* Client & Vehicle specs card */}
@@ -359,19 +435,19 @@ export default function Invoices() {
               </div>
             </div>
 
-            {/* Itemized Parts and Labor from JobCard */}
+            {/* Itemized Parts and Labor from Servicing record */}
             <div className="space-y-3.5 pt-2">
               <span className="text-xs font-extrabold text-slate-450 uppercase tracking-widest block">Itemized Service Details</span>
               <div className="space-y-2 border border-slate-850 p-4 rounded-2xl bg-slate-900/25">
                 {/* Spares */}
-                {selectedInvoiceData.invoice.jobCardId?.parts.map((p, idx) => (
+                {selectedInvoiceData.invoice.servicingId?.parts.map((p, idx) => (
                   <div key={`part-${idx}`} className="flex justify-between items-center text-sm text-slate-300">
                     <span>{p.name} <strong className="text-slate-500 text-xs font-normal">({p.qty} x Rs. {p.unitPrice})</strong></span>
                     <span className="font-mono text-slate-400 font-bold">Rs. {p.total.toFixed(2)}</span>
                   </div>
                 ))}
                 {/* Labour */}
-                {selectedInvoiceData.invoice.jobCardId?.labour.map((l, idx) => (
+                {selectedInvoiceData.invoice.servicingId?.labour.map((l, idx) => (
                   <div key={`labour-${idx}`} className="flex justify-between items-center text-sm text-slate-300 border-t border-slate-900/80 pt-2 mt-2">
                     <span>{l.name} <strong className="text-slate-500 text-xs font-normal">({l.hours} hrs x Rs. {l.unitPrice})</strong></span>
                     <span className="font-mono text-slate-400 font-bold">Rs. {l.total.toFixed(2)}</span>
@@ -386,10 +462,12 @@ export default function Invoices() {
                 <span>Subtotal:</span>
                 <span className="font-mono text-slate-200 font-bold">Rs. {selectedInvoiceData.invoice.subtotal.toFixed(2)}</span>
               </div>
-              <div className="flex justify-between text-slate-550">
-                <span>VAT (13%):</span>
-                <span className="font-mono text-slate-300 font-bold">Rs. {selectedInvoiceData.invoice.vat.toFixed(2)}</span>
-              </div>
+              {selectedInvoiceData.invoice.invoiceType === 'vat' && (
+                <div className="flex justify-between text-slate-550">
+                  <span>VAT (13%):</span>
+                  <span className="font-mono text-slate-300 font-bold">Rs. {selectedInvoiceData.invoice.vat.toFixed(2)}</span>
+                </div>
+              )}
               <div className="flex justify-between text-slate-300 border-t border-slate-900/60 pt-2">
                 <span>Total Amount:</span>
                 <span className="font-mono text-slate-200 font-bold">Rs. {selectedInvoiceData.invoice.total.toFixed(2)}</span>
@@ -413,7 +491,7 @@ export default function Invoices() {
                     <div key={p._id} className="p-3 bg-slate-900/50 rounded-xl border border-slate-855/60 flex justify-between items-center text-sm text-slate-300">
                       <div>
                         <p className="font-bold text-slate-200">Paid via <span className="uppercase text-xs px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 font-extrabold">{p.method}</span></p>
-                        <p className="text-xs text-slate-500 mt-1 font-medium">Clerk: {p.receivedBy?.name} | {new Date(p.createdAt).toLocaleDateString()}</p>
+                        <p className="text-xs text-slate-500 mt-1 font-medium">Clerk: {p.receivedBy?.name} | {formatNepaliDate(p.createdAt)}</p>
                       </div>
                       <span className="font-mono text-emerald-400 font-bold text-base">+Rs. {p.amount.toFixed(2)}</span>
                     </div>
@@ -821,6 +899,120 @@ export default function Invoices() {
                   ) : (
                     <>
                       <span>Apply Points Discount</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Generate Invoice */}
+      {isGenerateModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-955/75 backdrop-blur-sm">
+          <div className="relative w-full max-w-lg glass-card rounded-3xl overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+            <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-emerald-500 to-teal-400"></div>
+
+            <div className="flex items-center justify-between p-6 border-b border-slate-800">
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-emerald-450" />
+                <h2 className="text-xl font-extrabold text-white tracking-tight">Generate Invoice</h2>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsGenerateModalOpen(false)}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-white transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleGenerateInvoice} className="p-6 space-y-4">
+              {generateError && (
+                <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-start gap-2.5">
+                  <AlertCircle className="w-4.5 h-4.5 text-rose-455 shrink-0 mt-0.5" />
+                  <span className="text-xs text-rose-300 font-medium leading-relaxed">{generateError}</span>
+                </div>
+              )}
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-extrabold text-slate-300 uppercase tracking-widest block mb-0.5">Closed Servicing Record *</label>
+                {unbilledLoading ? (
+                  <div className="py-6 text-center"><Loader2 className="w-5 h-5 text-emerald-400 animate-spin mx-auto" /></div>
+                ) : unbilledRecords.length === 0 ? (
+                  <p className="text-xs text-slate-450 italic p-3 bg-slate-900/50 rounded-xl border border-slate-850">
+                    No closed servicing records are awaiting invoicing. Close a servicing record first.
+                  </p>
+                ) : (
+                  <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
+                    {unbilledRecords.map((rec) => (
+                      <label
+                        key={rec._id}
+                        className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-colors ${selectedServicingId === rec._id ? 'bg-emerald-950/25 border-emerald-500/40' : 'bg-slate-900/50 border-slate-850 hover:border-slate-750'}`}
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <input
+                            type="radio"
+                            name="servicingRecord"
+                            checked={selectedServicingId === rec._id}
+                            onChange={() => setSelectedServicingId(rec._id)}
+                            className="h-4 w-4 text-emerald-500 focus:ring-emerald-500"
+                          />
+                          <div>
+                            <p className="text-sm font-bold text-white">{rec.customerId?.name}</p>
+                            <p className="text-xs text-slate-450 font-mono uppercase">{rec.vehicleId?.plateNo} — {rec.vehicleId?.make} {rec.vehicleId?.model}</p>
+                          </div>
+                        </div>
+                        <span className="text-sm font-mono font-bold text-emerald-400">Rs. {rec.total.toFixed(2)}</span>
+                      </label>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-extrabold text-slate-300 uppercase tracking-widest block mb-0.5">Invoice Type *</label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setGenerateInvoiceType('vat')}
+                    className={`h-11 rounded-xl text-sm font-bold border transition-all cursor-pointer ${generateInvoiceType === 'vat' ? 'bg-indigo-600 border-indigo-500 text-white' : 'bg-slate-900 border-slate-800 text-slate-400 hover:border-slate-700'}`}
+                  >
+                    VAT (13%)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setGenerateInvoiceType('non-vat')}
+                    className={`h-11 rounded-xl text-sm font-bold border transition-all cursor-pointer ${generateInvoiceType === 'non-vat' ? 'bg-slate-700 border-slate-600 text-white' : 'bg-slate-900 border-slate-800 text-slate-400 hover:border-slate-700'}`}
+                  >
+                    Non-VAT
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex gap-3 justify-end pt-4 border-t border-slate-800 mt-6">
+                <button
+                  type="button"
+                  onClick={() => setIsGenerateModalOpen(false)}
+                  className="px-5 h-11 rounded-xl text-sm font-bold text-slate-300 hover:text-white bg-slate-855 transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={generateLoading || !selectedServicingId}
+                  className="flex items-center justify-center gap-1.5 px-5 h-11 rounded-xl text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 transition-all shadow-lg shadow-emerald-550/15 cursor-pointer"
+                >
+                  {generateLoading ? (
+                    <>
+                      <Loader2 className="w-4.5 h-4.5 animate-spin" />
+                      <span>Generating...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-4.5 h-4.5" />
+                      <span>Generate Invoice</span>
                     </>
                   )}
                 </button>

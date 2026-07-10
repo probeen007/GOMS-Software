@@ -11,6 +11,8 @@ import User from '../models/User.js';
 import { authenticate, authorize } from '../middleware/auth.js';
 import { createNotification } from '../utils/notifier.js';
 import { logAction } from '../utils/logger.js';
+import { formatNepaliTime, formatNepaliDateTime } from '../utils/nepaliDate.js';
+import { isWithinSupportedDateRange } from '../utils/dateRange.js';
 
 const router = express.Router();
 
@@ -117,7 +119,11 @@ router.post(
     body('customerId').notEmpty().withMessage('Customer ID is required'),
     body('vehicleId').notEmpty().withMessage('Vehicle ID is required'),
     body('technicianId').notEmpty().withMessage('Technician assignment is required'),
-    body('dateTime').notEmpty().withMessage('Appointment date and time is required').isISO8601().withMessage('Please enter a valid ISO date'),
+    body('dateTime')
+      .notEmpty().withMessage('Appointment date and time is required')
+      .isISO8601().withMessage('Please enter a valid ISO date')
+      .bail()
+      .custom(isWithinSupportedDateRange).withMessage('Appointment date is out of the supported range'),
     body('serviceType').notEmpty().withMessage('Service type is required').trim(),
     body('note').optional().trim()
   ],
@@ -161,7 +167,7 @@ router.post(
       });
 
       if (conflict) {
-        const conflictTime = new Date(conflict.dateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const conflictTime = formatNepaliTime(conflict.dateTime);
         return res.status(400).json({
           message: `Double-Booking Warning: Technician ${technician.name} is already booked for another appointment at ${conflictTime}.`
         });
@@ -189,7 +195,7 @@ router.post(
       await createNotification({
         recipientId: populatedAppointment.technicianId._id,
         title: 'New Appointment Assigned',
-        message: `You have been assigned to service ${populatedAppointment.vehicleId.make} ${populatedAppointment.vehicleId.model} for ${populatedAppointment.customerId.name} at ${new Date(populatedAppointment.dateTime).toLocaleString()}`,
+        message: `You have been assigned to service ${populatedAppointment.vehicleId.make} ${populatedAppointment.vehicleId.model} for ${populatedAppointment.customerId.name} at ${formatNepaliDateTime(populatedAppointment.dateTime)}`,
         type: 'appointment',
         link: '/appointments'
       });
@@ -207,7 +213,7 @@ router.post(
         req,
         action: 'appointment_created',
         module: 'appointments',
-        details: `Scheduled appointment for ${populatedAppointment.customerId.name} (${populatedAppointment.vehicleId.plateNo}) with tech ${populatedAppointment.technicianId.name} on ${new Date(populatedAppointment.dateTime).toLocaleString()}`
+        details: `Scheduled appointment for ${populatedAppointment.customerId.name} (${populatedAppointment.vehicleId.plateNo}) with tech ${populatedAppointment.technicianId.name} on ${formatNepaliDateTime(populatedAppointment.dateTime)}`
       });
 
       res.status(201).json(populatedAppointment);
@@ -226,7 +232,11 @@ router.patch(
   authenticate,
   authorize('admin', 'receptionist', 'technician'),
   [
-    body('dateTime').optional().isISO8601().withMessage('Please enter a valid ISO date'),
+    body('dateTime')
+      .optional()
+      .isISO8601().withMessage('Please enter a valid ISO date')
+      .bail()
+      .custom(isWithinSupportedDateRange).withMessage('Appointment date is out of the supported range'),
     body('serviceType').optional().notEmpty().withMessage('Service type cannot be empty').trim(),
     body('status').optional().isIn(['scheduled', 'checked-in', 'in-progress', 'completed', 'cancelled']).withMessage('Invalid status'),
     body('note').optional().trim()
@@ -359,7 +369,7 @@ router.post(
         title: 'Vehicle Checked-In',
         message: `Vehicle ${populatedAppointment.vehicleId.make} ${populatedAppointment.vehicleId.model} (${populatedAppointment.vehicleId.plateNo}) is checked in and ready for service.`,
         type: 'appointment',
-        link: '/job-cards'
+        link: '/servicing'
       });
 
       await createNotification({

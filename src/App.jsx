@@ -11,9 +11,7 @@ import Customers from './pages/Customers';
 import CustomerProfile from './pages/CustomerProfile';
 import Inventory from './pages/Inventory';
 import Appointments from './pages/Appointments';
-import Quotations from './pages/Quotations';
-import QuoteApproval from './pages/QuoteApproval';
-import JobCards from './pages/JobCards';
+import Servicing from './pages/Servicing';
 import Invoices from './pages/Invoices';
 import Loyalty from './pages/Loyalty';
 import Finance from './pages/Finance';
@@ -49,7 +47,6 @@ export default function App() {
         <Routes>
           {/* Public Auth Route */}
           <Route path="/login" element={<Login />} />
-          <Route path="/quote-approval/:token" element={<QuoteApproval />} />
 
           {/* Secure Portal Layout */}
           <Route
@@ -101,22 +98,12 @@ export default function App() {
               }
             />
 
-            {/* Module 5: Quotations */}
+            {/* Module 5/6: Servicing */}
             <Route
-              path="quotations"
-              element={
-                <ProtectedRoute allowedRoles={['admin', 'receptionist', 'accountant', 'technician']}>
-                  <Quotations />
-                </ProtectedRoute>
-              }
-            />
-
-            {/* Module 6: Job Cards */}
-            <Route
-              path="job-cards"
+              path="servicing"
               element={
                 <ProtectedRoute allowedRoles={['admin', 'receptionist', 'technician', 'accountant']}>
-                  <JobCards />
+                  <Servicing />
                 </ProtectedRoute>
               }
             />

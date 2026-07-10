@@ -16,7 +16,9 @@ import {
   User,
   Plus,
   X,
-  AlertCircle
+  AlertCircle,
+  Car,
+  Wrench
 } from 'lucide-react';
 
 export default function Customers() {
@@ -39,13 +41,19 @@ export default function Customers() {
     phone: '',
     email: '',
     address: '',
-    type: 'individual'
+    type: 'individual',
+    vehicleModel: '',
+    vehicleNumber: ''
   });
   const [modalError, setModalError] = useState('');
   const [modalLoading, setModalLoading] = useState(false);
 
   // Soft-Delete Confirmation State
   const [deleteConfirmId, setDeleteConfirmId] = useState(null);
+
+  // Find Service Records search
+  const [recordSearchTerm, setRecordSearchTerm] = useState('');
+  const [recordSearchBy, setRecordSearchBy] = useState('vehicle-number');
 
   // Fetch Customers
   const fetchCustomers = async () => {
@@ -92,6 +100,19 @@ export default function Customers() {
 
     try {
       const response = await axios.post('/api/customers', newCustomer);
+
+      // Optionally register a vehicle in the same step
+      if (newCustomer.vehicleModel.trim() && newCustomer.vehicleNumber.trim()) {
+        try {
+          await axios.post(`/api/customers/${response.data._id}/vehicles`, {
+            plateNo: newCustomer.vehicleNumber,
+            model: newCustomer.vehicleModel
+          });
+        } catch (vehicleError) {
+          console.error('Error registering vehicle for new customer:', vehicleError);
+        }
+      }
+
       setIsModalOpen(false);
       // Reset form
       setNewCustomer({
@@ -99,7 +120,9 @@ export default function Customers() {
         phone: '',
         email: '',
         address: '',
-        type: 'individual'
+        type: 'individual',
+        vehicleModel: '',
+        vehicleNumber: ''
       });
       // Redirect to new customer profile
       navigate(`/customers/${response.data._id}`);
@@ -109,6 +132,13 @@ export default function Customers() {
     } finally {
       setModalLoading(false);
     }
+  };
+
+  // Find Service Records search submit -> deep-link into Servicing page
+  const handleRecordSearchSubmit = (e) => {
+    e.preventDefault();
+    if (!recordSearchTerm.trim()) return;
+    navigate(`/servicing?q=${encodeURIComponent(recordSearchTerm.trim())}&by=${recordSearchBy}`);
   };
 
   // Delete Customer Action
@@ -144,6 +174,43 @@ export default function Customers() {
           </button>
         )}
       </div>
+
+      {/* Find Service Records */}
+      <form onSubmit={handleRecordSearchSubmit} className="p-5 bg-white border border-slate-200 rounded-2xl shadow-sm space-y-3">
+        <div className="flex items-center gap-2">
+          <Wrench className="w-4.5 h-4.5 text-blue-600" />
+          <h3 className="text-sm font-bold text-slate-800">Find Service Records</h3>
+        </div>
+        <div className="flex flex-col sm:flex-row gap-3">
+          <select
+            value={recordSearchBy}
+            onChange={(e) => setRecordSearchBy(e.target.value)}
+            className="h-11 bg-white border border-slate-200 rounded-xl px-3.5 text-sm font-semibold text-slate-700 focus:outline-none focus:border-blue-550 cursor-pointer"
+          >
+            <option value="vehicle-number">Vehicle Number</option>
+            <option value="customer-name">Customer Name</option>
+            <option value="customer-phone">Customer Number</option>
+          </select>
+          <div className="relative flex-1">
+            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+              <Search className="w-4.5 h-4.5" />
+            </div>
+            <input
+              type="text"
+              placeholder="Search by vehicle number, customer name, or phone..."
+              value={recordSearchTerm}
+              onChange={(e) => setRecordSearchTerm(e.target.value)}
+              className="block w-full h-11 bg-white border border-slate-200 hover:border-slate-350 text-slate-800 pl-10 pr-4 rounded-xl text-sm focus:outline-none focus:border-blue-550 focus:ring-1 focus:ring-blue-550 transition-all placeholder-slate-450"
+            />
+          </div>
+          <button
+            type="submit"
+            className="h-11 px-5 rounded-xl text-sm font-bold text-white bg-blue-600 hover:bg-blue-500 transition-all cursor-pointer shrink-0"
+          >
+            Search Records
+          </button>
+        </div>
+      </form>
 
       {/* Control Panel (Search and Stats) */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
@@ -479,6 +546,33 @@ export default function Customers() {
                     rows="2"
                     className="block w-full bg-slate-50/50 border border-slate-200 hover:border-slate-350 text-slate-800 rounded-xl py-2.5 px-3.5 text-sm focus:outline-none focus:bg-white focus:border-blue-550 transition-all placeholder-slate-400 resize-none"
                   ></textarea>
+                </div>
+
+                <div className="col-span-2 pt-2 border-t border-slate-100 flex items-center gap-1.5">
+                  <Car className="w-4 h-4 text-slate-400" />
+                  <span className="text-xs font-extrabold text-slate-500 uppercase tracking-wide">Vehicle (optional)</span>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-extrabold text-slate-500 uppercase tracking-wide">Vehicle Model</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Hilux"
+                    value={newCustomer.vehicleModel}
+                    onChange={(e) => setNewCustomer({ ...newCustomer, vehicleModel: e.target.value })}
+                    className="block w-full bg-slate-50/50 border border-slate-200 hover:border-slate-350 text-slate-800 rounded-xl py-2.5 px-3.5 text-sm focus:outline-none focus:bg-white focus:border-blue-550 transition-all placeholder-slate-400"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-extrabold text-slate-500 uppercase tracking-wide">Vehicle Number</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. BA-1-PA-2026"
+                    value={newCustomer.vehicleNumber}
+                    onChange={(e) => setNewCustomer({ ...newCustomer, vehicleNumber: e.target.value.toUpperCase() })}
+                    className="block w-full bg-slate-50/50 border border-slate-200 hover:border-slate-350 text-slate-800 rounded-xl py-2.5 px-3.5 text-sm focus:outline-none focus:bg-white focus:border-blue-550 transition-all placeholder-slate-400"
+                  />
                 </div>
               </div>
 

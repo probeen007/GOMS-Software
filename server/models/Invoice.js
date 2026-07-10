@@ -20,10 +20,15 @@ const creditNoteSchema = new mongoose.Schema({
 
 const invoiceSchema = new mongoose.Schema(
   {
-    jobCardId: {
+    servicingId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'JobCard',
-      required: [true, 'Job Card reference is required']
+      ref: 'Servicing',
+      required: [true, 'Servicing record reference is required']
+    },
+    invoiceType: {
+      type: String,
+      enum: ['vat', 'non-vat'],
+      default: 'vat'
     },
     customerId: {
       type: mongoose.Schema.Types.ObjectId,

@@ -6,6 +6,8 @@ import Attendance from '../models/Attendance.js';
 import Expenditure from '../models/Expenditure.js';
 import { authenticate, authorize } from '../middleware/auth.js';
 import { logAction } from '../utils/logger.js';
+import { formatNepaliDate } from '../utils/nepaliDate.js';
+import { isWithinSupportedDateRange } from '../utils/dateRange.js';
 
 const router = express.Router();
 
@@ -194,6 +196,10 @@ router.post('/attendance', authenticate, authorize('admin'), async (req, res) =>
       return res.status(400).json({ message: 'Invalid attendance payload' });
     }
 
+    if (!isWithinSupportedDateRange(date)) {
+      return res.status(400).json({ message: 'Attendance date is invalid or out of the supported range' });
+    }
+
     const targetDate = new Date(date);
     targetDate.setHours(0, 0, 0, 0);
 
@@ -224,7 +230,7 @@ router.post('/attendance', authenticate, authorize('admin'), async (req, res) =>
       req,
       action: 'attendance_logged',
       module: 'staff',
-      details: `Logged/updated staff attendance for date: ${targetDate.toLocaleDateString()}`
+      details: `Logged/updated staff attendance for date: ${formatNepaliDate(targetDate)}`
     });
 
     res.status(201).json(savedRecords);

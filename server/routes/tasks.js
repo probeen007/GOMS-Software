@@ -3,6 +3,7 @@ import { body, validationResult } from 'express-validator';
 import Task from '../models/Task.js';
 import { authenticate, authorize } from '../middleware/auth.js';
 import { logAction } from '../utils/logger.js';
+import { isWithinSupportedDateRange } from '../utils/dateRange.js';
 
 const router = express.Router();
 
@@ -35,7 +36,11 @@ router.post(
   [
     body('title').notEmpty().withMessage('Title is required').trim(),
     body('assignedTo').notEmpty().withMessage('Staff assignment is required'),
-    body('dueDate').isISO8601().toDate().withMessage('Invalid due date'),
+    body('dueDate')
+      .isISO8601().withMessage('Invalid due date')
+      .bail()
+      .custom(isWithinSupportedDateRange).withMessage('Due date is out of the supported range')
+      .toDate(),
     body('priority').isIn(['high', 'medium', 'low']).withMessage('Invalid priority'),
     body('description').optional().trim()
   ],
@@ -89,7 +94,12 @@ router.patch(
     body('title').optional().notEmpty().withMessage('Title cannot be empty').trim(),
     body('priority').optional().isIn(['high', 'medium', 'low']).withMessage('Invalid priority'),
     body('assignedTo').optional().notEmpty().withMessage('Staff assignment is required'),
-    body('dueDate').optional().isISO8601().toDate().withMessage('Invalid due date'),
+    body('dueDate')
+      .optional()
+      .isISO8601().withMessage('Invalid due date')
+      .bail()
+      .custom(isWithinSupportedDateRange).withMessage('Due date is out of the supported range')
+      .toDate(),
     body('description').optional().trim()
   ],
   async (req, res) => {

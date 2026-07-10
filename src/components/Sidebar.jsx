@@ -6,7 +6,6 @@ import {
   Users,
   Wrench,
   Calendar,
-  FileText,
   ClipboardList,
   Receipt,
   Award,
@@ -46,6 +45,12 @@ export default function Sidebar({ isOpen, onClose }) {
       roles: ['admin', 'receptionist', 'technician', 'accountant']
     },
     {
+      path: '/tasks',
+      label: 'To-Do List',
+      icon: ClipboardList,
+      roles: ['admin', 'receptionist', 'accountant', 'technician']
+    },
+    {
       path: '/customers',
       label: 'Customers & Vehicles',
       icon: Users,
@@ -64,15 +69,9 @@ export default function Sidebar({ isOpen, onClose }) {
       roles: ['admin', 'receptionist']
     },
     {
-      path: '/quotations',
-      label: 'Quotations',
-      icon: FileText,
-      roles: ['admin', 'receptionist', 'technician']
-    },
-    {
-      path: '/job-cards',
-      label: 'Job Cards',
-      icon: ClipboardList,
+      path: '/servicing',
+      label: 'Servicing',
+      icon: Wrench,
       roles: ['admin', 'receptionist', 'technician']
     },
     {
@@ -98,12 +97,6 @@ export default function Sidebar({ isOpen, onClose }) {
       label: 'Staff & Roles',
       icon: UserCheck,
       roles: ['admin']
-    },
-    {
-      path: '/tasks',
-      label: 'To-Do List',
-      icon: ClipboardList,
-      roles: ['admin', 'receptionist', 'accountant', 'technician']
     },
     {
       path: '/audit-logs',
