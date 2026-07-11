@@ -45,7 +45,29 @@ const apiLimiter = rateLimit({
 app.use(helmet({
   contentSecurityPolicy: false, // Disable CSP in dev to avoid blocking dev server scripts if needed
 }));
-app.use(cors());
+
+// CORS allow-list — same-origin requests (the deployed SPA) never send an Origin
+// header the browser checks against this, so this only gates cross-origin callers.
+// Add any additional trusted origins via the comma-separated CORS_ORIGINS env var.
+const defaultAllowedOrigins = ['http://localhost:3000', 'http://127.0.0.1:3000'];
+const configuredOrigins = (process.env.CORS_ORIGINS || '')
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+const allowedOrigins = [...defaultAllowedOrigins, ...configuredOrigins];
+
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true); // same-origin / non-browser requests (curl, mobile clients)
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    try {
+      if (/\.ngrok-free\.app$/.test(new URL(origin).hostname)) return callback(null, true);
+    } catch {
+      // malformed Origin header — fall through to rejection
+    }
+    callback(new Error('Not allowed by CORS'));
+  }
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(mongoSanitize());

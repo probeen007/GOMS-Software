@@ -23,8 +23,17 @@ export async function seedDatabase(forceClear = false) {
       return;
     }
 
+    const adminPassword = process.env.ADMIN_PASSWORD || 'admin123';
+    if (!process.env.ADMIN_PASSWORD && process.env.NODE_ENV === 'production') {
+      console.warn(
+        '[SECURITY WARNING] No ADMIN_PASSWORD env var set — seeding the initial admin account with the ' +
+        'well-known default password "admin123". Set ADMIN_PASSWORD in your environment before first deploy, ' +
+        'or log in and change this password immediately.'
+      );
+    }
+
     const salt = await bcrypt.genSalt(10);
-    const passwordHash = await bcrypt.hash('admin123', salt);
+    const passwordHash = await bcrypt.hash(adminPassword, salt);
 
     const admin = new User({
       name: 'System Admin',
@@ -38,7 +47,7 @@ export async function seedDatabase(forceClear = false) {
     console.log('----------------------------------------');
     console.log('Database seeded successfully!');
     console.log(`Admin Email: ${adminEmail}`);
-    console.log('Admin Password: admin123');
+    console.log(process.env.ADMIN_PASSWORD ? 'Admin Password: (set via ADMIN_PASSWORD env var)' : 'Admin Password: admin123 (default — please change)');
     console.log('----------------------------------------');
   } catch (error) {
     console.error('Error seeding database:', error);

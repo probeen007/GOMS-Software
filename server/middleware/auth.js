@@ -1,10 +1,9 @@
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
 import dotenv from 'dotenv';
+import { JWT_SECRET } from '../utils/jwtSecret.js';
 
 dotenv.config();
-
-const JWT_SECRET = process.env.JWT_SECRET || 'super_secret_drive_sync_token_key_1298471';
 
 export async function authenticate(req, res, next) {
   try {

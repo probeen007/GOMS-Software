@@ -69,9 +69,7 @@ npm run dev
 Open [http://localhost:3000](http://localhost:3000) in your web browser.
 
 ### 4. Admin Credentials
-The database seeder automatically runs on startup. You can log in using these default credentials:
-- **Email**: `admin@drivesync.com`
-- **Password**: `admin123`
+The database seeder automatically runs on startup and creates one admin account if none exists yet, using the email `admin@pmautomobiles.com`. Set an `ADMIN_PASSWORD` env var before first boot to choose the password — if it's left unset, a well-known default is used and a warning is logged, so **change it immediately after first login** in any shared or production environment.
 
 ---
 

@@ -1,22 +1,34 @@
 import express from 'express';
+import rateLimit from 'express-rate-limit';
 import { body, validationResult } from 'express-validator';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import User from '../models/User.js';
 import { authenticate } from '../middleware/auth.js';
 import { logAction } from '../utils/logger.js';
+import { JWT_SECRET } from '../utils/jwtSecret.js';
 import dotenv from 'dotenv';
 
 dotenv.config();
 
 const router = express.Router();
-const JWT_SECRET = process.env.JWT_SECRET || 'super_secret_drive_sync_token_key_1298471';
+
+// Stricter, login-specific rate limit on top of the global API limiter, to slow
+// down credential-stuffing/brute-force attempts against a single endpoint.
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: process.env.NODE_ENV === 'production' ? 10 : 1000,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: 'Too many login attempts. Please try again after 15 minutes.' }
+});
 
 // @route   POST /api/auth/login
 // @desc    Authenticate user & get token
 // @access  Public
 router.post(
   '/login',
+  loginLimiter,
   [
     body('email').isEmail().withMessage('Please include a valid email').normalizeEmail(),
     body('password').notEmpty().withMessage('Password is required')
@@ -36,14 +48,15 @@ router.post(
         return res.status(401).json({ message: 'Invalid credentials' });
       }
 
-      // Check if active
-      if (!user.isActive) {
-        return res.status(403).json({ message: 'Account is deactivated. Contact admin.' });
-      }
-
-      // Verify password
+      // Verify password (checked before the active-status check so that inactive
+      // accounts don't leak their existence via a distinguishable response)
       const isMatch = await bcrypt.compare(password, user.passwordHash);
       if (!isMatch) {
+        return res.status(401).json({ message: 'Invalid credentials' });
+      }
+
+      // Check if active
+      if (!user.isActive) {
         return res.status(401).json({ message: 'Invalid credentials' });
       }
 
