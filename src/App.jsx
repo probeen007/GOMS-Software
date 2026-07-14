@@ -24,6 +24,8 @@ const Staff = lazy(() => import('./pages/Staff'));
 const Tasks = lazy(() => import('./pages/Tasks'));
 const Notifications = lazy(() => import('./pages/Notifications'));
 const AuditLogs = lazy(() => import('./pages/AuditLogs'));
+const DayBook = lazy(() => import('./pages/DayBook'));
+const Settings = lazy(() => import('./pages/Settings'));
 
 // Elegant placeholder for unbuilt modules
 function ModulePlaceholder({ name, step }) {
@@ -181,6 +183,26 @@ export default function App() {
               element={
                 <ProtectedRoute allowedRoles={['admin']}>
                   <AuditLogs />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Daily Day Book Tracker */}
+            <Route
+              path="daybook"
+              element={
+                <ProtectedRoute allowedRoles={['admin', 'accountant', 'receptionist']}>
+                  <DayBook />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* System Settings */}
+            <Route
+              path="settings"
+              element={
+                <ProtectedRoute allowedRoles={['admin', 'accountant', 'receptionist', 'technician']}>
+                  <Settings />
                 </ProtectedRoute>
               }
             />

@@ -64,6 +64,41 @@ export default function Invoices() {
   const [generateLoading, setGenerateLoading] = useState(false);
   const [generateError, setGenerateError] = useState('');
 
+  // PC Direct Billing Modal State
+  const [isPCModalOpen, setIsPCModalOpen] = useState(false);
+  const [pcCustomers, setPcCustomers] = useState([]);
+  const [pcInventory, setPcInventory] = useState([]);
+  const [pcSelectedCustomerId, setPcSelectedCustomerId] = useState('');
+  const [pcCustomerVehicles, setPcCustomerVehicles] = useState([]);
+  const [pcSelectedVehicleId, setPcSelectedVehicleId] = useState('');
+  const [pcInvoiceType, setPcInvoiceType] = useState('vat');
+  const [pcItems, setPcItems] = useState([]);
+  const [pcDiscount, setPcDiscount] = useState('0');
+  const [pcOdometer, setPcOdometer] = useState('0');
+  const [pcError, setPcError] = useState('');
+  const [pcLoading, setPcLoading] = useState(false);
+  const [vatRate, setVatRate] = useState(13);
+  const [whatsAppEnabled, setWhatsAppEnabled] = useState(true);
+  const [loyaltyEnabled, setLoyaltyEnabled] = useState(true);
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const res = await axios.get('/api/settings');
+        if (res.data) {
+          setVatRate(res.data.vatRate || 13);
+          setGenerateInvoiceType(res.data.vatEnabled ? 'vat' : 'non-vat');
+          setPcInvoiceType(res.data.vatEnabled ? 'vat' : 'non-vat');
+          setWhatsAppEnabled(res.data.autoWhatsAppPrompts !== false);
+          setLoyaltyEnabled(res.data.loyaltySystemEnabled !== false);
+        }
+      } catch (err) {
+        console.error('Error fetching settings in Invoices:', err);
+      }
+    };
+    fetchSettings();
+  }, []);
+
   const fetchInvoices = async () => {
     setLoading(true);
     try {
@@ -150,6 +185,96 @@ export default function Invoices() {
       setGenerateError(err.response?.data?.message || 'Failed to generate invoice');
     } finally {
       setGenerateLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!pcSelectedCustomerId) {
+      setPcCustomerVehicles([]);
+      setPcSelectedVehicleId('');
+      return;
+    }
+    const fetchVehicles = async () => {
+      try {
+        const response = await axios.get(`/api/customers/${pcSelectedCustomerId}`);
+        setPcCustomerVehicles(response.data.vehicles || []);
+        setPcSelectedVehicleId('');
+      } catch (err) {
+        console.error('Fetch customer vehicles error:', err);
+      }
+    };
+    fetchVehicles();
+  }, [pcSelectedCustomerId]);
+
+  const openPCModal = async () => {
+    setIsPCModalOpen(true);
+    setPcSelectedCustomerId('');
+    setPcSelectedVehicleId('');
+    setPcCustomerVehicles([]);
+    setPcInvoiceType('vat');
+    setPcItems([{ name: '', qty: 1, unitPrice: 0, itemType: 'part' }]);
+    setPcDiscount('0');
+    setPcOdometer('0');
+    setPcError('');
+    setPcLoading(false);
+
+    try {
+      const custRes = await axios.get('/api/customers', { params: { limit: 100 } });
+      setPcCustomers(custRes.data.customers || custRes.data);
+
+      const invRes = await axios.get('/api/inventory', { params: { limit: 200 } });
+      setPcInventory(invRes.data || []);
+    } catch (err) {
+      console.error('Fetch PC billing master data error:', err);
+      setPcError('Failed to load customers or parts master data');
+    }
+  };
+
+  const handlePCSubmit = async (e) => {
+    e.preventDefault();
+    if (!pcSelectedCustomerId) {
+      setPcError('Customer is required');
+      return;
+    }
+    if (pcItems.length === 0) {
+      setPcError('Please add at least one item');
+      return;
+    }
+    for (const item of pcItems) {
+      if (!item.name) {
+        setPcError('Item name is required');
+        return;
+      }
+      if (Number(item.qty) <= 0) {
+        setPcError('Quantity must be greater than zero');
+        return;
+      }
+      if (Number(item.unitPrice) < 0) {
+        setPcError('Unit price cannot be negative');
+        return;
+      }
+    }
+
+    setPcLoading(true);
+    setPcError('');
+
+    try {
+      const response = await axios.post('/api/invoices/pc-generate', {
+        customerId: pcSelectedCustomerId,
+        vehicleId: pcSelectedVehicleId || undefined,
+        invoiceType: pcInvoiceType,
+        items: pcItems,
+        discount: Number(pcDiscount) || 0,
+        odometer: Number(pcOdometer) || 0
+      });
+      setIsPCModalOpen(false);
+      await fetchInvoices();
+      fetchInvoiceDetail(response.data._id);
+    } catch (err) {
+      console.error(err);
+      setPcError(err.response?.data?.message || 'Failed to submit direct PC invoice');
+    } finally {
+      setPcLoading(false);
     }
   };
 
@@ -294,14 +419,24 @@ export default function Invoices() {
             </p>
           </div>
           {isStaff && (
-            <button
-              type="button"
-              onClick={openGenerateModal}
-              className="flex items-center justify-center gap-2 px-5 h-11 bg-blue-600 hover:bg-blue-500 rounded-xl text-sm font-bold text-white transition-all duration-200 shadow-md shadow-blue-500/10 hover:-translate-y-0.5 cursor-pointer"
-            >
-              <FilePlus className="w-5 h-5" />
-              <span>Generate</span>
-            </button>
+            <div className="flex gap-2.5">
+              <button
+                type="button"
+                onClick={openGenerateModal}
+                className="flex items-center justify-center gap-2 px-4 h-11 bg-blue-600 hover:bg-blue-500 rounded-xl text-sm font-bold text-white transition-all duration-200 shadow-md shadow-blue-500/10 hover:-translate-y-0.5 cursor-pointer"
+              >
+                <FilePlus className="w-5 h-5" />
+                <span>Job Card Bill</span>
+              </button>
+              <button
+                type="button"
+                onClick={openPCModal}
+                className="flex items-center justify-center gap-2 px-4 h-11 bg-emerald-600 hover:bg-emerald-500 rounded-xl text-sm font-bold text-white transition-all duration-200 shadow-md shadow-emerald-500/10 hover:-translate-y-0.5 cursor-pointer"
+              >
+                <FileText className="w-5 h-5" />
+                <span>Direct PC Bill</span>
+              </button>
+            </div>
           )}
         </div>
 
@@ -467,29 +602,53 @@ export default function Invoices() {
               </div>
               <div className="space-y-1">
                 <span className="text-xs font-bold text-slate-400 uppercase tracking-wide block">Vehicle Specifications</span>
-                <p className="text-sm font-bold uppercase font-mono text-slate-800">{selectedInvoiceData.invoice.vehicleId?.plateNo}</p>
-                <p className="text-slate-500 text-xs font-medium">{selectedInvoiceData.invoice.vehicleId?.make} {selectedInvoiceData.invoice.vehicleId?.model}</p>
+                {selectedInvoiceData.invoice.vehicleId ? (
+                  <>
+                    <p className="text-sm font-bold uppercase font-mono text-slate-800">{selectedInvoiceData.invoice.vehicleId?.plateNo}</p>
+                    <p className="text-slate-500 text-xs font-medium">{selectedInvoiceData.invoice.vehicleId?.make} {selectedInvoiceData.invoice.vehicleId?.model}</p>
+                    {selectedInvoiceData.invoice.odometer > 0 && (
+                      <p className="text-[10px] text-slate-500 mt-0.5">Odometer: <strong>{selectedInvoiceData.invoice.odometer} km</strong></p>
+                    )}
+                  </>
+                ) : (
+                  <p className="text-sm font-bold text-slate-500 italic">Parts &amp; Counter Sale (No Vehicle)</p>
+                )}
               </div>
             </div>
 
-            {/* Itemized Parts and Labor from Servicing record */}
+            {/* Itemized Parts and Labor from Servicing record or items */}
             <div className="space-y-3 pt-2">
-              <span className="text-xs font-bold text-slate-400 uppercase tracking-wide block">Itemized Service Details</span>
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-wide block">Itemized Details</span>
               <div className="space-y-2 border border-slate-100 p-4 rounded-xl bg-slate-50">
-                {/* Spares */}
-                {selectedInvoiceData.invoice.servicingId?.parts.map((p, idx) => (
-                  <div key={`part-${idx}`} className="flex justify-between items-center text-sm text-slate-700">
-                    <span>{p.name} <strong className="text-slate-400 text-xs font-normal">({p.qty} x Rs. {p.unitPrice})</strong></span>
-                    <span className="font-mono text-slate-600 font-bold">Rs. {p.total.toFixed(2)}</span>
-                  </div>
-                ))}
-                {/* Labour */}
-                {selectedInvoiceData.invoice.servicingId?.labour.map((l, idx) => (
-                  <div key={`labour-${idx}`} className="flex justify-between items-center text-sm text-slate-700 border-t border-slate-200 pt-2 mt-2">
-                    <span>{l.name} <strong className="text-slate-400 text-xs font-normal">({l.hours} hrs x Rs. {l.unitPrice})</strong></span>
-                    <span className="font-mono text-slate-600 font-bold">Rs. {l.total.toFixed(2)}</span>
-                  </div>
-                ))}
+                {selectedInvoiceData.invoice.isPC ? (
+                  selectedInvoiceData.invoice.items?.map((item, idx) => (
+                    <div key={`item-${idx}`} className="flex justify-between items-center text-sm text-slate-700 border-t border-slate-100 first:border-0 pt-2 first:pt-0 mt-2 first:mt-0">
+                      <span>
+                        {item.name} 
+                        <strong className="text-slate-400 text-xs font-normal"> ({item.qty} x Rs. {item.unitPrice})</strong>
+                        <span className="ml-2 text-[9px] text-slate-400 bg-slate-200 border border-slate-300 font-extrabold uppercase px-1 rounded-sm">{item.itemType}</span>
+                      </span>
+                      <span className="font-mono text-slate-600 font-bold">Rs. {item.total.toFixed(2)}</span>
+                    </div>
+                  ))
+                ) : (
+                  <>
+                    {/* Spares */}
+                    {selectedInvoiceData.invoice.servicingId?.parts.map((p, idx) => (
+                      <div key={`part-${idx}`} className="flex justify-between items-center text-sm text-slate-700">
+                        <span>{p.name} <strong className="text-slate-400 text-xs font-normal">({p.qty} x Rs. {p.unitPrice})</strong></span>
+                        <span className="font-mono text-slate-600 font-bold">Rs. {p.total.toFixed(2)}</span>
+                      </div>
+                    ))}
+                    {/* Labour */}
+                    {selectedInvoiceData.invoice.servicingId?.labour.map((l, idx) => (
+                      <div key={`labour-${idx}`} className="flex justify-between items-center text-sm text-slate-700 border-t border-slate-200 pt-2 mt-2">
+                        <span>{l.name} <strong className="text-slate-400 text-xs font-normal">({l.hours} hrs x Rs. {l.unitPrice})</strong></span>
+                        <span className="font-mono text-slate-600 font-bold">Rs. {l.total.toFixed(2)}</span>
+                      </div>
+                    ))}
+                  </>
+                )}
               </div>
             </div>
 
@@ -556,7 +715,7 @@ export default function Invoices() {
             )}
 
             {/* Loyalty points redemption prompt */}
-            {selectedInvoiceData.invoice.customerId?.loyaltyPoints > 0 && selectedInvoiceData.invoice.status !== 'paid' && selectedInvoiceData.invoice.status !== 'credited' && (
+            {loyaltyEnabled && selectedInvoiceData.invoice.customerId?.loyaltyPoints > 0 && selectedInvoiceData.invoice.status !== 'paid' && selectedInvoiceData.invoice.status !== 'credited' && (
               <div className="p-4 bg-amber-50 border border-amber-100 rounded-xl flex items-center justify-between text-xs mt-4">
                 <div className="space-y-0.5">
                   <span className="text-amber-700 font-bold block text-sm">Redeemable Loyalty Points</span>
@@ -711,6 +870,7 @@ export default function Invoices() {
                   />
                 </div>
 
+                {whatsAppEnabled && (
                 <div className="flex items-center gap-2 sm:mt-5">
                   <input
                     type="checkbox"
@@ -723,6 +883,7 @@ export default function Invoices() {
                     Send WhatsApp Reminder
                   </label>
                 </div>
+                )}
               </div>
 
               <div className="flex gap-3 justify-end pt-4 border-t border-slate-100 mt-6">
@@ -1036,6 +1197,345 @@ export default function Invoices() {
                     <>
                       <FilePlus className="w-3.5 h-3.5" />
                       <span>Generate Invoice</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}      {/* Modal: Parts & Counter Direct Billing */}
+      {isPCModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/40 backdrop-blur-sm overflow-y-auto">
+          <div className="relative w-full max-w-4xl bg-white rounded-xl overflow-hidden shadow-xl animate-in fade-in zoom-in-95 duration-200 border border-slate-200 my-8">
+            <div className="absolute top-0 inset-x-0 h-1 bg-blue-600"></div>
+
+            <div className="flex items-center justify-between p-5 border-b border-slate-200 bg-slate-50/50">
+              <div>
+                <h2 className="text-base font-bold text-slate-900 uppercase tracking-wider">Direct PC Billing (Counter Sales)</h2>
+                <p className="text-[10px] text-slate-500 mt-0.5">Generate a direct counter sales invoice for parts or walk-in customers.</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsPCModalOpen(false)}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer border border-transparent"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handlePCSubmit} className="p-5 space-y-5">
+              {pcError && (
+                <div className="p-3 rounded-lg bg-rose-50 border border-rose-100 flex items-start gap-2">
+                  <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+                  <span className="text-xs text-rose-700 font-bold">{pcError}</span>
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+                {/* Left Form Settings */}
+                <div className="lg:col-span-1 space-y-3.5 bg-slate-50/60 p-4 rounded-xl border border-slate-200">
+                  <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Billing Context</h3>
+                  
+                  {/* Customer Select */}
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Customer *</label>
+                    <select
+                      required
+                      value={pcSelectedCustomerId}
+                      onChange={(e) => setPcSelectedCustomerId(e.target.value)}
+                      className="block w-full h-9 rounded-lg border-slate-200 text-xs font-semibold cursor-pointer focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                    >
+                      <option value="">-- Select Customer --</option>
+                      {pcCustomers.map(cust => (
+                        <option key={cust._id} value={cust._id}>{cust.name} ({cust.phone})</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Vehicle Select */}
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Vehicle Reference (Optional)</label>
+                    <select
+                      value={pcSelectedVehicleId}
+                      onChange={(e) => setPcSelectedVehicleId(e.target.value)}
+                      disabled={!pcSelectedCustomerId}
+                      className="block w-full h-9 rounded-lg border-slate-200 text-xs font-medium cursor-pointer disabled:opacity-50 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                    >
+                      <option value="">No Vehicle (Counter Sale)</option>
+                      {pcCustomerVehicles.map(veh => (
+                        <option key={veh._id} value={veh._id}>{veh.make} {veh.model} ({veh.plateNo})</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Odometer */}
+                  {pcSelectedVehicleId && (
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Odometer Mileage (km)</label>
+                      <input
+                        type="number"
+                        placeholder="0"
+                        value={pcOdometer}
+                        onChange={(e) => setPcOdometer(e.target.value)}
+                        className="block w-full h-9 rounded-lg border-slate-200 text-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </div>
+                  )}
+
+                  {/* Invoice Type */}
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">VAT Class *</label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setPcInvoiceType('vat')}
+                        className={`h-9 rounded-lg text-xs font-bold border transition-colors cursor-pointer ${pcInvoiceType === 'vat' ? 'bg-blue-600 border-blue-600 text-white shadow-sm' : 'bg-white border-slate-200 text-slate-700 hover:border-slate-350'}`}
+                      >
+                        VAT (13%)
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setPcInvoiceType('non-vat')}
+                        className={`h-9 rounded-lg text-xs font-bold border transition-colors cursor-pointer ${pcInvoiceType === 'non-vat' ? 'bg-slate-700 border-slate-700 text-white shadow-sm' : 'bg-white border-slate-200 text-slate-700 hover:border-slate-350'}`}
+                      >
+                        Non-VAT
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Discount */}
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Discount Applied (Rs.)</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      placeholder="0.00"
+                      value={pcDiscount}
+                      onChange={(e) => setPcDiscount(e.target.value)}
+                      className="block w-full h-9 rounded-lg border-slate-200 text-xs font-semibold focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                </div>
+
+                {/* Right Items Grid */}
+                <div className="lg:col-span-2 space-y-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Line Items Ledger</h3>
+                    
+                    {/* Add inventory item selector */}
+                    <div className="flex gap-2">
+                      <select
+                        onChange={(e) => {
+                          if (e.target.value) {
+                            const partId = e.target.value;
+                            const part = pcInventory.find(p => p._id === partId);
+                            if (part) {
+                              const exists = pcItems.find(item => item.partId === partId);
+                              if (exists) {
+                                setPcItems(pcItems.map(item => 
+                                  item.partId === partId ? { ...item, qty: item.qty + 1 } : item
+                                ));
+                              } else {
+                                setPcItems([...pcItems, {
+                                  partId: part._id,
+                                  name: part.name,
+                                  qty: 1,
+                                  unitPrice: part.unitPrice,
+                                  itemType: 'part'
+                                }]);
+                              }
+                            }
+                          }
+                          e.target.value = '';
+                        }}
+                        className="h-9 rounded-lg border-slate-200 text-xs font-medium cursor-pointer focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                      >
+                        <option value="">+ Add Inventory Part</option>
+                        {pcInventory.map(part => (
+                          <option key={part._id} value={part._id} disabled={part.qty <= 0}>
+                            {part.name} (SKU: {part.sku}) — Rs. {part.unitPrice} [Qty: {part.qty}]
+                          </option>
+                        ))}
+                      </select>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setPcItems([...pcItems, {
+                            name: '',
+                            qty: 1,
+                            unitPrice: 0,
+                            itemType: 'part'
+                          }]);
+                        }}
+                        className="px-3 h-9 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-lg text-xs font-bold text-slate-700 transition-colors cursor-pointer"
+                      >
+                        + Custom Row
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Table of items */}
+                  <div className="border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+                    <table className="w-full text-left border-collapse">
+                      <thead>
+                        <tr className="bg-slate-50 border-b border-slate-200">
+                          <th className="p-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider">Item Description</th>
+                          <th className="p-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider w-20 text-center">Qty</th>
+                          <th className="p-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider w-28 text-right">Price</th>
+                          <th className="p-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider w-24 text-right">Total</th>
+                          <th className="p-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider w-12"></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {pcItems.map((item, index) => (
+                          <tr key={index} className="border-b border-slate-100 last:border-0 hover:bg-slate-50/50">
+                            <td className="p-3">
+                              <input
+                                type="text"
+                                placeholder="Item name / spare part name"
+                                value={item.name}
+                                onChange={(e) => {
+                                  const updated = [...pcItems];
+                                  updated[index].name = e.target.value;
+                                  setPcItems(updated);
+                                }}
+                                className="block w-full h-9 rounded-lg border-slate-250 text-xs font-medium focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                              />
+                              <div className="flex gap-3 mt-1.5 pl-0.5">
+                                <label className="flex items-center gap-1 cursor-pointer text-[10px] text-slate-500 font-semibold select-none">
+                                  <input
+                                    type="radio"
+                                    name={`type-${index}`}
+                                    checked={item.itemType === 'part'}
+                                    onChange={() => {
+                                      const updated = [...pcItems];
+                                      updated[index].itemType = 'part';
+                                      setPcItems(updated);
+                                    }}
+                                    className="h-3 w-3 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                                  />
+                                  Spare Part
+                                </label>
+                                <label className="flex items-center gap-1 cursor-pointer text-[10px] text-slate-500 font-semibold select-none">
+                                  <input
+                                    type="radio"
+                                    name={`type-${index}`}
+                                    checked={item.itemType === 'labour'}
+                                    onChange={() => {
+                                      const updated = [...pcItems];
+                                      updated[index].itemType = 'labour';
+                                      setPcItems(updated);
+                                    }}
+                                    className="h-3 w-3 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                                  />
+                                  Labour Charge
+                                </label>
+                              </div>
+                            </td>
+                            <td className="p-3">
+                              <input
+                                type="number"
+                                min="1"
+                                placeholder="1"
+                                value={item.qty}
+                                onChange={(e) => {
+                                  const updated = [...pcItems];
+                                  updated[index].qty = parseInt(e.target.value) || 0;
+                                  setPcItems(updated);
+                                }}
+                                className="block w-full h-9 rounded-lg border-slate-250 text-xs font-bold text-center focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                              />
+                            </td>
+                            <td className="p-3">
+                              <input
+                                type="number"
+                                step="0.01"
+                                placeholder="0.00"
+                                value={item.unitPrice}
+                                onChange={(e) => {
+                                  const updated = [...pcItems];
+                                  updated[index].unitPrice = parseFloat(e.target.value) || 0;
+                                  setPcItems(updated);
+                                }}
+                                className="block w-full h-9 rounded-lg border-slate-250 text-xs font-mono font-bold text-right focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                              />
+                            </td>
+                            <td className="p-3 text-right text-xs font-mono font-bold text-slate-900">
+                              Rs. {((Number(item.qty) || 0) * (Number(item.unitPrice) || 0)).toFixed(2)}
+                            </td>
+                            <td className="p-3 text-center">
+                              <button
+                                type="button"
+                                onClick={() => setPcItems(pcItems.filter((_, idx) => idx !== index))}
+                                className="p-1 rounded-lg text-slate-400 hover:bg-rose-50 hover:text-rose-600 transition-colors cursor-pointer"
+                              >
+                                <X className="w-4 h-4" />
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                        {pcItems.length === 0 && (
+                          <tr>
+                            <td colSpan="5" className="p-6 text-center text-xs text-slate-400 italic">
+                              No items added yet. Click "+ Add Inventory Part" or "+ Custom Row".
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Calculations display */}
+                  <div className="bg-slate-50 rounded-xl border border-slate-200 p-4 space-y-2 text-xs font-semibold text-slate-500 ml-auto max-w-sm">
+                    <div className="flex justify-between">
+                      <span>Subtotal:</span>
+                      <span className="font-mono text-slate-800 font-bold">Rs. {pcItems.reduce((sum, item) => sum + (Number(item.qty) || 0) * (Number(item.unitPrice) || 0), 0).toFixed(2)}</span>
+                    </div>
+                    {pcInvoiceType === 'vat' && (
+                      <div className="flex justify-between">
+                        <span>VAT ({vatRate}%):</span>
+                        <span className="font-mono text-slate-800 font-bold">
+                          Rs. {(Math.round((Math.max(0, pcItems.reduce((sum, item) => sum + (Number(item.qty) || 0) * (Number(item.unitPrice) || 0), 0) - (Number(pcDiscount) || 0)) * (vatRate / 100)) * 100) / 100).toFixed(2)}
+                        </span>
+                      </div>
+                    )}
+                    <div className="flex justify-between text-sm font-bold text-slate-900 border-t border-slate-200 pt-2">
+                      <span>Grand Total:</span>
+                      <span className="font-mono text-blue-750 font-extrabold text-sm">
+                        Rs. {(
+                          Math.max(0, pcItems.reduce((sum, item) => sum + (Number(item.qty) || 0) * (Number(item.unitPrice) || 0), 0) - (Number(pcDiscount) || 0)) + 
+                          (pcInvoiceType === 'vat' ? Math.round((Math.max(0, pcItems.reduce((sum, item) => sum + (Number(item.qty) || 0) * (Number(item.unitPrice) || 0), 0) - (Number(pcDiscount) || 0)) * (vatRate / 100)) * 100) / 100 : 0)
+                        ).toFixed(2)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Action buttons */}
+              <div className="flex gap-3 justify-end pt-4 border-t border-slate-200 mt-6">
+                <button
+                  type="button"
+                  onClick={() => setIsPCModalOpen(false)}
+                  className="px-4 py-2 rounded-lg text-xs font-bold text-slate-700 hover:text-slate-950 bg-slate-100 hover:bg-slate-200 transition-colors cursor-pointer border border-slate-250"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={pcLoading || pcItems.length === 0}
+                  className="flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 transition-all shadow-sm cursor-pointer"
+                >
+                  {pcLoading ? (
+                    <>
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      <span>Generating Bill...</span>
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                      <span>Generate PC Invoice</span>
                     </>
                   )}
                 </button>

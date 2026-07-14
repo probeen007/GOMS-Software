@@ -10,6 +10,7 @@ import { createNotification } from '../utils/notifier.js';
 import { logAction } from '../utils/logger.js';
 import { formatNepaliDate } from '../utils/nepaliDate.js';
 import { escapeHtml } from '../utils/htmlEscape.js';
+import Settings from '../models/Settings.js';
 
 const router = express.Router();
 
@@ -485,6 +486,10 @@ router.get('/:id/pdf', authenticate, authorize('admin', 'receptionist', 'technic
       return res.status(404).send('Servicing record not found');
     }
 
+    const settings = await Settings.findOne();
+    const garageName = settings ? settings.garageName.toUpperCase() : 'PM AUTOMOBILES';
+    const garageAddress = settings ? settings.garageAddress : 'Kathmandu, Nepal';
+
     const htmlContent = `
       <!DOCTYPE html>
       <html>
@@ -513,9 +518,12 @@ router.get('/:id/pdf', authenticate, authorize('admin', 'receptionist', 'technic
         </div>
 
         <div class="header">
-          <div>
-            <div class="logo">PM AUTOMOBILES</div>
-            <div style="font-size: 12px; color: #666;">Kathmandu, Nepal | Service Worksheet</div>
+          <div style="display: flex; align-items: center; gap: 15px;">
+            <img src="/assets/logo.png" style="height: 50px; width: 50px; object-fit: contain;" alt="Logo" />
+            <div>
+              <div class="logo" style="line-height: 1.1;">${escapeHtml(garageName)}</div>
+              <div style="font-size: 12px; color: #666; margin-top: 4px;">${escapeHtml(garageAddress)} | Service Worksheet</div>
+            </div>
           </div>
           <div class="title">
             <h2 style="margin: 0; color: #6366f1;">SERVICING WORK SHEET</h2>

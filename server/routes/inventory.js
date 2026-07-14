@@ -174,6 +174,9 @@ router.post(
     body('items.*.qty').isInt({ min: 1 }).withMessage('Quantity must be 1 or more'),
     body('items.*.unitCost').isFloat({ min: 0 }).withMessage('Unit cost must be 0 or more'),
     body('totalCost').isFloat({ min: 0 }).withMessage('Total cost must be 0 or more'),
+    body('purchaseType').optional().isIn(['vat', 'non-vat']).withMessage('Purchase type must be vat or non-vat'),
+    body('subtotal').optional().isFloat({ min: 0 }).withMessage('Subtotal must be 0 or more'),
+    body('vat').optional().isFloat({ min: 0 }).withMessage('VAT must be 0 or more'),
     body('billFileUrl').optional().trim()
   ],
   async (req, res) => {
@@ -182,7 +185,7 @@ router.post(
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { supplierName, items, totalCost, billFileUrl } = req.body;
+    const { supplierName, items, totalCost, purchaseType, subtotal, vat, billFileUrl } = req.body;
 
     try {
       // 1. Create the Purchase Document
@@ -190,6 +193,9 @@ router.post(
         supplierName,
         items,
         totalCost,
+        purchaseType: purchaseType || 'non-vat',
+        subtotal: subtotal !== undefined ? subtotal : totalCost,
+        vat: vat !== undefined ? vat : 0,
         billFileUrl: billFileUrl || ''
       });
       await purchase.save();
@@ -207,7 +213,7 @@ router.post(
 
       // 3. Auto-Create corresponding Expenditure log
       const expenditure = new Expenditure({
-        category: 'Inventory Purchase',
+        category: (purchaseType || 'non-vat') === 'vat' ? 'Inventory Purchase (VAT)' : 'Inventory Purchase (Non-VAT)',
         amount: totalCost,
         note: `Restocked ${items.length} parts from ${supplierName}. (Ref Purchase ID: ${purchase._id})`,
         date: new Date()

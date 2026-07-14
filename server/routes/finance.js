@@ -9,6 +9,7 @@ import InventoryStock from '../models/InventoryStock.js';
 import Appointment from '../models/Appointment.js';
 import Servicing from '../models/Servicing.js';
 import Attendance from '../models/Attendance.js';
+import Purchase from '../models/Purchase.js';
 import { authenticate, authorize } from '../middleware/auth.js';
 import { logAction } from '../utils/logger.js';
 import { isWithinSupportedDateRange } from '../utils/dateRange.js';
@@ -302,19 +303,25 @@ const resolveDateRange = (query) => {
 };
 
 // @route   GET /api/finance/vat-report
-// @desc    VAT invoices issued in the given date range, with totals
+// @desc    VAT invoices and purchases in the given date range, with totals
 // @access  Private (admin, accountant)
 router.get('/vat-report', authenticate, authorize('admin', 'accountant'), async (req, res) => {
   try {
     const { start, end } = resolveDateRange(req.query);
 
-    const invoices = await Invoice.find({
-      invoiceType: 'vat',
-      createdAt: { $gte: start, $lte: end }
-    })
-      .populate('customerId', 'name phone')
-      .populate('vehicleId', 'plateNo make model')
-      .sort({ createdAt: -1 });
+    const [invoices, purchases] = await Promise.all([
+      Invoice.find({
+        invoiceType: 'vat',
+        createdAt: { $gte: start, $lte: end }
+      })
+        .populate('customerId', 'name phone')
+        .populate('vehicleId', 'plateNo make model')
+        .sort({ createdAt: -1 }),
+      Purchase.find({
+        purchaseType: 'vat',
+        createdAt: { $gte: start, $lte: end }
+      }).sort({ createdAt: -1 })
+    ]);
 
     const totals = invoices.reduce(
       (acc, inv) => {
@@ -326,7 +333,24 @@ router.get('/vat-report', authenticate, authorize('admin', 'accountant'), async 
       { subtotal: 0, vat: 0, total: 0 }
     );
 
-    res.json({ invoices, totals, count: invoices.length });
+    const purchaseTotals = purchases.reduce(
+      (acc, p) => {
+        acc.subtotal += p.subtotal;
+        acc.vat += p.vat;
+        acc.total += p.totalCost;
+        return acc;
+      },
+      { subtotal: 0, vat: 0, total: 0 }
+    );
+
+    res.json({
+      invoices,
+      totals,
+      count: invoices.length,
+      purchases,
+      purchaseTotals,
+      purchaseCount: purchases.length
+    });
   } catch (err) {
     console.error('Fetch VAT report error:', err.message);
     res.status(500).json({ message: 'Server error' });
@@ -334,19 +358,25 @@ router.get('/vat-report', authenticate, authorize('admin', 'accountant'), async 
 });
 
 // @route   GET /api/finance/non-vat-report
-// @desc    Non-VAT invoices issued in the given date range, with totals
+// @desc    Non-VAT invoices and purchases in the given date range, with totals
 // @access  Private (admin, accountant)
 router.get('/non-vat-report', authenticate, authorize('admin', 'accountant'), async (req, res) => {
   try {
     const { start, end } = resolveDateRange(req.query);
 
-    const invoices = await Invoice.find({
-      invoiceType: 'non-vat',
-      createdAt: { $gte: start, $lte: end }
-    })
-      .populate('customerId', 'name phone')
-      .populate('vehicleId', 'plateNo make model')
-      .sort({ createdAt: -1 });
+    const [invoices, purchases] = await Promise.all([
+      Invoice.find({
+        invoiceType: 'non-vat',
+        createdAt: { $gte: start, $lte: end }
+      })
+        .populate('customerId', 'name phone')
+        .populate('vehicleId', 'plateNo make model')
+        .sort({ createdAt: -1 }),
+      Purchase.find({
+        purchaseType: 'non-vat',
+        createdAt: { $gte: start, $lte: end }
+      }).sort({ createdAt: -1 })
+    ]);
 
     const totals = invoices.reduce(
       (acc, inv) => {
@@ -357,7 +387,23 @@ router.get('/non-vat-report', authenticate, authorize('admin', 'accountant'), as
       { subtotal: 0, total: 0 }
     );
 
-    res.json({ invoices, totals, count: invoices.length });
+    const purchaseTotals = purchases.reduce(
+      (acc, p) => {
+        acc.subtotal += p.subtotal;
+        acc.total += p.totalCost;
+        return acc;
+      },
+      { subtotal: 0, total: 0 }
+    );
+
+    res.json({
+      invoices,
+      totals,
+      count: invoices.length,
+      purchases,
+      purchaseTotals,
+      purchaseCount: purchases.length
+    });
   } catch (err) {
     console.error('Fetch Non-VAT report error:', err.message);
     res.status(500).json({ message: 'Server error' });
@@ -371,12 +417,22 @@ router.get('/summary-report', authenticate, authorize('admin', 'accountant'), as
   try {
     const { start, end } = resolveDateRange(req.query);
 
-    const [payments, expenditures, vatInvoices, nonVatInvoices, outstandingInvoices] = await Promise.all([
+    const [
+      payments,
+      expenditures,
+      vatInvoices,
+      nonVatInvoices,
+      outstandingInvoices,
+      vatPurchases,
+      nonVatPurchases
+    ] = await Promise.all([
       Payment.find({ createdAt: { $gte: start, $lte: end } }),
       Expenditure.find({ date: { $gte: start, $lte: end } }),
       Invoice.find({ invoiceType: 'vat', createdAt: { $gte: start, $lte: end } }),
       Invoice.find({ invoiceType: 'non-vat', createdAt: { $gte: start, $lte: end } }),
-      Invoice.find({ status: { $ne: 'paid' }, createdAt: { $gte: start, $lte: end } })
+      Invoice.find({ status: { $ne: 'paid' }, createdAt: { $gte: start, $lte: end } }),
+      Purchase.find({ purchaseType: 'vat', createdAt: { $gte: start, $lte: end } }),
+      Purchase.find({ purchaseType: 'non-vat', createdAt: { $gte: start, $lte: end } })
     ]);
 
     const totalIncome = payments.reduce((sum, p) => sum + p.amount, 0);
@@ -385,6 +441,10 @@ router.get('/summary-report', authenticate, authorize('admin', 'accountant'), as
     const vatCollected = vatInvoices.reduce((sum, inv) => sum + inv.vat, 0);
     const nonVatInvoiceTotal = nonVatInvoices.reduce((sum, inv) => sum + inv.total, 0);
     const outstandingDues = outstandingInvoices.reduce((sum, inv) => sum + inv.amountDue, 0);
+
+    const vatPurchaseTotal = vatPurchases.reduce((sum, p) => sum + p.totalCost, 0);
+    const vatPaid = vatPurchases.reduce((sum, p) => sum + p.vat, 0);
+    const nonVatPurchaseTotal = nonVatPurchases.reduce((sum, p) => sum + p.totalCost, 0);
 
     res.json({
       totalIncome,
@@ -395,7 +455,13 @@ router.get('/summary-report', authenticate, authorize('admin', 'accountant'), as
       vatCollected,
       nonVatInvoiceCount: nonVatInvoices.length,
       nonVatInvoiceTotal,
-      outstandingDues
+      outstandingDues,
+      vatPurchaseCount: vatPurchases.length,
+      vatPurchaseTotal,
+      vatPaid,
+      nonVatPurchaseCount: nonVatPurchases.length,
+      nonVatPurchaseTotal,
+      netVatPayable: vatCollected - vatPaid
     });
   } catch (err) {
     console.error('Fetch summary report error:', err.message);

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
@@ -15,7 +15,9 @@ import {
   X,
   ChevronLeft,
   ChevronRight,
-  Globe
+  Globe,
+  BookOpen,
+  Settings
 } from 'lucide-react';
 
 export default function Sidebar({ isOpen, onClose }) {
@@ -26,12 +28,25 @@ export default function Sidebar({ isOpen, onClose }) {
     return localStorage.getItem('sidebar-collapsed') === 'true';
   });
 
+  useEffect(() => {
+    const handleCollapseChange = () => {
+      setIsCollapsed(localStorage.getItem('sidebar-collapsed') === 'true');
+    };
+    window.addEventListener('storage', handleCollapseChange);
+    window.addEventListener('sidebar-collapsed-change', handleCollapseChange);
+    return () => {
+      window.removeEventListener('storage', handleCollapseChange);
+      window.removeEventListener('sidebar-collapsed-change', handleCollapseChange);
+    };
+  }, []);
+
   if (!user) return null;
 
   const toggleCollapse = () => {
     setIsCollapsed(prev => {
       const next = !prev;
       localStorage.setItem('sidebar-collapsed', String(next));
+      window.dispatchEvent(new Event('sidebar-collapsed-change'));
       return next;
     });
   };
@@ -60,19 +75,19 @@ export default function Sidebar({ isOpen, onClose }) {
       path: '/inventory',
       label: 'Inventory & Parts',
       icon: Wrench,
-      roles: ['admin', 'receptionist', 'technician']
+      roles: ['admin', 'technician', 'accountant']
     },
     {
       path: '/appointments',
       label: 'Appointments',
       icon: Calendar,
-      roles: ['admin', 'receptionist']
+      roles: ['admin', 'receptionist', 'technician']
     },
     {
       path: '/servicing',
       label: 'Servicing',
       icon: Wrench,
-      roles: ['admin', 'receptionist', 'technician']
+      roles: ['admin', 'receptionist', 'technician', 'accountant']
     },
     {
       path: '/invoices',
@@ -84,13 +99,19 @@ export default function Sidebar({ isOpen, onClose }) {
       path: '/loyalty',
       label: 'Loyalty Ledger',
       icon: Award,
-      roles: ['admin', 'receptionist']
+      roles: ['admin', 'receptionist', 'accountant']
     },
     {
       path: '/finance',
       label: 'Finance Reports',
       icon: TrendingUp,
       roles: ['admin', 'accountant']
+    },
+    {
+      path: '/daybook',
+      label: 'Daily Day Book',
+      icon: BookOpen,
+      roles: ['admin', 'accountant', 'receptionist']
     },
     {
       path: '/staff',
@@ -103,6 +124,12 @@ export default function Sidebar({ isOpen, onClose }) {
       label: 'Audit Logs',
       icon: History,
       roles: ['admin']
+    },
+    {
+      path: '/settings',
+      label: 'Settings',
+      icon: Settings,
+      roles: ['admin', 'accountant', 'receptionist', 'technician']
     }
   ];
 
@@ -114,12 +141,15 @@ export default function Sidebar({ isOpen, onClose }) {
       {/* Brand Logo Header */}
       <div className={`flex items-center ${isCollapsed ? 'justify-center py-5 px-2' : 'justify-between px-6 py-5'} border-b border-slate-100 bg-slate-50/50 transition-all duration-300`}>
         {!isCollapsed && (
-          <h1 className="font-extrabold text-lg text-slate-900 tracking-tight transition-all duration-300">
-            PM Auto Mobiles
-          </h1>
+          <div className="flex items-center gap-2.5">
+            <img src="/assets/logo.png" alt="Logo" className="w-8 h-8 object-contain" />
+            <h1 className="font-extrabold text-base text-slate-900 tracking-tight transition-all duration-300">
+              PM Auto Mobiles
+            </h1>
+          </div>
         )}
         {isCollapsed && (
-          <span className="font-bold text-lg text-blue-600 tracking-wider">PM</span>
+          <img src="/assets/logo.png" alt="Logo" className="w-8 h-8 object-contain" />
         )}
         <button
           onClick={toggleCollapse}
@@ -173,23 +203,6 @@ export default function Sidebar({ isOpen, onClose }) {
             </NavLink>
           );
         })}
-        
-        {/* Public Landing Page Link */}
-        <a
-          href="/landing.html"
-          onClick={() => {
-            if (window.innerWidth < 1024) onClose();
-          }}
-          className={`flex items-center ${isCollapsed ? 'justify-center p-3' : 'px-3.5 py-3 gap-3.5'} rounded-xl transition-all duration-300 group text-sm font-bold border border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-50`}
-          title={isCollapsed ? 'Public Website' : ''}
-        >
-          <Globe className={`w-5.5 h-5.5 shrink-0 transition-transform duration-200 group-hover:scale-105 text-slate-400 group-hover:text-slate-700`} />
-          {!isCollapsed && (
-            <span className="transition-opacity duration-300 opacity-100 whitespace-nowrap overflow-hidden text-ellipsis">
-              Public Website
-            </span>
-          )}
-        </a>
       </nav>
 
       {/* User Footer Card */}

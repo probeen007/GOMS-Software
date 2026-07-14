@@ -43,7 +43,8 @@ export default function Login() {
     <div className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-slate-100 to-blue-50/40 overflow-hidden px-4">
       <div className="w-full max-w-[460px] z-10 space-y-7 animate-fade-in-up">
         {/* Brand Header */}
-        <div className="text-center space-y-1">
+        <div className="text-center space-y-3 flex flex-col items-center">
+          <img src="/assets/logo.png" alt="PM Auto Mobiles Logo" className="w-16 h-16 object-contain mb-1" />
           <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">PM Auto Mobiles</h2>
           <p className="text-xs text-slate-500 font-semibold uppercase tracking-wider">
             Auto-Service Operations Management Portal

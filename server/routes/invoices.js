@@ -6,12 +6,14 @@ import Servicing from '../models/Servicing.js';
 import Customer from '../models/Customer.js';
 import Vehicle from '../models/Vehicle.js';
 import LoyaltyLedger from '../models/LoyaltyLedger.js';
+import InventoryStock from '../models/InventoryStock.js';
 import { authenticate, authorize } from '../middleware/auth.js';
 import { createNotification } from '../utils/notifier.js';
 import { logAction } from '../utils/logger.js';
 import { formatNepaliDate, formatNepaliDateTime } from '../utils/nepaliDate.js';
 import { escapeHtml } from '../utils/htmlEscape.js';
 import { isWithinSupportedDateRange } from '../utils/dateRange.js';
+import Settings from '../models/Settings.js';
 
 const router = express.Router();
 
@@ -48,11 +50,17 @@ router.post(
         return res.status(400).json({ message: 'This servicing record has already been invoiced' });
       }
 
+      const settings = await Settings.findOne();
+      const vatRate = settings ? (settings.vatRate / 100) : 0.13;
+
       const subtotal = servicing.subtotal;
       const discount = servicing.discount || 0;
       const taxedBase = Math.max(0, subtotal - discount);
-      const vat = invoiceType === 'vat' ? taxedBase * 0.13 : 0;
+      const vat = invoiceType === 'vat' ? Math.round((taxedBase * vatRate) * 100) / 100 : 0;
       const total = taxedBase + vat;
+
+      const defaultNextServiceDate = new Date();
+      defaultNextServiceDate.setDate(defaultNextServiceDate.getDate() + 90);
 
       const invoice = new Invoice({
         servicingId: servicing._id,
@@ -65,7 +73,9 @@ router.post(
         total,
         amountPaid: 0,
         amountDue: total,
-        status: 'unpaid'
+        status: 'unpaid',
+        odometer: servicing.mileageOut || 0,
+        nextServiceDate: defaultNextServiceDate
       });
       await invoice.save();
 
@@ -100,6 +110,141 @@ router.post(
     }
   }
 );
+
+// @route   POST /api/invoices/pc-generate
+// @desc    Create a Parts & Counter direct invoice (isPC: true, no Job Card required)
+// @access  Private (admin, receptionist, accountant)
+router.post(
+  '/pc-generate',
+  authenticate,
+  authorize('admin', 'receptionist', 'accountant'),
+  [
+    body('customerId').notEmpty().withMessage('Customer is required'),
+    body('invoiceType').isIn(['vat', 'non-vat']).withMessage('Invoice type must be vat or non-vat'),
+    body('items').isArray({ min: 1 }).withMessage('Items list must contain at least 1 item'),
+    body('items.*.name').notEmpty().withMessage('Item name is required'),
+    body('items.*.qty').isInt({ min: 1 }).withMessage('Quantity must be 1 or more'),
+    body('items.*.unitPrice').isFloat({ min: 0 }).withMessage('Unit price must be 0 or more'),
+    body('discount').optional().isFloat({ min: 0 }).withMessage('Discount cannot be negative'),
+    body('odometer').optional().isNumeric().withMessage('Odometer must be a number')
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { customerId, vehicleId, invoiceType, items, discount, odometer } = req.body;
+
+    try {
+      const customer = await Customer.findById(customerId);
+      if (!customer) {
+        return res.status(404).json({ message: 'Customer not found' });
+      }
+
+      if (vehicleId) {
+        const vehicle = await Vehicle.findById(vehicleId);
+        if (!vehicle) {
+          return res.status(404).json({ message: 'Vehicle not found' });
+        }
+      }
+
+      // Check stock levels and decrement before writing database transactions
+      // To ensure atomicity, we'll verify stock for all parts first.
+      for (const item of items) {
+        if (item.partId && (item.itemType === 'part' || !item.itemType)) {
+          const part = await InventoryStock.findById(item.partId);
+          if (!part) {
+            return res.status(404).json({ message: `Part not found in inventory stock: ${item.name}` });
+          }
+          if (part.qty < item.qty) {
+            return res.status(400).json({
+              message: `Insufficient stock for '${part.name}'. Requested: ${item.qty}, Available: ${part.qty}`
+            });
+          }
+        }
+      }
+
+      // Decrement stock levels
+      for (const item of items) {
+        if (item.partId && (item.itemType === 'part' || !item.itemType)) {
+          await InventoryStock.findByIdAndUpdate(item.partId, {
+            $inc: { qty: -Number(item.qty) }
+          });
+        }
+      }
+
+      // Calculate financials
+      let calculatedSubtotal = 0;
+      const formattedItems = items.map(item => {
+        const lineTotal = Number(item.qty) * Number(item.unitPrice);
+        calculatedSubtotal += lineTotal;
+        return {
+          name: item.name,
+          qty: Number(item.qty),
+          unitPrice: Number(item.unitPrice),
+          total: lineTotal,
+          itemType: item.itemType || 'part'
+        };
+      });
+
+      const settings = await Settings.findOne();
+      const vatRate = settings ? (settings.vatRate / 100) : 0.13;
+
+      const disc = Number(discount) || 0;
+      const taxedBase = Math.max(0, calculatedSubtotal - disc);
+      const vat = invoiceType === 'vat' ? Math.round((taxedBase * vatRate) * 100) / 100 : 0;
+      const total = taxedBase + vat;
+
+      const defaultNextServiceDate = new Date();
+      defaultNextServiceDate.setDate(defaultNextServiceDate.getDate() + 90);
+
+      const invoice = new Invoice({
+        isPC: true,
+        items: formattedItems,
+        customerId,
+        vehicleId: vehicleId || null,
+        invoiceType,
+        subtotal: calculatedSubtotal,
+        discount: disc,
+        vat,
+        total,
+        amountPaid: 0,
+        amountDue: total,
+        status: 'unpaid',
+        odometer: Number(odometer) || 0,
+        nextServiceDate: vehicleId ? defaultNextServiceDate : null
+      });
+
+      await invoice.save();
+
+      await createNotification({
+        recipientRoles: ['admin', 'accountant'],
+        title: 'New PC Invoice Generated',
+        message: `Direct Counter Invoice generated for ${customer.name} (Total: Rs. ${invoice.total.toFixed(2)})`,
+        type: 'payment',
+        link: '/invoices'
+      });
+
+      await logAction({
+        req,
+        action: 'pc_invoice_generated',
+        module: 'invoices',
+        details: `Generated direct PC Counter Invoice #${invoice.invoiceNo} for client ${customer.name}. Total: Rs. ${invoice.total.toFixed(2)}`
+      });
+
+      const populated = await Invoice.findById(invoice._id)
+        .populate('customerId', 'name phone email')
+        .populate('vehicleId', 'plateNo make model');
+
+      res.status(201).json(populated);
+    } catch (err) {
+      console.error('Generate PC invoice error:', err.message);
+      res.status(500).json({ message: 'Server error' });
+    }
+  }
+);
+
 
 // @route   GET /api/invoices
 // @desc    Get all invoices
@@ -304,22 +449,25 @@ router.post(
         details: `Payment of Rs. ${pAmt.toFixed(2)} recorded for Invoice #${invoice.invoiceNo}. Status: ${invoice.status.toUpperCase()}.${req.body.nextServiceDate ? ` Next service scheduled: ${formatNepaliDate(req.body.nextServiceDate)}.` : ''}${req.body.sendWhatsApp ? ' WhatsApp reminder simulated.' : ''}`
       });
 
-      // Auto-trigger loyalty points if invoice becomes fully paid
+      // Auto-trigger loyalty points if invoice becomes fully paid (only if loyalty system is enabled)
       if (invoice.status === 'paid') {
-        const pointsEarned = Math.floor(invoice.total / 10); // 1 point per Rs. 10
-        if (pointsEarned > 0) {
-          const ledger = new LoyaltyLedger({
-            customerId: invoice.customerId,
-            invoiceId: invoice._id,
-            points: pointsEarned,
-            transactionType: 'earned',
-            notes: `Points earned from Invoice #${invoice.invoiceNo}`
-          });
-          await ledger.save();
+        const loyaltySettings = await Settings.findOne();
+        if (loyaltySettings?.loyaltySystemEnabled !== false) {
+          const pointsEarned = Math.floor(invoice.total / 10); // 1 point per Rs. 10
+          if (pointsEarned > 0) {
+            const ledger = new LoyaltyLedger({
+              customerId: invoice.customerId,
+              invoiceId: invoice._id,
+              points: pointsEarned,
+              transactionType: 'earned',
+              notes: `Points earned from Invoice #${invoice.invoiceNo}`
+            });
+            await ledger.save();
 
-          await Customer.findByIdAndUpdate(invoice.customerId, {
-            $inc: { loyaltyPoints: pointsEarned }
-          });
+            await Customer.findByIdAndUpdate(invoice.customerId, {
+              $inc: { loyaltyPoints: pointsEarned }
+            });
+          }
         }
       }
 
@@ -430,6 +578,12 @@ router.post(
     const { points } = req.body;
 
     try {
+      // Check if loyalty system is enabled before allowing redemption
+      const loyaltySettings = await Settings.findOne();
+      if (loyaltySettings?.loyaltySystemEnabled === false) {
+        return res.status(403).json({ message: 'Loyalty points system is currently disabled in global settings.' });
+      }
+
       const invoice = await Invoice.findById(req.params.id);
       if (!invoice) {
         return res.status(404).json({ message: 'Invoice not found' });
@@ -520,6 +674,11 @@ router.get('/:id/pdf', authenticate, authorize('admin', 'receptionist', 'account
     const payments = await Payment.find({ invoiceId: invoice._id })
       .populate('receivedBy', 'name');
 
+    const settings = await Settings.findOne();
+    const garageName = settings ? settings.garageName.toUpperCase() : 'PM AUTOMOBILES';
+    const garageAddress = settings ? settings.garageAddress : 'Kathmandu, Nepal';
+    const garagePhone = settings ? settings.garagePhone : '+977-1-4444444';
+
     const htmlContent = `
       <!DOCTYPE html>
       <html>
@@ -546,6 +705,41 @@ router.get('/:id/pdf', authenticate, authorize('admin', 'receptionist', 'account
             body { margin: 20px; }
             .no-print { display: none; }
           }
+          ${invoice.isPC ? `
+          @page {
+            size: A5 portrait;
+            margin: 8mm;
+          }
+          body {
+            margin: 15px;
+            font-size: 11px;
+          }
+          .logo {
+            font-size: 18px;
+          }
+          .grand-total {
+            font-size: 14px;
+          }
+          table {
+            margin-bottom: 15px;
+          }
+          td, th {
+            padding: 6px;
+            font-size: 11px;
+          }
+          .header {
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+          }
+          .grid {
+            margin-bottom: 15px;
+            gap: 15px;
+          }
+          .footer {
+            margin-top: 25px;
+            padding-top: 10px;
+          }
+          ` : ''}
         </style>
       </head>
       <body>
@@ -554,9 +748,12 @@ router.get('/:id/pdf', authenticate, authorize('admin', 'receptionist', 'account
         </div>
 
         <div class="header">
-          <div>
-            <div class="logo">PM AUTOMOBILES</div>
-            <div style="font-size: 12px; color: #666;">Kathmandu, Nepal | Phone: +977-1-4444444</div>
+          <div style="display: flex; align-items: center; gap: 15px;">
+            <img src="/assets/logo.png" style="height: 50px; width: 50px; object-fit: contain;" alt="Logo" />
+            <div>
+              <div class="logo" style="line-height: 1.1;">${escapeHtml(garageName)}</div>
+              <div style="font-size: 12px; color: #666; margin-top: 4px;">${escapeHtml(garageAddress)} | Phone: ${escapeHtml(garagePhone)}</div>
+            </div>
           </div>
           <div class="title">
             <h2 style="margin: 0; color: #10b981;">${invoice.invoiceType === 'vat' ? 'OFFICIAL TAX INVOICE (VAT)' : 'OFFICIAL INVOICE (NON-VAT)'}</h2>
@@ -575,9 +772,19 @@ router.get('/:id/pdf', authenticate, authorize('admin', 'receptionist', 'account
           </div>
           <div>
             <div class="section-title">Vehicle & Reference Details</div>
-            <strong>Servicing Record ID:</strong> ${invoice.servicingId?._id || 'N/A'}<br>
-            <strong>Make / Model:</strong> ${escapeHtml(invoice.vehicleId?.make)} ${escapeHtml(invoice.vehicleId?.model)}<br>
-            <strong>Plate No:</strong> ${escapeHtml(invoice.vehicleId?.plateNo) || 'N/A'}
+            ${invoice.isPC ? `
+              <strong>Billing Type:</strong> Parts & Counter Sales<br>
+              ${invoice.vehicleId ? `
+                <strong>Make / Model:</strong> ${escapeHtml(invoice.vehicleId?.make)} ${escapeHtml(invoice.vehicleId?.model)}<br>
+                <strong>Plate No:</strong> ${escapeHtml(invoice.vehicleId?.plateNo) || 'N/A'}<br>
+                <strong>Odometer:</strong> ${invoice.odometer ? invoice.odometer + ' km' : 'N/A'}
+              ` : '<strong>PC counter sale (No Vehicle)</strong>'}
+            ` : `
+              <strong>Servicing Record ID:</strong> ${invoice.servicingId?._id || 'N/A'}<br>
+              <strong>Make / Model:</strong> ${escapeHtml(invoice.vehicleId?.make)} ${escapeHtml(invoice.vehicleId?.model)}<br>
+              <strong>Plate No:</strong> ${escapeHtml(invoice.vehicleId?.plateNo) || 'N/A'}<br>
+              <strong>Odometer:</strong> ${invoice.odometer ? invoice.odometer + ' km' : 'N/A'}
+            `}
           </div>
         </div>
 
@@ -593,24 +800,36 @@ router.get('/:id/pdf', authenticate, authorize('admin', 'receptionist', 'account
             </tr>
           </thead>
           <tbody>
-            ${invoice.servicingId?.parts.map(p => `
-              <tr>
-                <td>${escapeHtml(p.name)}</td>
-                <td><span style="font-size: 10px; color: #888; text-transform: uppercase;">Part</span></td>
-                <td style="text-align: center;">${p.qty}</td>
-                <td style="text-align: right;">Rs. ${p.unitPrice.toFixed(2)}</td>
-                <td style="text-align: right;">Rs. ${p.total.toFixed(2)}</td>
-              </tr>
-            `).join('') || ''}
-            ${invoice.servicingId?.labour.map(l => `
-              <tr>
-                <td>${escapeHtml(l.name)}</td>
-                <td><span style="font-size: 10px; color: #888; text-transform: uppercase;">Labour</span></td>
-                <td style="text-align: center;">${l.hours} hrs</td>
-                <td style="text-align: right;">Rs. ${l.unitPrice.toFixed(2)}</td>
-                <td style="text-align: right;">Rs. ${l.total.toFixed(2)}</td>
-              </tr>
-            `).join('') || ''}
+            ${invoice.isPC ? (
+              invoice.items.map(item => `
+                <tr>
+                  <td>${escapeHtml(item.name)}</td>
+                  <td><span style="font-size: 10px; color: #888; text-transform: uppercase;">${escapeHtml(item.itemType)}</span></td>
+                  <td style="text-align: center;">${item.qty}</td>
+                  <td style="text-align: right;">Rs. ${item.unitPrice.toFixed(2)}</td>
+                  <td style="text-align: right;">Rs. ${item.total.toFixed(2)}</td>
+                </tr>
+              `).join('')
+            ) : `
+              ${invoice.servicingId?.parts.map(p => `
+                <tr>
+                  <td>${escapeHtml(p.name)}</td>
+                  <td><span style="font-size: 10px; color: #888; text-transform: uppercase;">Part</span></td>
+                  <td style="text-align: center;">${p.qty}</td>
+                  <td style="text-align: right;">Rs. ${p.unitPrice.toFixed(2)}</td>
+                  <td style="text-align: right;">Rs. ${p.total.toFixed(2)}</td>
+                </tr>
+              `).join('') || ''}
+              ${invoice.servicingId?.labour.map(l => `
+                <tr>
+                  <td>${escapeHtml(l.name)}</td>
+                  <td><span style="font-size: 10px; color: #888; text-transform: uppercase;">Labour</span></td>
+                  <td style="text-align: center;">${l.hours} hrs</td>
+                  <td style="text-align: right;">Rs. ${l.unitPrice.toFixed(2)}</td>
+                  <td style="text-align: right;">Rs. ${l.total.toFixed(2)}</td>
+                </tr>
+              `).join('') || ''}
+            `}
           </tbody>
         </table>
 

@@ -325,7 +325,7 @@
           <tr>
             <td><strong>Inventory & Parts Catalog</strong></td>
             <td><span class="badge badge-full">Read/Write</span></td>
-            <td><span class="badge badge-view">Read Only</span></td>
+            <td>No Access</td>
             <td><span class="badge badge-view">Read Only</span></td>
             <td><span class="badge badge-full">Read/Write</span></td>
             <td>No Access</td>
@@ -355,11 +355,11 @@
             <td><span class="badge badge-full">Approve/Reject</span></td>
           </tr>
           <tr>
-            <td><strong>Active Job Cards</strong></td>
+            <td><strong>Active Job Cards (Servicing)</strong></td>
             <td><span class="badge badge-full">Read/Write</span></td>
             <td><span class="badge badge-full">Read/Write</span></td>
             <td><span class="badge badge-full">Read/Write</span></td>
-            <td>No Access</td>
+            <td><span class="badge badge-view">Read Only</span></td>
             <td>No Access</td>
           </tr>
           <tr>
@@ -390,6 +390,14 @@
             <td><strong>Finance Reports & Charts</strong></td>
             <td><span class="badge badge-full">Read/Write</span></td>
             <td>No Access</td>
+            <td>No Access</td>
+            <td><span class="badge badge-full">Read/Write</span></td>
+            <td>No Access</td>
+          </tr>
+          <tr>
+            <td><strong>Daily Day Book</strong></td>
+            <td><span class="badge badge-full">Full</span></td>
+            <td><span class="badge badge-full">Read/Write</span></td>
             <td>No Access</td>
             <td><span class="badge badge-full">Read/Write</span></td>
             <td>No Access</td>
@@ -613,7 +621,7 @@
       <li>**Midnight Stock Audit:** A daily `node-cron` job runs at midnight. It sweeps the inventory database, identifies low-stocked SKUs, and issues in-app alerts to admin and accountant users.</li>
     </ul>
 
-    <h3>📊 2. Finance Reports & Cash Flow</h3>
+    <h3>📊 2. Finance Reports & Cash Flow (with VAT & Non-VAT breakdowns)</h3>
     <ul>
       <li>Navigate to **Finance Reports**.</li>
       <li>The page renders an interactive cash flow chart using Recharts.</li>
@@ -625,6 +633,7 @@
       </li>
       <li>**Filter:** Use the date range pickers to filter the cash flow data and summary metrics.</li>
       <li>**Add Expenditure Manual Form:** Click **Add Expense** to record manual shop overhead costs.</li>
+      <li>**VAT & Non-VAT Reporting:** Separate ledger tabs compile reports specifically listing VAT-applicable versus Non-VAT billing transactions for sales and purchases, assisting with internal auditing and government tax filing.</li>
     </ul>
 
     <h3>🔔 3. In-App Notifications Bell</h3>
@@ -653,6 +662,23 @@
       <li>Unauthenticated visitors typing in the main domain `http://localhost:3000/` are automatically redirected here.</li>
       <li>The landing page showcases garage services, company history, and team members.</li>
       <li>Clicking **Login** routes the browser to `/login`. Once signed in, the system allows the user to access the operational dashboard.</li>
+    </ul>
+
+    <h3>📓 7. Daily Day Book Ledger</h3>
+    <ul>
+      <li>**Opening & Closing Reconciliation:** Tracks physical cash and bank balances day-by-day. Daily receipts and payments automatically compute an **Expected Closing Balance** that is reconciled against the **Actual Closing Balance** entered by the counter staff.</li>
+      <li>**Security Locks:** The Day Book for any calendar date can be locked/closed. Once closed, edits are rejected by the backend unless the requesting user has the `admin` role.</li>
+    </ul>
+
+    <h3>👥 8. Staff Salaries & Monthly Attendance</h3>
+    <ul>
+      <li>**Attendance Log:** Admins can record daily attendance (Present, Absent, Half-Day, Paid Leave) for all employee accounts.</li>
+      <li>**Payroll Calculator:** Automatically computes monthly salary payments based on base salary, daily attendance records, hourly overtime rates, and logged overtime hours. Payslips are saved to the ledger with full audit logging.</li>
+    </ul>
+
+    <h3>🎁 9. Loyalty Points Adjustments</h3>
+    <ul>
+      <li>**Manual Overrides:** In addition to automatic rewards earned via payments (1 point per Rs. 10 paid), Admins can manually add or deduct points via the **Loyalty Ledger** screen with mandatory reason notes.</li>
     </ul>
 
     <footer>

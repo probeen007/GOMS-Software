@@ -23,6 +23,25 @@ export default function Inventory() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [lowStock, setLowStock] = useState(false);
+  const [vatRate, setVatRate] = useState(13);
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const res = await axios.get('/api/settings');
+        if (res.data) {
+          setVatRate(res.data.vatRate || 13);
+          setPurchaseData(prev => ({
+            ...prev,
+            purchaseType: res.data.vatEnabled ? 'vat' : 'non-vat'
+          }));
+        }
+      } catch (err) {
+        console.error('Error fetching settings in Inventory:', err);
+      }
+    };
+    fetchSettings();
+  }, []);
 
   // Modal: Add New Part
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -49,7 +68,10 @@ export default function Inventory() {
   const [purchaseData, setPurchaseData] = useState({
     supplierName: '',
     items: [{ partId: '', qty: 1, unitCost: 0 }],
-    totalCost: 0
+    totalCost: 0,
+    purchaseType: 'non-vat',
+    subtotal: 0,
+    vat: 0
   });
   const [purchaseError, setPurchaseError] = useState('');
   const [purchaseLoading, setPurchaseLoading] = useState(false);
@@ -81,8 +103,24 @@ export default function Inventory() {
     const total = purchaseData.items.reduce((sum, item) => {
       return sum + (Number(item.qty) * Number(item.unitCost));
     }, 0);
-    setPurchaseData(prev => ({ ...prev, totalCost: total }));
-  }, [purchaseData.items]);
+    if (purchaseData.purchaseType === 'vat') {
+      const sub = total;
+      const vatVal = Math.round((sub * (vatRate / 100)) * 100) / 100;
+      setPurchaseData(prev => ({
+        ...prev,
+        subtotal: sub,
+        vat: vatVal,
+        totalCost: sub + vatVal
+      }));
+    } else {
+      setPurchaseData(prev => ({
+        ...prev,
+        subtotal: total,
+        vat: 0,
+        totalCost: total
+      }));
+    }
+  }, [purchaseData.items, purchaseData.purchaseType, vatRate]);
 
   // Handle Add New Part
   const handleAddNewItem = async (e) => {
@@ -150,7 +188,10 @@ export default function Inventory() {
       setPurchaseData({
         supplierName: '',
         items: [{ partId: '', qty: 1, unitCost: 0 }],
-        totalCost: 0
+        totalCost: 0,
+        purchaseType: 'non-vat',
+        subtotal: 0,
+        vat: 0
       });
       fetchInventory();
     } catch (error) {
@@ -677,17 +718,63 @@ export default function Inventory() {
                 </div>
               )}
 
-              <div className="space-y-1.5">
-                <label className="text-xs font-extrabold text-slate-500 uppercase tracking-wide">Supplier Name *</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. Bosch Auto Parts Ltd."
-                  value={purchaseData.supplierName}
-                  onChange={(e) => setPurchaseData({ ...purchaseData, supplierName: e.target.value })}
-                  className="block w-full h-11 rounded-xl border-slate-200 text-sm"
-                />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-extrabold text-slate-500 uppercase tracking-wide">Supplier Name *</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Bosch Auto Parts Ltd."
+                    value={purchaseData.supplierName}
+                    onChange={(e) => setPurchaseData({ ...purchaseData, supplierName: e.target.value })}
+                    className="block w-full h-11 rounded-xl border-slate-200 text-sm"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-extrabold text-slate-500 uppercase tracking-wide">Purchase Type *</label>
+                  <select
+                    value={purchaseData.purchaseType}
+                    onChange={(e) => setPurchaseData({ ...purchaseData, purchaseType: e.target.value })}
+                    className="block w-full h-11 rounded-xl border-slate-200 text-sm"
+                  >
+                    <option value="non-vat">Non-VAT</option>
+                    <option value="vat">VAT (13%)</option>
+                  </select>
+                </div>
               </div>
+
+              {purchaseData.purchaseType === 'vat' && (
+                <div className="grid grid-cols-2 gap-4 bg-slate-50 p-3 rounded-xl border border-slate-100 animate-in fade-in duration-200">
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-slate-500 uppercase">Subtotal (Rs.)</label>
+                    <input
+                      type="text"
+                      disabled
+                      value={purchaseData.subtotal.toFixed(2)}
+                      className="block w-full h-10 rounded-lg border-slate-200 text-xs bg-slate-100 font-mono font-semibold"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-slate-500 uppercase">VAT Amount (Rs.)</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={purchaseData.vat}
+                      onChange={(e) => {
+                        const vatVal = parseFloat(e.target.value) || 0;
+                        setPurchaseData(prev => ({
+                          ...prev,
+                          vat: vatVal,
+                          totalCost: prev.subtotal + vatVal
+                        }));
+                      }}
+                      className="block w-full h-10 rounded-lg border-slate-200 text-xs bg-white font-mono font-semibold"
+                    />
+                  </div>
+                </div>
+              )}
 
               {/* Line Items List */}
               <div className="space-y-3 pt-3">

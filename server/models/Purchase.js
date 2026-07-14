@@ -31,6 +31,19 @@ const purchaseSchema = new mongoose.Schema(
       required: true,
       min: [0, 'Total cost cannot be negative']
     },
+    purchaseType: {
+      type: String,
+      enum: ['vat', 'non-vat'],
+      default: 'non-vat'
+    },
+    subtotal: {
+      type: Number,
+      default: 0
+    },
+    vat: {
+      type: Number,
+      default: 0
+    },
     billFileUrl: {
       type: String,
       default: ''

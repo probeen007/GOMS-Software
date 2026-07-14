@@ -199,29 +199,41 @@ export default function Dashboard() {
 
       {/* 1.5 FINANCIAL SUMMARY LEDGER RIBBON */}
       {(user.role === 'admin' || user.role === 'accountant') && (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm divide-y lg:divide-y-0 lg:divide-x divide-slate-100">
-          <div className="space-y-1.5 lg:first:pl-0 lg:pl-5">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 bg-white p-5 rounded-xl border border-slate-200 shadow-sm divide-y lg:divide-y-0 lg:divide-x divide-slate-100">
+          <div className="space-y-1 lg:first:pl-0 lg:pl-5">
             <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">Total Inflow (Income)</span>
-            <span className="text-xl font-extrabold text-emerald-600 tracking-tight block">
+            <span className="text-lg font-extrabold text-slate-900 tracking-tight block">
               Rs. {metrics?.totalIncome?.toLocaleString(undefined, { minimumFractionDigits: 2 }) || '0.00'}
             </span>
+            <span className="text-[10px] font-semibold text-emerald-600 flex items-center gap-1">
+              <span>▲</span> Active Revenue Inflow
+            </span>
           </div>
-          <div className="space-y-1.5 pt-4 lg:pt-0 lg:pl-5">
+          <div className="space-y-1 pt-4 lg:pt-0 lg:pl-5">
             <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">Total Outflow (Expense)</span>
-            <span className="text-xl font-extrabold text-rose-600 tracking-tight block">
+            <span className="text-lg font-extrabold text-slate-900 tracking-tight block">
               Rs. {metrics?.totalExpenditures?.toLocaleString(undefined, { minimumFractionDigits: 2 }) || '0.00'}
             </span>
-          </div>
-          <div className="space-y-1.5 pt-4 lg:pt-0 lg:pl-5">
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">Net Revenue (Profit)</span>
-            <span className={`text-xl font-extrabold tracking-tight block ${metrics?.netProfit >= 0 ? 'text-emerald-700' : 'text-rose-600'}`}>
-              Rs. {metrics?.netProfit?.toLocaleString(undefined, { minimumFractionDigits: 2 }) || '0.00'}
+            <span className="text-[10px] font-semibold text-rose-600 flex items-center gap-1">
+              <span>▼</span> Operating Expenditures
             </span>
           </div>
-          <div className="space-y-1.5 pt-4 lg:pt-0 lg:pl-5">
+          <div className="space-y-1 pt-4 lg:pt-0 lg:pl-5">
+            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">Net Revenue (Profit)</span>
+            <span className="text-lg font-extrabold text-slate-900 tracking-tight block">
+              Rs. {metrics?.netProfit?.toLocaleString(undefined, { minimumFractionDigits: 2 }) || '0.00'}
+            </span>
+            <span className={`text-[10px] font-semibold flex items-center gap-1 ${metrics?.netProfit >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+              {metrics?.netProfit >= 0 ? '▲ Positive Balance' : '▼ Net Deficit'}
+            </span>
+          </div>
+          <div className="space-y-1 pt-4 lg:pt-0 lg:pl-5">
             <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">Outstanding Dues</span>
-            <span className="text-xl font-extrabold text-blue-600 tracking-tight block">
+            <span className="text-lg font-extrabold text-slate-900 tracking-tight block">
               Rs. {metrics?.totalOutstanding?.toLocaleString(undefined, { minimumFractionDigits: 2 }) || '0.00'}
+            </span>
+            <span className="text-[10px] font-semibold text-blue-600 flex items-center gap-1">
+              <span>●</span> Pending Receivables
             </span>
           </div>
         </div>
@@ -231,98 +243,98 @@ export default function Dashboard() {
       {(user.role === 'admin' || user.role === 'receptionist' || user.role === 'accountant') && (
         <div className="grid grid-cols-2 lg:grid-cols-6 gap-4">
           {/* Card 1: Vehicles Serviced */}
-          <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between group hover:-translate-y-0.5 transition-all duration-300">
+          <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between group hover:border-slate-300 transition-all duration-200">
             <div className="flex items-center gap-2.5">
-              <div className="p-2.5 rounded-xl bg-blue-50 text-blue-600 border border-blue-100/50 group-hover:bg-blue-100 transition-colors">
-                <Car className="w-5 h-5" />
+              <div className="p-2 rounded-lg bg-slate-50 text-slate-600 border border-slate-200 shrink-0">
+                <Car className="w-4 h-4" />
               </div>
-              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Serviced</span>
+              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Serviced</span>
             </div>
             <div className="mt-4">
-              <h3 className="text-2xl font-bold text-slate-900 tracking-tight">
+              <h3 className="text-xl font-bold text-slate-950 tracking-tight">
                 {metrics?.vehiclesServiced || 0}
               </h3>
-              <p className="text-xs text-slate-400 font-semibold mt-0.5">Vehicles serviced</p>
+              <p className="text-[10px] text-slate-400 font-semibold mt-0.5">Vehicles serviced</p>
             </div>
           </div>
 
           {/* Card 2: Total Customers */}
-          <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between group hover:-translate-y-0.5 transition-all duration-300">
+          <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between group hover:border-slate-300 transition-all duration-200">
             <div className="flex items-center gap-2.5">
-              <div className="p-2.5 rounded-xl bg-violet-50 text-violet-600 border border-violet-100/50 group-hover:bg-violet-100 transition-colors">
-                <Users className="w-5 h-5" />
+              <div className="p-2 rounded-lg bg-slate-50 text-slate-600 border border-slate-200 shrink-0">
+                <Users className="w-4 h-4" />
               </div>
-              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Customers</span>
+              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Customers</span>
             </div>
             <div className="mt-4">
-              <h3 className="text-2xl font-bold text-slate-900 tracking-tight">
+              <h3 className="text-xl font-bold text-slate-950 tracking-tight">
                 {metrics?.totalCustomers || 0}
               </h3>
-              <p className="text-xs text-slate-400 font-semibold mt-0.5">Client directory</p>
+              <p className="text-[10px] text-slate-400 font-semibold mt-0.5">Client directory</p>
             </div>
           </div>
 
           {/* Card 3: Pending Services */}
-          <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between group hover:-translate-y-0.5 transition-all duration-300">
+          <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between group hover:border-slate-300 transition-all duration-200">
             <div className="flex items-center gap-2.5">
-              <div className="p-2.5 rounded-xl bg-amber-50 text-amber-600 border border-amber-100/50 group-hover:bg-amber-100 transition-colors">
-                <Wrench className="w-5 h-5" />
+              <div className="p-2 rounded-lg bg-slate-50 text-slate-600 border border-slate-200 shrink-0">
+                <Wrench className="w-4 h-4" />
               </div>
-              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Pending</span>
+              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Pending</span>
             </div>
             <div className="mt-4">
-              <h3 className="text-2xl font-bold text-slate-900 tracking-tight">
+              <h3 className="text-xl font-bold text-slate-950 tracking-tight">
                 {metrics?.pendingServices || 0}
               </h3>
-              <p className="text-xs text-slate-400 font-semibold mt-0.5">Jobs in progress</p>
+              <p className="text-[10px] text-slate-400 font-semibold mt-0.5">Jobs in progress</p>
             </div>
           </div>
 
           {/* Card 4: Upcoming Service Reminders */}
-          <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between group hover:-translate-y-0.5 transition-all duration-300">
+          <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between group hover:border-slate-300 transition-all duration-200">
             <div className="flex items-center gap-2.5">
-              <div className="p-2.5 rounded-xl bg-indigo-50 text-indigo-600 border border-indigo-100/50 group-hover:bg-indigo-100 transition-colors">
-                <Bell className="w-5 h-5" />
+              <div className="p-2 rounded-lg bg-slate-50 text-slate-600 border border-slate-200 shrink-0">
+                <Bell className="w-4 h-4" />
               </div>
-              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Reminders</span>
+              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Reminders</span>
             </div>
             <div className="mt-4">
-              <h3 className="text-2xl font-bold text-slate-900 tracking-tight">
+              <h3 className="text-xl font-bold text-slate-950 tracking-tight">
                 {metrics?.upcomingServiceReminders || 0}
               </h3>
-              <p className="text-xs text-slate-400 font-semibold mt-0.5">Next service due</p>
+              <p className="text-[10px] text-slate-400 font-semibold mt-0.5">Next service due</p>
             </div>
           </div>
 
           {/* Card 5: Staff Present Today */}
-          <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between group hover:-translate-y-0.5 transition-all duration-300">
+          <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between group hover:border-slate-300 transition-all duration-200">
             <div className="flex items-center gap-2.5">
-              <div className="p-2.5 rounded-xl bg-blue-50 text-blue-600 border border-blue-100/50 group-hover:bg-blue-100 transition-colors">
-                <UserCheck className="w-5 h-5" />
+              <div className="p-2 rounded-lg bg-slate-50 text-slate-600 border border-slate-200 shrink-0">
+                <UserCheck className="w-4 h-4" />
               </div>
-              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Attendance</span>
+              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Attendance</span>
             </div>
             <div className="mt-4">
-              <h3 className="text-2xl font-bold text-slate-900 tracking-tight">
+              <h3 className="text-xl font-bold text-slate-950 tracking-tight">
                 {metrics?.staffPresentToday || 0}
               </h3>
-              <p className="text-xs text-slate-400 font-semibold mt-0.5">Staff present</p>
+              <p className="text-[10px] text-slate-400 font-semibold mt-0.5">Staff present</p>
             </div>
           </div>
 
           {/* Card 6: Completed Services */}
-          <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between group hover:-translate-y-0.5 transition-all duration-300">
+          <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between group hover:border-slate-300 transition-all duration-200">
             <div className="flex items-center gap-2.5">
-              <div className="p-2.5 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-100/50 group-hover:bg-emerald-100 transition-colors">
-                <CheckCircle2 className="w-5 h-5" />
+              <div className="p-2 rounded-lg bg-slate-50 text-slate-600 border border-slate-200 shrink-0">
+                <CheckCircle2 className="w-4 h-4" />
               </div>
-              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Completed</span>
+              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Completed</span>
             </div>
             <div className="mt-4">
-              <h3 className="text-2xl font-bold text-slate-900 tracking-tight">
+              <h3 className="text-xl font-bold text-slate-950 tracking-tight">
                 {metrics?.completedServices || 0}
               </h3>
-              <p className="text-xs text-slate-400 font-semibold mt-0.5">Finished services</p>
+              <p className="text-[10px] text-slate-400 font-semibold mt-0.5">Finished services</p>
             </div>
           </div>
         </div>
@@ -338,24 +350,24 @@ export default function Dashboard() {
           {(user.role === 'admin' || user.role === 'accountant') && (
             <>
               {/* Cash Flow Chart */}
-              <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+              <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h2 className="text-base font-bold text-slate-900 uppercase tracking-wider">Cash Flow Dynamics</h2>
-                    <p className="text-xs text-slate-500 mt-0.5">Vibrant area chart of daily income vs expenditures (last 30 days)</p>
+                    <h2 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Cash Flow Dynamics</h2>
+                    <p className="text-[10px] text-slate-400 mt-0.5 font-medium">Daily income vs expenditures overview</p>
                   </div>
-                  <div className="flex items-center gap-3 text-xs font-bold uppercase tracking-wider">
+                  <div className="flex items-center gap-3 text-[10px] font-bold uppercase tracking-wider">
                     <span className="flex items-center gap-1.5 text-emerald-600">
-                      <span className="w-2.5 h-2.5 rounded bg-emerald-500"></span>
+                      <span className="w-2 h-2 rounded bg-emerald-500"></span>
                       <span>Income</span>
                     </span>
                     <span className="flex items-center gap-1.5 text-rose-600">
-                      <span className="w-2.5 h-2.5 rounded bg-rose-500"></span>
+                      <span className="w-2 h-2 rounded bg-rose-500"></span>
                       <span>Expense</span>
                     </span>
                   </div>
                 </div>
-
+ 
                 <div className="h-64 w-full">
                   {cashFlow.chartData.length === 0 ? (
                     <div className="h-full flex flex-col items-center justify-center text-center">
@@ -367,11 +379,11 @@ export default function Dashboard() {
                       <AreaChart data={cashFlow.chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                         <defs>
                           <linearGradient id="colorIncome" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#10b981" stopOpacity={0.2}/>
+                            <stop offset="5%" stopColor="#10b981" stopOpacity={0.15}/>
                             <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
                           </linearGradient>
                           <linearGradient id="colorExpense" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#f43f5e" stopOpacity={0.2}/>
+                            <stop offset="5%" stopColor="#f43f5e" stopOpacity={0.15}/>
                             <stop offset="95%" stopColor="#f43f5e" stopOpacity={0}/>
                           </linearGradient>
                         </defs>
@@ -379,48 +391,48 @@ export default function Dashboard() {
                         <XAxis dataKey="date" stroke="#64748b" fontSize={10} tickLine={false} />
                         <YAxis stroke="#64748b" fontSize={10} tickLine={false} />
                         <Tooltip contentStyle={{ backgroundColor: '#ffffff', borderColor: '#e2e8f0', borderRadius: '8px', color: '#0f172a', fontSize: '11px' }} />
-                        <Area type="monotone" dataKey="income" stroke="#10b981" strokeWidth={2.5} fillOpacity={1} fill="url(#colorIncome)" />
-                        <Area type="monotone" dataKey="expenditure" stroke="#f43f5e" strokeWidth={2.5} fillOpacity={1} fill="url(#colorExpense)" />
+                        <Area type="monotone" dataKey="income" stroke="#10b981" strokeWidth={2} fillOpacity={1} fill="url(#colorIncome)" />
+                        <Area type="monotone" dataKey="expenditure" stroke="#f43f5e" strokeWidth={2} fillOpacity={1} fill="url(#colorExpense)" />
                       </AreaChart>
                     </ResponsiveContainer>
                   )}
                 </div>
               </div>
-
+ 
               {/* Unpaid Invoices */}
-              <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+              <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h2 className="text-base font-bold text-slate-900 uppercase tracking-wider">Dues & Overdue Billings</h2>
-                    <p className="text-xs text-slate-500 mt-0.5">Quick lookup of pending client invoices</p>
+                    <h2 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Dues & Overdue Billings</h2>
+                    <p className="text-[10px] text-slate-400 mt-0.5 font-medium">Pending customer invoices</p>
                   </div>
                   <Link to="/invoices" className="text-xs font-bold text-blue-600 hover:underline flex items-center gap-0.5">
                     <span>Manage all Invoices</span>
                     <ArrowRight className="w-3.5 h-3.5" />
                   </Link>
                 </div>
-
+ 
                 <div className="overflow-x-auto">
                   {unpaidInvoices.length === 0 ? (
                     <p className="text-xs text-slate-500 text-center py-4">All customer invoices are fully settled!</p>
                   ) : (
                     <table className="w-full border-collapse text-left">
                       <thead>
-                        <tr className="border-b border-slate-200 text-xs font-bold text-slate-500 uppercase tracking-wider">
+                        <tr className="border-b border-slate-200 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
                           <th className="pb-2.5 font-bold">Invoice No</th>
                           <th className="pb-2.5 font-bold">Due Balance</th>
                           <th className="pb-2.5 font-bold">Status</th>
                           <th className="pb-2.5 text-right font-bold">Actions</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-slate-100 text-sm">
+                      <tbody className="divide-y divide-slate-100 text-xs">
                         {unpaidInvoices.map((inv) => (
                           <tr key={inv._id} className="hover:bg-slate-50">
                             <td className="py-3 font-semibold text-slate-800">#{inv.invoiceNo}</td>
                             <td className="py-3 text-slate-900 font-bold">Rs. {inv.amountDue.toFixed(2)}</td>
                             <td className="py-3">
-                              <span className={`inline-flex px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
-                                inv.status === 'overdue' ? 'bg-rose-50 text-rose-600 border border-rose-100' : 'bg-amber-50 text-amber-600 border border-amber-100'
+                              <span className={`inline-flex px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border ${
+                                inv.status === 'overdue' ? 'bg-rose-50 text-rose-700 border-rose-200' : 'bg-amber-50 text-amber-750 border-amber-200'
                               }`}>
                                 {inv.status}
                               </span>
@@ -428,7 +440,7 @@ export default function Dashboard() {
                             <td className="py-3 text-right">
                               <Link
                                   to={`/invoices`}
-                                  className="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-xs font-bold text-white transition-all inline-block"
+                                  className="px-2.5 py-1 rounded bg-blue-600 hover:bg-blue-700 text-[10px] font-bold text-white transition-all inline-block shadow-sm"
                               >
                                 Collect Payment
                               </Link>
@@ -442,21 +454,21 @@ export default function Dashboard() {
               </div>
             </>
           )}
-
+ 
           {/* B. RECEPTIONIST VIEW: TODAY'S APPOINTMENTS & ACTIONS */}
           {(user.role === 'admin' || user.role === 'receptionist') && (
-            <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+            <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-base font-bold text-slate-900 uppercase tracking-wider">Today's Appointment Schedule</h2>
-                  <p className="text-xs text-slate-500 mt-0.5">Quick booking actions, check-ins, and state triggers</p>
+                  <h2 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Today's Appointment Schedule</h2>
+                  <p className="text-[10px] text-slate-400 mt-0.5 font-medium">Quick booking actions and customer state triggers</p>
                 </div>
                 <Link to="/appointments" className="text-xs font-bold text-blue-600 hover:underline flex items-center gap-0.5">
                   <span>View Full Schedule</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </Link>
               </div>
-
+ 
               <div className="space-y-3">
                 {appointments.length === 0 ? (
                   <div className="text-center py-8 bg-slate-50 rounded-xl border border-slate-200">
@@ -469,41 +481,41 @@ export default function Dashboard() {
                     return (
                       <div
                         key={appt._id}
-                        className="p-4 rounded-xl border border-slate-200 bg-slate-50 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                        className="p-4 rounded-xl border border-slate-200 bg-slate-50/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
                       >
                         <div className="flex items-center gap-3">
-                          <div className="p-2.5 rounded-lg bg-slate-100 text-blue-600 font-bold text-sm shrink-0 flex flex-col items-center justify-center min-w-16">
+                          <div className="p-2.5 rounded-lg bg-slate-100/80 text-slate-700 font-bold text-xs shrink-0 flex flex-col items-center justify-center min-w-16 border border-slate-200">
                             <Clock className="w-3.5 h-3.5 text-slate-500 mb-0.5" />
                             <span>{apptTime}</span>
                           </div>
                           <div>
-                            <div className="text-sm font-bold text-slate-900 flex items-center gap-1.5">
+                            <div className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
                               <span>{appt.customerId?.name || 'Customer'}</span>
-                              <span className={`inline-flex px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
+                              <span className={`inline-flex px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border ${
                                 appt.status === 'checked-in'
-                                  ? 'bg-emerald-50 text-emerald-600 border border-emerald-100'
+                                  ? 'bg-emerald-50 text-emerald-700 border-emerald-250'
                                   : appt.status === 'in-progress'
-                                  ? 'bg-sky-50 text-sky-600 border border-sky-100'
+                                  ? 'bg-sky-50 text-sky-705 border-sky-200'
                                   : appt.status === 'scheduled'
-                                  ? 'bg-blue-50 text-blue-600 border border-blue-100'
-                                  : 'bg-slate-100 text-slate-600 border border-slate-200'
+                                  ? 'bg-blue-50 text-blue-700 border-blue-200'
+                                  : 'bg-slate-105 text-slate-700 border-slate-200'
                               }`}>
                                 {appt.status}
                               </span>
                             </div>
-                            <p className="text-xs text-slate-500 mt-0.5 font-semibold">
+                            <p className="text-[10px] text-slate-500 mt-0.5 font-semibold">
                               Vehicle Plate: <span className="text-slate-700">{appt.vehicleId?.plateNo || 'N/A'}</span>
                             </p>
                           </div>
                         </div>
-
+ 
                         <div className="flex items-center gap-2">
                           {appt.status === 'scheduled' && (
                             <>
                               <button
                                 onClick={() => handleCheckIn(appt._id)}
                                 disabled={actionLoading === appt._id}
-                                className="px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-xs font-bold text-white transition-colors flex items-center gap-1 cursor-pointer disabled:opacity-50"
+                                className="px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-505 text-xs font-bold text-white transition-colors flex items-center gap-1 cursor-pointer disabled:opacity-50 shadow-sm"
                               >
                                 {actionLoading === appt._id ? (
                                   <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -515,20 +527,20 @@ export default function Dashboard() {
                               <button
                                 onClick={() => handleCancelAppt(appt._id)}
                                 disabled={actionLoading === appt._id}
-                                className="px-3.5 py-1.5 rounded-lg bg-white hover:bg-slate-50 border border-slate-200 text-xs font-bold text-rose-600 transition-colors cursor-pointer disabled:opacity-50"
+                                className="px-3.5 py-1.5 rounded-lg bg-white hover:bg-slate-50 border border-slate-200 text-xs font-bold text-rose-600 transition-colors cursor-pointer disabled:opacity-50 shadow-sm"
                               >
                                 <span>Cancel</span>
                               </button>
                             </>
                           )}
                           {appt.status === 'checked-in' && (
-                            <span className="text-xs text-emerald-600 font-bold flex items-center gap-1.5 bg-emerald-50 px-2.5 py-1.5 rounded-md border border-emerald-100">
+                            <span className="text-xs text-emerald-700 font-bold flex items-center gap-1.5 bg-emerald-50 px-2.5 py-1.5 rounded-md border border-emerald-200">
                               <CheckCircle2 className="w-4 h-4 text-emerald-500" />
                               <span>Checked-In</span>
                             </span>
                           )}
                           {appt.status === 'in-progress' && (
-                            <span className="text-xs text-sky-600 font-bold flex items-center gap-1.5 bg-sky-50 px-2.5 py-1.5 rounded-md border border-sky-100">
+                            <span className="text-xs text-sky-700 font-bold flex items-center gap-1.5 bg-sky-50 px-2.5 py-1.5 rounded-md border border-sky-200">
                               <Wrench className="w-4 h-4 text-sky-600" />
                               <span>Servicing...</span>
                             </span>
@@ -541,21 +553,21 @@ export default function Dashboard() {
               </div>
             </div>
           )}
-
+ 
           {/* C. TECHNICIAN VIEW: ASSIGNED SERVICING RECORDS LIST */}
           {(user.role === 'admin' || user.role === 'technician') && (
-            <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+            <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-base font-bold text-slate-900 uppercase tracking-wider">Your Assigned Work Orders</h2>
-                  <p className="text-xs text-slate-500 mt-0.5">Active servicing checklists assigned to you</p>
+                  <h2 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Your Assigned Work Orders</h2>
+                  <p className="text-[10px] text-slate-400 mt-0.5 font-medium">Active servicing checklists assigned to you</p>
                 </div>
                 <Link to="/servicing" className="text-xs font-bold text-blue-600 hover:underline flex items-center gap-0.5">
                   <span>Open Servicing Center</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </Link>
               </div>
-
+ 
               <div className="space-y-3">
                 {jobCards.length === 0 ? (
                   <div className="text-center py-8 bg-slate-50 rounded-xl border border-slate-200">
@@ -566,23 +578,23 @@ export default function Dashboard() {
                   jobCards.map((jc) => (
                     <div
                       key={jc._id}
-                      className="p-4 rounded-xl border border-slate-200 bg-slate-50 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-slate-300 transition-colors"
+                      className="p-4 rounded-xl border border-slate-200 bg-slate-50/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-slate-300 transition-colors"
                     >
                       <div>
-                        <div className="text-sm font-bold text-slate-800 flex items-center gap-2">
+                        <div className="text-xs font-bold text-slate-800 flex items-center gap-2">
                           <span>Record ID: #{jc._id.toString().substring(18)}</span>
-                          <span className="inline-flex px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-amber-50 text-amber-600 border border-amber-100">
+                          <span className="inline-flex px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-amber-50 text-amber-700 border border-amber-200">
                             {jc.status}
                           </span>
                         </div>
-                        <p className="text-sm text-slate-500 mt-1 font-semibold">
+                        <p className="text-xs text-slate-500 mt-1 font-semibold">
                           Client: <span className="text-slate-700">{jc.customerId?.name || 'Customer'}</span> | Plate:{' '}
                           <span className="text-slate-700">{jc.vehicleId?.plateNo || 'N/A'}</span>
                         </p>
                       </div>
                       <Link
                         to={`/servicing`}
-                        className="px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-xs font-bold text-white transition-colors cursor-pointer text-center inline-block"
+                        className="px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-xs font-bold text-white transition-colors cursor-pointer text-center inline-block shadow-sm"
                       >
                         Manage Worksheet
                       </Link>
@@ -599,34 +611,34 @@ export default function Dashboard() {
         <div className="space-y-6">
           
           {/* I. QUICK ACTIONS WIDGET */}
-          <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-            <h2 className="text-base font-bold text-slate-900 uppercase tracking-wider">Quick Actions Shortcuts</h2>
+          <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-4">
+            <h2 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Quick Actions</h2>
             
             <div className="grid grid-cols-1 gap-3">
               {(user.role === 'admin' || user.role === 'receptionist') && (
                 <>
                   <Link
                     to="/appointments"
-                    className="p-3 rounded-xl border border-slate-100 bg-slate-50/50 hover:bg-white hover:border-blue-200 hover:shadow-md hover:shadow-blue-900/5 transition-all flex items-center gap-4 group text-left"
+                    className="p-3 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-slate-100/50 transition-all flex items-center gap-3.5 group text-left"
                   >
-                    <div className="p-3 rounded-xl bg-blue-50 text-blue-600 group-hover:bg-blue-100 transition-all shrink-0">
-                      <Plus className="w-5 h-5" />
+                    <div className="p-2.5 rounded-lg bg-slate-150 text-slate-700 border border-slate-350 shrink-0">
+                      <Plus className="w-4 h-4" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <span className="font-bold text-sm text-slate-800 group-hover:text-blue-600 transition-colors block">Book Slots</span>
-                      <span className="text-xs text-slate-400 block mt-0.5">Manage schedule</span>
+                      <span className="font-bold text-xs text-slate-800 group-hover:text-blue-600 transition-colors block">Book Slots</span>
+                      <span className="text-[10px] text-slate-400 block mt-0.5 font-medium">Manage schedule</span>
                     </div>
                   </Link>
                   <Link
                     to="/customers"
-                    className="p-3 rounded-xl border border-slate-100 bg-slate-50/50 hover:bg-white hover:border-violet-200 hover:shadow-md hover:shadow-violet-900/5 transition-all flex items-center gap-4 group text-left"
+                    className="p-3 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-slate-100/50 transition-all flex items-center gap-3.5 group text-left"
                   >
-                    <div className="p-3 rounded-xl bg-violet-50 text-violet-600 group-hover:bg-violet-100 transition-all shrink-0">
-                      <Users className="w-5 h-5" />
+                    <div className="p-2.5 rounded-lg bg-slate-150 text-slate-700 border border-slate-350 shrink-0">
+                      <Users className="w-4 h-4" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <span className="font-bold text-sm text-slate-800 group-hover:text-violet-600 transition-colors block">Register Client</span>
-                      <span className="text-xs text-slate-400 block mt-0.5">Add new customer</span>
+                      <span className="font-bold text-xs text-slate-800 group-hover:text-blue-600 transition-colors block">Register Client</span>
+                      <span className="text-[10px] text-slate-400 block mt-0.5 font-medium">Add new customer</span>
                     </div>
                   </Link>
                 </>
@@ -636,26 +648,26 @@ export default function Dashboard() {
                 <>
                   <Link
                     to="/finance"
-                    className="p-3 rounded-xl border border-slate-100 bg-slate-50/50 hover:bg-white hover:border-emerald-200 hover:shadow-md hover:shadow-emerald-900/5 transition-all flex items-center gap-4 group text-left"
+                    className="p-3 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-slate-100/50 transition-all flex items-center gap-3.5 group text-left"
                   >
-                    <div className="p-3 rounded-xl bg-emerald-50 text-emerald-600 group-hover:bg-emerald-100 transition-all shrink-0">
-                      <TrendingUp className="w-5 h-5" />
+                    <div className="p-2.5 rounded-lg bg-slate-150 text-slate-700 border border-slate-350 shrink-0">
+                      <TrendingUp className="w-4 h-4" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <span className="font-bold text-sm text-slate-800 group-hover:text-emerald-600 transition-colors block">Record Expense</span>
-                      <span className="text-xs text-slate-400 block mt-0.5">Log company spend</span>
+                      <span className="font-bold text-xs text-slate-800 group-hover:text-blue-600 transition-colors block">Record Expense</span>
+                      <span className="text-[10px] text-slate-400 block mt-0.5 font-medium">Log company spend</span>
                     </div>
                   </Link>
                   <Link
                     to="/invoices"
-                    className="p-3 rounded-xl border border-slate-100 bg-slate-50/50 hover:bg-white hover:border-blue-200 hover:shadow-md hover:shadow-blue-900/5 transition-all flex items-center gap-4 group text-left"
+                    className="p-3 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-slate-100/50 transition-all flex items-center gap-3.5 group text-left"
                   >
-                    <div className="p-3 rounded-xl bg-blue-50 text-blue-600 group-hover:bg-blue-100 transition-all shrink-0">
-                      <Receipt className="w-5 h-5" />
+                    <div className="p-2.5 rounded-lg bg-slate-150 text-slate-700 border border-slate-350 shrink-0">
+                      <Receipt className="w-4 h-4" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <span className="font-bold text-sm text-slate-800 group-hover:text-blue-600 transition-colors block">View Invoices</span>
-                      <span className="text-xs text-slate-400 block mt-0.5">Billing & receipts</span>
+                      <span className="font-bold text-xs text-slate-800 group-hover:text-blue-600 transition-colors block">View Invoices</span>
+                      <span className="text-[10px] text-slate-400 block mt-0.5 font-medium">Billing & receipts</span>
                     </div>
                   </Link>
                 </>
@@ -665,26 +677,26 @@ export default function Dashboard() {
                 <>
                   <Link
                     to="/inventory"
-                    className="p-3 rounded-xl border border-slate-100 bg-slate-50/50 hover:bg-white hover:border-blue-200 hover:shadow-md hover:shadow-blue-900/5 transition-all flex items-center gap-4 group text-left"
+                    className="p-3 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-slate-100/50 transition-all flex items-center gap-3.5 group text-left"
                   >
-                    <div className="p-3 rounded-xl bg-blue-50 text-blue-600 group-hover:bg-blue-100 transition-all shrink-0">
-                      <Wrench className="w-5 h-5" />
+                    <div className="p-2.5 rounded-lg bg-slate-150 text-slate-700 border border-slate-350 shrink-0">
+                      <Wrench className="w-4 h-4" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <span className="font-bold text-sm text-slate-800 group-hover:text-blue-600 transition-colors block">Inventory Parts</span>
-                      <span className="text-xs text-slate-400 block mt-0.5">Stock levels</span>
+                      <span className="font-bold text-xs text-slate-800 group-hover:text-blue-600 transition-colors block">Inventory Parts</span>
+                      <span className="text-[10px] text-slate-400 block mt-0.5 font-medium">Stock levels</span>
                     </div>
                   </Link>
                   <Link
                     to="/servicing"
-                    className="p-3 rounded-xl border border-slate-100 bg-slate-50/50 hover:bg-white hover:border-blue-200 hover:shadow-md hover:shadow-blue-900/5 transition-all flex items-center gap-4 group text-left"
+                    className="p-3 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-slate-100/50 transition-all flex items-center gap-3.5 group text-left"
                   >
-                    <div className="p-3 rounded-xl bg-blue-50 text-blue-600 group-hover:bg-blue-100 transition-all shrink-0">
-                      <ClipboardList className="w-5 h-5" />
+                    <div className="p-2.5 rounded-lg bg-slate-150 text-slate-700 border border-slate-350 shrink-0">
+                      <ClipboardList className="w-4 h-4" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <span className="font-bold text-sm text-slate-800 group-hover:text-blue-600 transition-colors block">Servicing</span>
-                      <span className="text-xs text-slate-400 block mt-0.5">Active work orders</span>
+                      <span className="font-bold text-xs text-slate-800 group-hover:text-blue-600 transition-colors block">Servicing</span>
+                      <span className="text-[10px] text-slate-400 block mt-0.5 font-medium">Active work orders</span>
                     </div>
                   </Link>
                 </>
@@ -693,10 +705,10 @@ export default function Dashboard() {
           </div>
 
           {/* II. ALERTS & LIVE FEED WIDGET */}
-          <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+          <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-base font-bold text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
-                <Bell className="w-4.5 h-4.5 text-blue-600" />
+              <h2 className="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                <Bell className="w-4 h-4 text-slate-600" />
                 <span>Live Alert Feed</span>
               </h2>
               <Link to="/notifications" className="text-xs font-bold text-slate-500 hover:text-blue-600 uppercase tracking-wider">
@@ -706,22 +718,22 @@ export default function Dashboard() {
 
             <div className="space-y-3.5">
               {notifications.length === 0 ? (
-                <p className="text-sm text-slate-500 text-center py-4">No recent activity logs.</p>
+                <p className="text-xs text-slate-500 text-center py-4">No recent activity logs.</p>
               ) : (
                 notifications.map((noti) => (
-                  <div key={noti._id} className="p-3 rounded-xl bg-slate-50 border border-slate-100 flex gap-3 items-center">
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center border text-sm font-bold shrink-0 ${
+                  <div key={noti._id} className="p-3 rounded-xl bg-slate-50/50 border border-slate-200 flex gap-3 items-center">
+                    <div className={`w-9 h-9 rounded-lg flex items-center justify-center border text-xs font-bold shrink-0 ${
                       noti.type === 'inventory'
-                        ? 'bg-rose-50 border-rose-200 text-rose-600'
+                        ? 'bg-rose-50 border-rose-200 text-rose-700'
                         : noti.type === 'payment'
-                        ? 'bg-emerald-50 border-emerald-200 text-emerald-600'
-                        : 'bg-blue-50 border-blue-200 text-blue-600'
+                        ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
+                        : 'bg-blue-50 border-blue-200 text-blue-700'
                     }`}>
                       {noti.type ? noti.type.charAt(0).toUpperCase() : 'S'}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <div className="text-sm font-bold text-slate-800 leading-tight truncate">{noti.title}</div>
-                      <p className="text-xs text-slate-500 mt-1 line-clamp-2 leading-relaxed">
+                      <div className="text-xs font-bold text-slate-800 leading-tight truncate">{noti.title}</div>
+                      <p className="text-[10px] text-slate-500 mt-1 line-clamp-2 leading-relaxed">
                         {noti.message}
                       </p>
                     </div>

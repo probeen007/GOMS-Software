@@ -23,7 +23,24 @@ const invoiceSchema = new mongoose.Schema(
     servicingId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Servicing',
-      required: [true, 'Servicing record reference is required']
+      required: false
+    },
+    isPC: {
+      type: Boolean,
+      default: false
+    },
+    items: [
+      {
+        name: { type: String, required: true },
+        qty: { type: Number, required: true, default: 1 },
+        unitPrice: { type: Number, required: true, default: 0 },
+        total: { type: Number, required: true, default: 0 },
+        itemType: { type: String, default: 'part' }
+      }
+    ],
+    odometer: {
+      type: Number,
+      default: 0
     },
     invoiceType: {
       type: String,
@@ -38,7 +55,7 @@ const invoiceSchema = new mongoose.Schema(
     vehicleId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Vehicle',
-      required: [true, 'Vehicle ID is required']
+      required: false
     },
     invoiceNo: {
       type: String,

@@ -21,6 +21,8 @@ import staffRoutes from './routes/staff.js';
 import notificationRoutes from './routes/notifications.js';
 import auditLogRoutes from './routes/auditLogs.js';
 import tasksRoutes from './routes/tasks.js';
+import daybookRoutes from './routes/daybook.js';
+import settingsRoutes from './routes/settings.js';
 import { initCronJobs, checkLowStock } from './jobs/stockCheck.js';
 
 dotenv.config();
@@ -46,9 +48,10 @@ app.use(helmet({
   contentSecurityPolicy: false, // Disable CSP in dev to avoid blocking dev server scripts if needed
 }));
 
-// CORS allow-list — same-origin requests (the deployed SPA) never send an Origin
-// header the browser checks against this, so this only gates cross-origin callers.
-// Add any additional trusted origins via the comma-separated CORS_ORIGINS env var.
+// CORS allow-list. Note: browsers send an Origin header on same-origin
+// state-changing requests too (not just cross-origin ones), so your deployed
+// frontend's own domain must be included via the CORS_ORIGINS env var
+// (comma-separated), e.g. CORS_ORIGINS=https://goms-software.vercel.app
 const defaultAllowedOrigins = ['http://localhost:3000', 'http://127.0.0.1:3000'];
 const configuredOrigins = (process.env.CORS_ORIGINS || '')
   .split(',')
@@ -90,6 +93,8 @@ app.use('/api/staff', staffRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/audit-logs', auditLogRoutes);
 app.use('/api/tasks', tasksRoutes);
+app.use('/api/daybook', daybookRoutes);
+app.use('/api/settings', settingsRoutes);
 
 // Test endpoint
 app.get('/api/health', (req, res) => {
