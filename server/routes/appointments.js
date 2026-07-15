@@ -99,7 +99,8 @@ router.get('/', authenticate, authorize('admin', 'receptionist', 'technician'), 
       .populate('customerId', 'name phone email')
       .populate('vehicleId', 'plateNo make model year colour')
       .populate('technicianId', 'name email')
-      .sort({ dateTime: 1 });
+      .sort({ dateTime: 1 })
+      .lean();
 
     res.json(appointments);
   } catch (err) {
@@ -137,13 +138,13 @@ router.post(
 
     try {
       // 1. Verify customer exists
-      const customer = await Customer.findOne({ _id: customerId, deletedAt: null });
+      const customer = await Customer.findOne({ _id: customerId, deletedAt: null }).lean();
       if (!customer) {
         return res.status(404).json({ message: 'Customer not found' });
       }
 
       // 2. Verify vehicle exists and belongs to the customer
-      const vehicle = await Vehicle.findOne({ _id: vehicleId, customerId: customer._id });
+      const vehicle = await Vehicle.findOne({ _id: vehicleId, customerId: customer._id }).lean();
       if (!vehicle) {
         return res.status(404).json({ message: 'Vehicle not registered to this customer' });
       }
@@ -164,7 +165,7 @@ router.post(
         technicianId: technician._id,
         status: { $in: ['scheduled', 'checked-in', 'in-progress'] },
         dateTime: { $gte: minTime, $lte: maxTime }
-      });
+      }).lean();
 
       if (conflict) {
         const conflictTime = formatNepaliTime(conflict.dateTime);
@@ -189,7 +190,8 @@ router.post(
       const populatedAppointment = await Appointment.findById(appointment._id)
         .populate('customerId', 'name phone')
         .populate('vehicleId', 'plateNo make model year')
-        .populate('technicianId', 'name');
+        .populate('technicianId', 'name')
+        .lean();
 
       // Send in-app notifications
       await createNotification({
@@ -253,11 +255,21 @@ router.patch(
         return res.status(404).json({ message: 'Appointment not found' });
       }
 
-      // Technician authorization constraint
-      if (req.user.role === 'technician' && req.body.status) {
+      // Technician authorization constraint: can only update the status of
+      // their own assigned appointments, and only to an allowed transition.
+      if (req.user.role === 'technician') {
+        if (!appointment.technicianId || appointment.technicianId.toString() !== req.user.id) {
+          return res.status(403).json({ message: 'Forbidden: You can only update appointments assigned to you.' });
+        }
+
+        const requestedKeys = Object.keys(req.body).filter((k) => req.body[k] !== undefined);
+        if (requestedKeys.some((k) => k !== 'status')) {
+          return res.status(403).json({ message: 'Forbidden: Technicians are only permitted to update appointment status.' });
+        }
+
         const allowedTechStatuses = ['in-progress', 'completed'];
-        if (!allowedTechStatuses.includes(req.body.status)) {
-          return res.status(453).json({ message: 'Technicians are only permitted to transition status to in-progress or completed.' });
+        if (req.body.status && !allowedTechStatuses.includes(req.body.status)) {
+          return res.status(403).json({ message: 'Technicians are only permitted to transition status to in-progress or completed.' });
         }
       }
 
@@ -279,7 +291,8 @@ router.patch(
       const populatedAppointment = await Appointment.findById(appointment._id)
         .populate('customerId', 'name phone email')
         .populate('vehicleId', 'plateNo make model year colour')
-        .populate('technicianId', 'name email');
+        .populate('technicianId', 'name email')
+        .lean();
 
       // Send status change notifications
       if (req.body.status && req.body.status !== previousStatus) {
@@ -361,7 +374,8 @@ router.post(
       const populatedAppointment = await Appointment.findById(appointment._id)
         .populate('customerId', 'name phone email')
         .populate('vehicleId', 'plateNo make model year colour')
-        .populate('technicianId', 'name email');
+        .populate('technicianId', 'name email')
+        .lean();
 
       // Send notifications
       await createNotification({

@@ -17,7 +17,8 @@ import {
   Filter,
   Camera,
   Image as ImageIcon,
-  MessageSquare
+  MessageSquare,
+  Trash2
 } from 'lucide-react';
 
 export default function Appointments() {
@@ -109,6 +110,16 @@ export default function Appointments() {
       fetchReminders();
     } catch (error) {
       console.error('Error marking reminder sent:', error);
+    }
+  };
+
+  const handleDeleteReminder = async (invoiceId) => {
+    if (!window.confirm('Remove this service reminder from the list? This does not affect the invoice or payment record.')) return;
+    try {
+      await axios.delete(`/api/invoices/${invoiceId}/service-reminder`);
+      fetchReminders();
+    } catch (error) {
+      console.error('Error deleting reminder:', error);
     }
   };
 
@@ -699,6 +710,14 @@ export default function Appointments() {
 
                     {/* Footer Actions */}
                     <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteReminder(rem._id)}
+                        className="flex items-center gap-2 px-4 h-10 rounded-lg text-sm font-bold text-slate-500 bg-white hover:bg-rose-50 hover:text-rose-600 border border-slate-200 hover:border-rose-200 transition-colors cursor-pointer"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                        <span>Delete</span>
+                      </button>
                       <a
                         href={getWhatsAppLink(rem.customerId?.phone || '', message)}
                         target="_blank"

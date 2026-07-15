@@ -10,10 +10,9 @@ const router = express.Router();
 // @access  Private
 router.get('/', authenticate, async (req, res) => {
   try {
-    let settings = await Settings.findOne();
+    let settings = await Settings.findOne().lean();
     if (!settings) {
-      settings = new Settings({});
-      await settings.save();
+      settings = await new Settings({}).save();
     }
     res.json(settings);
   } catch (err) {
@@ -57,11 +56,12 @@ router.put('/', authenticate, authorize('admin'), async (req, res) => {
     await settings.save();
 
     // Log this settings update action to audit logs
-    await logAction(
-      req.user.id,
-      'UPDATE_SETTINGS',
-      `Updated system settings. Garage: ${settings.garageName}`
-    );
+    await logAction({
+      req,
+      action: 'UPDATE_SETTINGS',
+      module: 'settings',
+      details: `Updated system settings. Garage: ${settings.garageName}`
+    });
 
     res.json(settings);
   } catch (err) {

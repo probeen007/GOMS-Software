@@ -31,7 +31,9 @@ const auditLogSchema = new mongoose.Schema(
         'invoices',
         'loyalty',
         'finance',
-        'staff'
+        'staff',
+        'tasks',
+        'settings'
       ]
     },
     details: {

@@ -46,7 +46,8 @@ router.get('/unbilled', authenticate, authorize('admin', 'receptionist', 'accoun
     const records = await Servicing.find({ status: 'closed', invoiceId: null })
       .populate('customerId', 'name phone email')
       .populate('vehicleId', 'plateNo make model')
-      .sort({ closedAt: -1 });
+      .sort({ closedAt: -1 })
+      .lean();
 
     res.json(records);
   } catch (err) {
@@ -72,19 +73,19 @@ router.get('/search', authenticate, authorize('admin', 'receptionist', 'technici
     let vehicleIds = null;
 
     if (by === 'customer-name') {
-      const customers = await Customer.find({ name: regex, deletedAt: null }).select('_id');
+      const customers = await Customer.find({ name: regex, deletedAt: null }).select('_id').lean();
       customerIds = customers.map(c => c._id);
     } else if (by === 'customer-phone') {
-      const customers = await Customer.find({ phone: regex, deletedAt: null }).select('_id');
+      const customers = await Customer.find({ phone: regex, deletedAt: null }).select('_id').lean();
       customerIds = customers.map(c => c._id);
     } else if (by === 'vehicle-number') {
-      const vehicles = await Vehicle.find({ plateNo: regex }).select('_id');
+      const vehicles = await Vehicle.find({ plateNo: regex }).select('_id').lean();
       vehicleIds = vehicles.map(v => v._id);
     } else {
       // No field specified: search across all three
       const [customers, vehicles] = await Promise.all([
-        Customer.find({ $or: [{ name: regex }, { phone: regex }], deletedAt: null }).select('_id'),
-        Vehicle.find({ plateNo: regex }).select('_id')
+        Customer.find({ $or: [{ name: regex }, { phone: regex }], deletedAt: null }).select('_id').lean(),
+        Vehicle.find({ plateNo: regex }).select('_id').lean()
       ]);
       customerIds = customers.map(c => c._id);
       vehicleIds = vehicles.map(v => v._id);
@@ -101,7 +102,8 @@ router.get('/search', authenticate, authorize('admin', 'receptionist', 'technici
     const records = await Servicing.find({ $or: orConditions })
       .populate('customerId', 'name phone email')
       .populate('vehicleId', 'plateNo make model')
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .lean();
 
     res.json(records);
   } catch (err) {
@@ -128,8 +130,8 @@ router.get('/', authenticate, authorize('admin', 'receptionist', 'technician', '
     if (search && search.trim()) {
       const regex = { $regex: search.trim(), $options: 'i' };
       const [matchingCustomers, matchingVehicles] = await Promise.all([
-        Customer.find({ name: regex, deletedAt: null }).select('_id'),
-        Vehicle.find({ $or: [{ plateNo: regex }, { make: regex }, { model: regex }] }).select('_id')
+        Customer.find({ name: regex, deletedAt: null }).select('_id').lean(),
+        Vehicle.find({ $or: [{ plateNo: regex }, { make: regex }, { model: regex }] }).select('_id').lean()
       ]);
       query.$or = [
         { customerId: { $in: matchingCustomers.map((c) => c._id) } },
@@ -147,7 +149,8 @@ router.get('/', authenticate, authorize('admin', 'receptionist', 'technician', '
         })
         .sort({ createdAt: -1 })
         .skip(skip)
-        .limit(limit),
+        .limit(limit)
+        .lean(),
       Servicing.countDocuments(query)
     ]);
 
@@ -174,7 +177,8 @@ router.get('/:id', authenticate, authorize('admin', 'receptionist', 'technician'
       .populate({
         path: 'appointmentId',
         populate: { path: 'technicianId', select: 'name' }
-      });
+      })
+      .lean();
 
     if (!record) {
       return res.status(404).json({ message: 'Servicing record not found' });
@@ -209,12 +213,12 @@ router.post(
     const { customerId, vehicleId, appointmentId, findings } = req.body;
 
     try {
-      const customer = await Customer.findOne({ _id: customerId, deletedAt: null });
+      const customer = await Customer.findOne({ _id: customerId, deletedAt: null }).lean();
       if (!customer) {
         return res.status(404).json({ message: 'Customer not found' });
       }
 
-      const vehicle = await Vehicle.findOne({ _id: vehicleId, customerId: customer._id });
+      const vehicle = await Vehicle.findOne({ _id: vehicleId, customerId: customer._id }).lean();
       if (!vehicle) {
         return res.status(404).json({ message: 'Vehicle not registered to this customer' });
       }
@@ -242,7 +246,8 @@ router.post(
 
       const populated = await Servicing.findById(record._id)
         .populate('customerId', 'name phone')
-        .populate('vehicleId', 'plateNo make model');
+        .populate('vehicleId', 'plateNo make model')
+        .lean();
 
       res.status(201).json(populated);
     } catch (err) {
@@ -316,7 +321,8 @@ router.post(
 
       const populated = await Servicing.findById(record._id)
         .populate('customerId', 'name phone')
-        .populate('vehicleId', 'plateNo make model');
+        .populate('vehicleId', 'plateNo make model')
+        .lean();
 
       await logAction({
         req,
@@ -376,7 +382,8 @@ router.post(
 
       const populated = await Servicing.findById(record._id)
         .populate('customerId', 'name phone')
-        .populate('vehicleId', 'plateNo make model');
+        .populate('vehicleId', 'plateNo make model')
+        .lean();
 
       await logAction({
         req,
@@ -433,8 +440,8 @@ router.patch(
         await Appointment.findByIdAndUpdate(record.appointmentId, { status: 'completed' });
       }
 
-      const customer = await Customer.findById(record.customerId);
-      const appointment = record.appointmentId ? await Appointment.findById(record.appointmentId) : null;
+      const customer = await Customer.findById(record.customerId).lean();
+      const appointment = record.appointmentId ? await Appointment.findById(record.appointmentId).lean() : null;
 
       await createNotification({
         recipientRoles: ['admin', 'receptionist', 'accountant'],
@@ -480,13 +487,14 @@ router.get('/:id/pdf', authenticate, authorize('admin', 'receptionist', 'technic
       .populate({
         path: 'appointmentId',
         populate: { path: 'technicianId', select: 'name' }
-      });
+      })
+      .lean();
 
     if (!record) {
       return res.status(404).send('Servicing record not found');
     }
 
-    const settings = await Settings.findOne();
+    const settings = await Settings.findOne().lean();
     const garageName = settings ? settings.garageName.toUpperCase() : 'PM AUTOMOBILES';
     const garageAddress = settings ? settings.garageAddress : 'Kathmandu, Nepal';
 

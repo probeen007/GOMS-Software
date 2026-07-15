@@ -14,7 +14,8 @@ router.get('/customer/:customerId', authenticate, authorize('admin', 'receptioni
   try {
     const history = await LoyaltyLedger.find({ customerId: req.params.customerId })
       .populate('invoiceId', 'invoiceNo')
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .lean();
 
     res.json(history);
   } catch (err) {

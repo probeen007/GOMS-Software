@@ -178,7 +178,7 @@ router.get('/attendance', authenticate, authorize('admin'), async (req, res) => 
       endOfDay.setHours(23, 59, 59, 999);
       query.date = { $gte: startOfDay, $lte: endOfDay };
     }
-    const records = await Attendance.find(query).populate('userId', 'name email role');
+    const records = await Attendance.find(query).populate('userId', 'name email role').lean();
     res.json(records);
   } catch (err) {
     console.error('Fetch attendance error:', err.message);
@@ -259,7 +259,7 @@ router.get('/salary-sheet', authenticate, authorize('admin'), async (req, res) =
     const staff = await User.find({ isActive: true });
     const attendanceRecords = await Attendance.find({
       date: { $gte: startOfMonth, $lte: endOfMonth }
-    });
+    }).lean();
 
     const salarySheet = staff.map((member) => {
       const memberRecords = attendanceRecords.filter(

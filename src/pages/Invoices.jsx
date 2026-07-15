@@ -61,6 +61,7 @@ export default function Invoices() {
   const [unbilledLoading, setUnbilledLoading] = useState(false);
   const [selectedServicingId, setSelectedServicingId] = useState('');
   const [generateInvoiceType, setGenerateInvoiceType] = useState('vat');
+  const [generateNextServiceDate, setGenerateNextServiceDate] = useState('');
   const [generateLoading, setGenerateLoading] = useState(false);
   const [generateError, setGenerateError] = useState('');
 
@@ -75,6 +76,7 @@ export default function Invoices() {
   const [pcItems, setPcItems] = useState([]);
   const [pcDiscount, setPcDiscount] = useState('0');
   const [pcOdometer, setPcOdometer] = useState('0');
+  const [pcNextServiceDate, setPcNextServiceDate] = useState('');
   const [pcError, setPcError] = useState('');
   const [pcLoading, setPcLoading] = useState(false);
   const [vatRate, setVatRate] = useState(13);
@@ -157,6 +159,7 @@ export default function Invoices() {
     setIsGenerateModalOpen(true);
     setSelectedServicingId('');
     setGenerateInvoiceType('vat');
+    setGenerateNextServiceDate('');
     setGenerateError('');
     fetchUnbilledRecords();
   };
@@ -174,7 +177,8 @@ export default function Invoices() {
     try {
       const response = await axios.post('/api/invoices/generate', {
         servicingId: selectedServicingId,
-        invoiceType: generateInvoiceType
+        invoiceType: generateInvoiceType,
+        nextServiceDate: generateNextServiceDate || null
       });
       setIsGenerateModalOpen(false);
       setSelectedServicingId('');
@@ -215,6 +219,7 @@ export default function Invoices() {
     setPcItems([{ name: '', qty: 1, unitPrice: 0, itemType: 'part' }]);
     setPcDiscount('0');
     setPcOdometer('0');
+    setPcNextServiceDate('');
     setPcError('');
     setPcLoading(false);
 
@@ -265,7 +270,8 @@ export default function Invoices() {
         invoiceType: pcInvoiceType,
         items: pcItems,
         discount: Number(pcDiscount) || 0,
-        odometer: Number(pcOdometer) || 0
+        odometer: Number(pcOdometer) || 0,
+        nextServiceDate: pcNextServiceDate || null
       });
       setIsPCModalOpen(false);
       await fetchInvoices();
@@ -1175,6 +1181,18 @@ export default function Invoices() {
                 </div>
               </div>
 
+              <div className="space-y-1.5">
+                <label className="text-xs font-extrabold text-slate-500 uppercase tracking-wide">Next Service Date (Optional)</label>
+                <input
+                  type="date"
+                  value={generateNextServiceDate}
+                  onChange={(e) => setGenerateNextServiceDate(e.target.value)}
+                  min={new Date().toISOString().split('T')[0]}
+                  className="block w-full h-11 rounded-xl border-slate-200 text-sm"
+                />
+                <p className="text-[11px] text-slate-400">Set the date this vehicle is next due for a service. Leave blank if unknown — it can be added later when payment is recorded.</p>
+              </div>
+
               <div className="flex gap-3 justify-end pt-4 border-t border-slate-100 mt-6">
                 <button
                   type="button"
@@ -1278,6 +1296,20 @@ export default function Invoices() {
                         placeholder="0"
                         value={pcOdometer}
                         onChange={(e) => setPcOdometer(e.target.value)}
+                        className="block w-full h-9 rounded-lg border-slate-200 text-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </div>
+                  )}
+
+                  {/* Next Service Date */}
+                  {pcSelectedVehicleId && (
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Next Service Date (Optional)</label>
+                      <input
+                        type="date"
+                        value={pcNextServiceDate}
+                        onChange={(e) => setPcNextServiceDate(e.target.value)}
+                        min={new Date().toISOString().split('T')[0]}
                         className="block w-full h-9 rounded-lg border-slate-200 text-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                       />
                     </div>

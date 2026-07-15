@@ -25,7 +25,7 @@
       --amber-500: #f59e0b;
       --amber-50: #fef3c7;
     }
-    
+
     * {
       box-sizing: border-box;
       margin: 0;
@@ -263,26 +263,31 @@
 <body>
 
   <div class="container">
-    <a href="/landing.html" class="back-home-btn">&larr; Back to Homepage</a>
+    <a href="/" class="back-home-btn">&larr; Back to Dashboard</a>
     <header>
       <div class="brand-logo">PM Auto<span>Mobiles</span></div>
       <div class="doc-title">Operations & User Manual</div>
       <div class="doc-meta">
-        <strong>Version:</strong> v1.0.0 (MVP)
+        <strong>Version:</strong> v2.0.0
         <span>|</span>
-        <strong>Release Date:</strong> June 2026
+        <strong>Release Date:</strong> July 2026
         <span>|</span>
         <strong>Target:</strong> Internal Garage Staff
       </div>
     </header>
 
     <p>
-      Welcome to the <strong>PM Auto Mobiles Garage Operations Manual</strong>. This document details the end-to-end operation of the web application, highlighting roles, operational flows, and step-by-step procedures to manage your garage digitally.
+      Welcome to the <strong>PM Auto Mobiles Garage Operations Manual</strong>. This document details the end-to-end operation of the web application (GOMS &mdash; Garage Operations Management System), highlighting roles, operational flows, and step-by-step procedures to manage your garage digitally. You can always reopen this manual by clicking the <strong>?</strong> help icon in the top navigation bar of the dashboard.
     </p>
 
-    <h2>👥 Role-Specific Access & Security Matrix</h2>
+    <div class="alert alert-warning">
+      <div class="alert-title">What's New in v2.0.0</div>
+      <p>The separate Quotation and Job Card modules have been retired and merged into a single, simpler <strong>Servicing</strong> workflow. Invoices now support a VAT / Non-VAT toggle at generation time, direct-counter (PC) billing for walk-in parts sales, a Customer Dues report with month/year filtering, manually-set service reminders with WhatsApp follow-up, and all dates across the system now display in the Nepali Bikram Sambat calendar.</p>
+    </div>
+
+    <h2>Role-Specific Access & Security Matrix</h2>
     <p>
-      PM Auto Mobiles uses a Role-Based Access Control (RBAC) system to ensure staff members only access components relevant to their duties.
+      PM Auto Mobiles uses a Role-Based Access Control (RBAC) system to ensure staff members only access components relevant to their duties. The four staff roles are <strong>Admin</strong>, <strong>Receptionist</strong>, <strong>Technician</strong>, and <strong>Accountant</strong>.
     </p>
 
     <div class="table-container">
@@ -294,17 +299,15 @@
             <th>Receptionist</th>
             <th>Technician</th>
             <th>Accountant</th>
-            <th>Customers</th>
           </tr>
         </thead>
         <tbody>
           <tr>
             <td><strong>System Dashboard</strong></td>
             <td><span class="badge badge-full">Full</span></td>
-            <td>Front-Desk</td>
-            <td>Floor-List</td>
-            <td>Finance-List</td>
-            <td>No Access</td>
+            <td>Front-Desk KPIs</td>
+            <td>Job Floor KPIs</td>
+            <td>Finance KPIs</td>
           </tr>
           <tr>
             <td><strong>Customers & Vehicles</strong></td>
@@ -312,13 +315,18 @@
             <td><span class="badge badge-full">Read/Write</span></td>
             <td><span class="badge badge-view">Read Only</span></td>
             <td>No Access</td>
-            <td>No Access</td>
           </tr>
           <tr>
             <td><strong>Appointments & Check-in</strong></td>
             <td><span class="badge badge-full">Read/Write</span></td>
             <td><span class="badge badge-full">Read/Write</span></td>
             <td><span class="badge badge-view">Read Only</span></td>
+            <td>No Access</td>
+          </tr>
+          <tr>
+            <td><strong>Service Reminders (WhatsApp)</strong></td>
+            <td><span class="badge badge-full">Read/Write</span></td>
+            <td><span class="badge badge-full">Read/Write</span></td>
             <td>No Access</td>
             <td>No Access</td>
           </tr>
@@ -328,7 +336,6 @@
             <td>No Access</td>
             <td><span class="badge badge-view">Read Only</span></td>
             <td><span class="badge badge-full">Read/Write</span></td>
-            <td>No Access</td>
           </tr>
           <tr>
             <td><strong>Record Stock Purchase</strong></td>
@@ -336,47 +343,34 @@
             <td>No Access</td>
             <td>No Access</td>
             <td><span class="badge badge-full">Read/Write</span></td>
-            <td>No Access</td>
           </tr>
           <tr>
-            <td><strong>Quotation Builder</strong></td>
-            <td><span class="badge badge-full">Read/Write</span></td>
-            <td><span class="badge badge-full">Read/Write</span></td>
-            <td><span class="badge badge-full">Read/Write</span></td>
-            <td><span class="badge badge-full">Read/Write</span></td>
-            <td>No Access</td>
-          </tr>
-          <tr>
-            <td><strong>Quotation Public Page</strong></td>
-            <td><span class="badge badge-view">View Only</span></td>
-            <td><span class="badge badge-view">View Only</span></td>
-            <td><span class="badge badge-view">View Only</span></td>
-            <td><span class="badge badge-view">View Only</span></td>
-            <td><span class="badge badge-full">Approve/Reject</span></td>
-          </tr>
-          <tr>
-            <td><strong>Active Job Cards (Servicing)</strong></td>
+            <td><strong>Servicing (Work Orders)</strong></td>
             <td><span class="badge badge-full">Read/Write</span></td>
             <td><span class="badge badge-full">Read/Write</span></td>
             <td><span class="badge badge-full">Read/Write</span></td>
             <td><span class="badge badge-view">Read Only</span></td>
-            <td>No Access</td>
           </tr>
           <tr>
-            <td><strong>Invoices & Credit Notes</strong></td>
+            <td><strong>Invoices (Generate / VAT & Non-VAT)</strong></td>
             <td><span class="badge badge-full">Read/Write</span></td>
-            <td><span class="badge badge-view">Read Only</span></td>
-            <td>No Access</td>
             <td><span class="badge badge-full">Read/Write</span></td>
             <td>No Access</td>
+            <td><span class="badge badge-full">Read/Write</span></td>
           </tr>
           <tr>
-            <td><strong>Record Payments</strong></td>
+            <td><strong>PC Direct Billing (Counter Sales)</strong></td>
             <td><span class="badge badge-full">Read/Write</span></td>
             <td><span class="badge badge-full">Read/Write</span></td>
             <td>No Access</td>
             <td><span class="badge badge-full">Read/Write</span></td>
+          </tr>
+          <tr>
+            <td><strong>Record Payments & Credit Notes</strong></td>
+            <td><span class="badge badge-full">Read/Write</span></td>
+            <td><span class="badge badge-full">Read/Write</span></td>
             <td>No Access</td>
+            <td><span class="badge badge-full">Read/Write</span></td>
           </tr>
           <tr>
             <td><strong>Loyalty Point Redemptions</strong></td>
@@ -384,15 +378,13 @@
             <td><span class="badge badge-full">Read/Write</span></td>
             <td>No Access</td>
             <td><span class="badge badge-full">Read/Write</span></td>
-            <td>No Access</td>
           </tr>
           <tr>
-            <td><strong>Finance Reports & Charts</strong></td>
+            <td><strong>Finance Reports (VAT / Non-VAT / Summary / Dues)</strong></td>
             <td><span class="badge badge-full">Read/Write</span></td>
             <td>No Access</td>
             <td>No Access</td>
             <td><span class="badge badge-full">Read/Write</span></td>
-            <td>No Access</td>
           </tr>
           <tr>
             <td><strong>Daily Day Book</strong></td>
@@ -400,12 +392,10 @@
             <td><span class="badge badge-full">Read/Write</span></td>
             <td>No Access</td>
             <td><span class="badge badge-full">Read/Write</span></td>
-            <td>No Access</td>
           </tr>
           <tr>
-            <td><strong>Staff Accounts Manager</strong></td>
+            <td><strong>Staff Accounts, Attendance & Payroll</strong></td>
             <td><span class="badge badge-full">Full</span></td>
-            <td>No Access</td>
             <td>No Access</td>
             <td>No Access</td>
             <td>No Access</td>
@@ -416,7 +406,6 @@
             <td>No Access</td>
             <td>No Access</td>
             <td>No Access</td>
-            <td>No Access</td>
           </tr>
           <tr>
             <td><strong>To-Do List Tasks</strong></td>
@@ -424,261 +413,176 @@
             <td><span class="badge badge-full">Read/Write</span></td>
             <td><span class="badge badge-partial">Status Only</span></td>
             <td><span class="badge badge-full">Read/Write</span></td>
-            <td>No Access</td>
+          </tr>
+          <tr>
+            <td><strong>In-App Notifications</strong></td>
+            <td><span class="badge badge-full">Read/Write</span></td>
+            <td><span class="badge badge-full">Read/Write</span></td>
+            <td><span class="badge badge-full">Read/Write</span></td>
+            <td><span class="badge badge-full">Read/Write</span></td>
+          </tr>
+          <tr>
+            <td><strong>System Settings (Branding, VAT Rate)</strong></td>
+            <td><span class="badge badge-full">Read/Write</span></td>
+            <td><span class="badge badge-view">Read Only</span></td>
+            <td><span class="badge badge-view">Read Only</span></td>
+            <td><span class="badge badge-view">Read Only</span></td>
           </tr>
         </tbody>
       </table>
     </div>
 
-    <h2>🚗 Core Operational Journey (End-to-End Workflow)</h2>
+    <h2>Core Operational Journey (End-to-End Workflow)</h2>
     <p>
-      This section provides detailed, step-by-step instructions on how to take a customer vehicle through the entire garage lifecycle.
+      This section provides step-by-step instructions on how to take a customer vehicle through the entire garage lifecycle, from booking to payment.
     </p>
 
-    <h3>📅 Step 1: Appointment Booking</h3>
+    <h3>Step 1: Appointment Booking</h3>
     <p><strong>Primary Roles:</strong> Receptionist, Admin</p>
     <ol>
       <li>Navigate to the <strong>Appointments</strong> page using the left-hand sidebar menu.</li>
-      <li>Click the blue <strong>Create Appointment</strong> button in the upper-right corner. This will slide open a modal form.</li>
-      <li>In the **Customer Details** field, type the customer's name to search existing files. If they are a new client, click **+ Add Customer** to enter their name, phone, email, and billing address.</li>
-      <li>In the **Vehicle Details** field, select the vehicle. If it is not listed, click **+ Add Vehicle** to register it (input plate number, manufacturer make, model, year, and vehicle color).</li>
-      <li>Set the **Appointment Date & Time** using the scheduling picker.</li>
-      <li>Select the **Service Type** (e.g., General Service, Engine Repair, Brake Maintenance, Suspension Check).</li>
-      <li>Choose the **Assign Technician** dropdown and select the technician. </li>
-      <li>Add any **Diagnostic Intake Comments** or customer complaints (e.g., "Squeaking sound when brakes are applied").</li>
-      <li>Click the **Schedule** button.
-        <div class="alert alert-warning">
-          <div class="alert-title">Schedule Conflict Verification</div>
-          <p>The system automatically checks if the assigned technician has another appointment overlapping at the selected hour. If they do, a warnings alert is displayed, and the appointment booking is blocked until a different technician or time is selected.</p>
-        </div>
-      </li>
+      <li>Click the blue <strong>Book Appointment</strong> button in the upper-right corner. This opens a booking form.</li>
+      <li>Search for the customer by name or phone. If they are new, add their name, phone, and vehicle details directly in the flow (or from the <strong>Customers & Vehicles</strong> page first &mdash; vehicle model, plate number, and vehicle number can be captured there too).</li>
+      <li>Set the appointment date &amp; time and the assigned technician.</li>
+      <li>Add any intake comments or customer complaints (e.g., "Squeaking sound when brakes are applied").</li>
+      <li>Click <strong>Book Appointment</strong> to save it.</li>
     </ol>
 
-    <h3>🔍 Step 2: Vehicle Intake & Check-In</h3>
+    <h3>Step 2: Vehicle Intake & Check-In</h3>
     <p><strong>Primary Roles:</strong> Receptionist, Admin, Technician</p>
     <ol>
-      <li>When the customer arrives at the shop, open the **Appointments** calendar or list page.</li>
-      <li>Locate the customer's appointment block and click **Check-In**.</li>
-      <li>Under **Odometer Reading**, input the exact mileage displayed on the dashboard dashboard.</li>
-      <li>Use the interactive checklist to mark **Pre-Existing Vehicle Damages**. Select where the scratches or dents are located and type details (e.g., "Scratch on passenger rear side door").</li>
-      <li>Under **Condition Photos**, click the upload area and upload photos of the vehicle from your mobile device or computer camera (captures the condition of the car at intake).</li>
-      <li>Review and hit **Confirm Check-In**.
-        <ul>
-          <li>The system changes the status badge to `checked-in` and creates the intake checklist.</li>
-          <li>In-app notifications alert technicians that the vehicle is ready for physical inspection.</li>
-        </ul>
-      </li>
+      <li>When the customer arrives, open the appointment list and click <strong>Check-In</strong> on their booking.</li>
+      <li>Record the odometer reading and any pre-existing damage notes/photos if applicable.</li>
+      <li>The appointment status updates to <code>checked-in</code>, and the vehicle is ready to move into Servicing.</li>
     </ol>
 
-    <h3>📝 Step 3: Estimate & Quotation Building</h3>
-    <p><strong>Primary Roles:</strong> Technician, Admin, Receptionist, Accountant</p>
+    <h3>Step 3: Servicing &mdash; Parts, Labour & Work Tracking</h3>
+    <p><strong>Primary Roles:</strong> Technician, Receptionist, Admin</p>
     <ol>
-      <li>Under the **Quotations** tab, click **New Quotation** and link it to the checked-in vehicle/appointment.</li>
-      <li>Under **Billable Parts / Spares**:
-        <ul>
-          <li>Click **Add Part**. Start typing the name of the replacement component (e.g., "Front Brake Pads").</li>
-          <li>The system queries the database catalog, autocompletes the part details, displays the current stock levels, and fills in the default unit price.</li>
-          <li>Enter the quantity needed. The system verifies if there is enough stock available.</li>
-        </ul>
-      </li>
-      <li>Under **Billable Labour**:
-        <ul>
-          <li>Click **Add Labour Line**.</li>
-          <li>Type the description of the labor (e.g., "Install front brake pads").</li>
-          <li>Input the estimated **Hours** required and the technician's hourly rate. The total labor cost is computed automatically.</li>
-        </ul>
-      </li>
-      <li>If appropriate, enter a **Discount Percentage** (0% - 100%). The system automatically calculates:
-        <ul>
-          <li>Subtotal (sum of parts and labour).</li>
-          <li>Discount (deducted from subtotal).</li>
-          <li>VAT (13% tax applied to the discounted subtotal).</li>
-          <li>Total Payable Amount.</li>
-        </ul>
-      </li>
-      <li>Click **Save as Draft**.
-        <div class="alert alert-important">
-          <div class="alert-title">Draft Status Security Block</div>
-          <p>While a quotation is in <strong>Draft</strong>, the approval controls on the public webpage are disabled. The customer will not be able to accept or reject it. You must change the state to "Sent" to authorize customer interaction.</p>
+      <li>Navigate to the <strong>Servicing</strong> page and create a new servicing record for the customer's vehicle.</li>
+      <li>Add <strong>Parts</strong> used in the repair &mdash; selecting an inventory item and quantity <strong>automatically decrements live stock levels</strong>. If stock drops below the configured minimum, the item is flagged and admins/accountants are alerted.</li>
+      <li>Add <strong>Labour</strong> lines describing the work performed and the cost/hours involved.</li>
+      <li>Document repair notes as work progresses.</li>
+      <li>When the vehicle is ready, record the <strong>Mileage Out</strong> and click <strong>Close</strong> to mark the servicing record as <code>closed</code>.
+        <div class="alert alert-warning">
+          <div class="alert-title">One Invoice Per Record</div>
+          <p>A servicing record can only be invoiced once it is <code>closed</code>, and each closed record can only be linked to a single invoice &mdash; the system blocks duplicate billing automatically.</p>
         </div>
       </li>
-      <li>Once review is complete, click **Publish & Send**. The status transitions to `sent`, and a unique secure URL token is generated (e.g., `/quote-approval/d7a8f9b6...`).</li>
     </ol>
 
-    <h3>📱 Step 4: Customer Quotation Review & Approval</h3>
-    <p><strong>Primary Role:</strong> Customer (Public portal link, no login required)</p>
+    <h3>Step 4: Generating the Invoice (VAT / Non-VAT)</h3>
+    <p><strong>Primary Roles:</strong> Receptionist, Accountant, Admin</p>
     <ol>
-      <li>The garage staff shares the tokenized URL link with the client.</li>
-      <li>The customer opens the link on their mobile phone or web browser. They will see a professionally styled, responsive estimate summary.</li>
-      <li>The customer can review the cost breakdown.</li>
-      <li>To approve the repair job:
-        <ul>
-          <li>The customer clicks the green **Approve Estimate** button.</li>
-          <li>A prompt asks them to enter their name or digital signature.</li>
-          <li>The quote status instantly updates to `approved`.</li>
-          <li><strong>System Automation:</strong> The backend automatically creates a **Job Card** pre-populated with all the approved parts, quantities, and labor details from the quotation.</li>
-        </ul>
-      </li>
-      <li>To decline the estimate:
-        <ul>
-          <li>The customer clicks the red **Decline Estimate** button and inputs a decline reason (e.g., "Too expensive").</li>
-          <li>The quote status changes to `rejected`, and the receptionist is notified to contact the customer.</li>
-        </ul>
-      </li>
+      <li>Navigate to the <strong>Invoices & Payments</strong> page and click the <strong>Generate</strong> button.</li>
+      <li>Select the closed, not-yet-invoiced servicing record from the list.</li>
+      <li>Choose the invoice type by toggling <strong>VAT</strong> (tax applied at the configured rate, default 13%) or <strong>Non-VAT</strong>.</li>
+      <li>Optionally set the <strong>Next Service Date</strong> right here if you already know when the vehicle should return &mdash; this field is entered manually by staff (it is no longer auto-calculated), and can also be set or changed later when recording payment. Leaving it blank is fine.</li>
+      <li>Click <strong>Generate Invoice</strong>. The invoice is created with the parts/labour totals, VAT (if applicable), and is ready for payment.</li>
     </ol>
 
-    <h3>🛠️ Step 5: Workshop Floor Execution (Job Cards)</h3>
-    <p><strong>Primary Roles:</strong> Technician, Admin, Receptionist</p>
+    <h3>Step 4b: PC Direct Billing (Counter Sales, No Work Order)</h3>
+    <p><strong>Primary Roles:</strong> Receptionist, Accountant, Admin</p>
+    <p>For walk-in customers buying parts over the counter without a full servicing work order:</p>
     <ol>
-      <li>Technicians log into the system and navigate to the **Job Cards** section.
-        <ul>
-          <li>*Note:* Technicians are restricted via RBAC filters and will only see job cards assigned to them.</li>
-        </ul>
-      </li>
-      <li>Click on the active Job Card to open the workshop floor workspace.</li>
-      <li>If additional parts are required during the repair process, the technician clicks **Allocate Parts**:
-        <ul>
-          <li>Select the item and quantity.</li>
-          <li><strong>System Automation:</strong> Submitting changes **immediately decrements the stock levels** in the live inventory catalog. If the quantity drops below the safety margin, the system flags the SKU as "Low Stock" and alerts the admin.</li>
-        </ul>
-      </li>
-      <li>The technician documents repair notes under **Inspection Findings & Work Logs** (e.g., "Removed worn pads, cleaned rotors, installed new OEM pads").</li>
+      <li>On the <strong>Invoices</strong> page, click <strong>PC Billing</strong>.</li>
+      <li>Select the customer, and optionally link a vehicle (for odometer tracking and service reminders).</li>
+      <li>Add line items (parts or misc. charges) with quantity and unit price, and an optional discount.</li>
+      <li>Choose <strong>VAT</strong> or <strong>Non-VAT</strong>, optionally enter the odometer reading and Next Service Date if a vehicle is linked, then submit. The invoice is generated the same way as a servicing invoice and supports A4 half-size print output for quick counter receipts.</li>
     </ol>
 
-    <h3>📁 Step 6: Job Card Closure & Invoicing</h3>
-    <p><strong>Primary Roles:</strong> Technician, Admin, Receptionist</p>
+    <h3>Step 5: Billing, Settlements & WhatsApp Receipts</h3>
+    <p><strong>Primary Roles:</strong> Receptionist, Accountant, Admin</p>
     <ol>
-      <li>When work on the vehicle is complete, open the active Job Card.</li>
-      <li>Input the final **Mileage Out** (odometer reading upon test drive completion).</li>
-      <li>Click the **Close Job Card** button and confirm.
-        <ul>
-          <li>The status transitions to `closed`.</li>
-          <li>The closing timestamp is recorded.</li>
-          <li><strong>System Automation:</strong> The system immediately generates an official **Tax Invoice** under the billing ledger, pre-populating client, vehicle, parts, labor totals, VAT, and discounts.</li>
-        </ul>
-      </li>
+      <li>Open the target invoice from the <strong>Invoices</strong> list &mdash; unpaid balances are shown with clear status badges.</li>
+      <li>Click <strong>Record Payment</strong>, enter the amount, and select the payment method: <strong>Cash</strong>, <strong>Card</strong>, <strong>Fonepay</strong>, or <strong>Bank Transfer</strong>. Add a reference note if applicable.</li>
+      <li><strong>Loyalty Redemption:</strong> if the customer has redeemable points, you can apply them as a discount directly on the invoice.</li>
+      <li>You can set or update the <strong>Next Service Date</strong> here too, and toggle <strong>Send WhatsApp</strong> to open a pre-filled WhatsApp message with the payment confirmation for the receptionist to send manually.</li>
+      <li>Submit the payment. The invoice status updates automatically (unpaid &rarr; partially-paid &rarr; paid).</li>
     </ol>
 
-    <h3>💳 Step 7: Billing, Settlements & WhatsApp Receipts</h3>
-    <p><strong>Primary Roles:</strong> Accountant, Receptionist, Admin</p>
-    <ol>
-      <li>Navigate to the **Invoices** page. Unpaid invoices are marked with red "Unpaid" badges.</li>
-      <li>Open the target invoice and click the **Record Payment** button.</li>
-      <li>In the payment form:
-        <ul>
-          <li>Enter the **Payment Amount**.</li>
-          <li>Select the **Payment Method** (Cash, Card, ConnectIPS, Bank Transfer).</li>
-          <li>Add a **Reference Note** (e.g., transaction ID, bank reference).</li>
-        </ul>
-      </li>
-      <li>**Loyalty Points Discount Redemption:**
-        <ul>
-          <li>If the customer has accumulated points, the system displays their redeemable value (e.g., "500 points available = Rs. 50.00 discount").</li>
-          <li>Select the **Redeem Points** checkbox to deduct the points balance and apply a matching credit note discount directly to the invoice.</li>
-        </ul>
-      </li>
-      <li>Toggle **Send WhatsApp Receipt** and click **Submit Payment**.
-        <ul>
-          <li>**System Automation (WhatsApp Receipt Redirect):**
-            <ul>
-              <li>The system formats a customized, professional receipt message: 
-                <br><em>"Dear John Doe, payment of Rs. 5000.00 has been recorded for Invoice #INV-1002. Remaining balance: Rs. 0.00. Your vehicle Toyota Hilux is ready for collection. Your next service is recommended on 2026-12-28. Thank you for choosing PM Automobiles!"</em>
-              </li>
-              <li>The system formats the Nepalese phone number: it removes all non-numeric characters, verifies that it is a 10-digit number starting with `9`, and prepends the country code `977`.</li>
-              <li>A new tab opens redirecting to `https://wa.me/977XXXXXXXXXX?text=...`, allowing the receptionist to send the receipt directly via WhatsApp.</li>
-            </ul>
-          </li>
-        </ul>
-      </li>
-    </ol>
-
-    <h3>🎁 Step 8: Loyalty Points Credit</h3>
+    <h3>Step 6: Loyalty Points Credit</h3>
     <p><strong>Primary Role:</strong> System Automated</p>
     <ul>
-      <li>When an invoice transitions to the `paid` status (balance due becomes 0), the system automatically calculates the loyalty reward points.</li>
-      <li>Points are awarded at a rate of **1 Loyalty Point for every Rs. 10** of the invoice total.</li>
-      <li>The customer's profile is updated, and the transaction is recorded in the **Loyalty Ledger** for audit purposes.</li>
+      <li>When an invoice becomes fully <code>paid</code>, the system automatically awards loyalty points at a rate of <strong>1 point for every Rs. 10</strong> of the invoice total, recorded in the Loyalty Ledger.</li>
     </ul>
 
-    <h2>📈 Management & Support Modules</h2>
+    <h3>Step 7: Service Reminders & Manual WhatsApp Follow-up</h3>
+    <p><strong>Primary Roles:</strong> Receptionist, Admin</p>
+    <ol>
+      <li>Any invoice with a <strong>Next Service Date</strong> set appears under <strong>Appointments &rarr; Service Reminders</strong>, sorted soonest-due first, with an "Action Required" flag when due within a day.</li>
+      <li>Click <strong>Send to WhatsApp</strong> on a reminder card &mdash; this opens a pre-filled WhatsApp message to the customer's phone number, which staff review and send manually (this is not a fully automated background send).</li>
+      <li>After sending, the card is marked <strong>Reminder Sent</strong> but <strong>stays in the list</strong> &mdash; it is not removed automatically. When you're done with it, click the <strong>Delete</strong> button on that card to remove it from the worklist yourself. Deleting a reminder only clears the reminder date; it does not affect the invoice or payment record.</li>
+    </ol>
 
-    <h3>📦 1. Inventory Control & Auto-Expenses</h3>
+    <h2>Management & Support Modules</h2>
+
+    <h3>1. Inventory Control & Auto-Expenses</h3>
     <ul>
-      <li>**Inventory Monitoring:** The inventory screen displays items in a grid. Any item with a quantity less than or equal to `minQty` is highlighted with a red warning flag.</li>
-      <li>**Record Purchase (Restocking):**
-        <ol>
-          <li>Navigate to **Inventory** → **Record Purchase**.</li>
-          <li>Select the supplier name.</li>
-          <li>Add the restocked parts, inputting the quantity and the unit cost at the time of purchase.</li>
-          <li>Submit the purchase.
-            <ul>
-              <li>**System Automation:** The stock levels of the listed items increase immediately.</li>
-              <li>**Finance Link:** The system **automatically registers a matching Expenditure entry** in the Cash Flow ledger, preventing manual bookkeeping duplication.</li>
-            </ul>
-          </li>
-        </ol>
-      </li>
-      <li>**Midnight Stock Audit:** A daily `node-cron` job runs at midnight. It sweeps the inventory database, identifies low-stocked SKUs, and issues in-app alerts to admin and accountant users.</li>
+      <li><strong>Inventory Monitoring:</strong> Items at or below their minimum quantity are flagged as low stock.</li>
+      <li><strong>Record Purchase (Restocking):</strong> Navigate to <strong>Inventory &rarr; Record Purchase</strong>, select the supplier, add restocked items with quantity and unit cost, and submit. Stock levels increase immediately, and a matching <strong>Expenditure entry is automatically logged</strong> in the Finance ledger.</li>
+      <li><strong>Midnight Stock Audit:</strong> A daily automated job sweeps inventory for low-stock items and alerts admins/accountants.</li>
     </ul>
 
-    <h3>📊 2. Finance Reports & Cash Flow (with VAT & Non-VAT breakdowns)</h3>
+    <h3>2. Finance Reports (VAT / Non-VAT / Summary / Customer Dues)</h3>
+    <p>Navigate to <strong>Finance Reports</strong>, which has five tabs:</p>
     <ul>
-      <li>Navigate to **Finance Reports**.</li>
-      <li>The page renders an interactive cash flow chart using Recharts.</li>
-      <li>**Data Sources:**
-        <ul>
-          <li>**Income:** Derived from payments recorded against invoices.</li>
-          <li>**Expenditures:** Derived from inventory restock purchases and manual expense logging (e.g., rent, utilities).</li>
-        </ul>
-      </li>
-      <li>**Filter:** Use the date range pickers to filter the cash flow data and summary metrics.</li>
-      <li>**Add Expenditure Manual Form:** Click **Add Expense** to record manual shop overhead costs.</li>
-      <li>**VAT & Non-VAT Reporting:** Separate ledger tabs compile reports specifically listing VAT-applicable versus Non-VAT billing transactions for sales and purchases, assisting with internal auditing and government tax filing.</li>
+      <li><strong>Overview:</strong> Interactive cash flow chart, income/expenditure/net-profit KPIs, and an outstanding dues total, all filterable by a date range.</li>
+      <li><strong>VAT Report</strong> and <strong>Non-VAT Report:</strong> Separate ledgers listing VAT-applicable versus Non-VAT sales and purchases, for tax filing and auditing.</li>
+      <li><strong>Summary Report:</strong> A consolidated view combining income, expenditure, VAT collected/paid, and outstanding dues for the selected date range.</li>
+      <li><strong>Customer Dues:</strong> Shows exactly which customers currently have an outstanding balance and how much is pending, grouped per customer with an expandable breakdown of their individual unpaid invoices. Use the <strong>Month</strong> and <strong>Year</strong> dropdown filters at the top to narrow dues to a specific billing period, or leave both on "All" to see all-time outstanding balances.</li>
+      <li><strong>Add Expenditure:</strong> Manually log shop overhead costs (rent, utilities, salaries, etc.) from the Overview tab.</li>
     </ul>
 
-    <h3>🔔 3. In-App Notifications Bell</h3>
+    <h3>3. In-App Notifications</h3>
     <ul>
-      <li>A live notification bell is located in the Topbar.</li>
-      <li>It displays an unread count badge.</li>
-      <li>Notifications are targeted by role (e.g., accountants receive payment notifications; technicians receive job card updates; admins see audit and low stock alerts).</li>
-      <li>Click the bell to mark items as read.</li>
+      <li>The bell icon in the Topbar shows a live unread-count badge, and the full <strong>Notifications</strong> page lists all alerts with Status (All/Unread/Read) and Type filters.</li>
+      <li>Notifications are targeted by role &mdash; e.g., accountants receive payment notifications, technicians receive servicing updates, admins see audit and low-stock alerts.</li>
     </ul>
 
-    <h3>📝 4. To-Do List Tasks (RBAC Enforced)</h3>
+    <h3>4. To-Do List Tasks (RBAC Enforced)</h3>
     <ul>
-      <li>**Admins, Receptionists, and Accountants** have full permissions: they can create new tasks, assign them to staff members, edit details, and delete tasks.</li>
-      <li>**Technicians** are restricted: they can only view tasks assigned to them, and the edit controls are locked except for the **Status** dropdown (enabling them to mark their tasks as *Not Started*, *In Progress*, or *Completed*).</li>
+      <li><strong>Admins, Receptionists, and Accountants</strong> can create, assign, edit, and delete tasks.</li>
+      <li><strong>Technicians</strong> can only view tasks assigned to them and update the <strong>Status</strong> (Not Started / In Progress / Completed).</li>
     </ul>
 
-    <h3>📋 5. System Audit Log</h3>
+    <h3>5. System Audit Log</h3>
     <ul>
-      <li>Admins can access **Audit Logs** to view a secure, timestamped record of every creation, deletion, or modification made to core schemas (appointments, job cards, invoices, and inventory).</li>
-      <li>Logs record the active user, IP/request details, the type of change, and a details string explaining the operation.</li>
+      <li>Admins can access <strong>Audit Logs</strong> for a timestamped record of every significant creation, deletion, or modification across the system, including the acting user and a details string.</li>
     </ul>
 
-    <h3>🌐 6. Public Landing Page</h3>
+    <h3>6. System Settings</h3>
     <ul>
-      <li>**Landing Page URL:** `http://localhost:3000/landing.html`.</li>
-      <li>Unauthenticated visitors typing in the main domain `http://localhost:3000/` are automatically redirected here.</li>
-      <li>The landing page showcases garage services, company history, and team members.</li>
-      <li>Clicking **Login** routes the browser to `/login`. Once signed in, the system allows the user to access the operational dashboard.</li>
+      <li>Admins can configure global settings under <strong>Settings</strong>: garage name, phone, and address (company branding shown across invoices and receipts), the VAT rate applied to VAT-type invoices, and toggles for low-stock alerts, Day Book closure reminders, automatic WhatsApp prompts, and the loyalty points system.</li>
+      <li>All other roles can view these settings but cannot change them.</li>
     </ul>
 
-    <h3>📓 7. Daily Day Book Ledger</h3>
+    <h3>7. Public Landing Page</h3>
     <ul>
-      <li>**Opening & Closing Reconciliation:** Tracks physical cash and bank balances day-by-day. Daily receipts and payments automatically compute an **Expected Closing Balance** that is reconciled against the **Actual Closing Balance** entered by the counter staff.</li>
-      <li>**Security Locks:** The Day Book for any calendar date can be locked/closed. Once closed, edits are rejected by the backend unless the requesting user has the `admin` role.</li>
+      <li>The public marketing site (<code>/landing.html</code>) showcases garage services and company information for unauthenticated visitors.</li>
+      <li>Clicking <strong>Login</strong> routes to <code>/login</code>; once signed in, staff land on the operational dashboard.</li>
     </ul>
 
-    <h3>👥 8. Staff Salaries & Monthly Attendance</h3>
+    <h3>8. Daily Day Book Ledger</h3>
     <ul>
-      <li>**Attendance Log:** Admins can record daily attendance (Present, Absent, Half-Day, Paid Leave) for all employee accounts.</li>
-      <li>**Payroll Calculator:** Automatically computes monthly salary payments based on base salary, daily attendance records, hourly overtime rates, and logged overtime hours. Payslips are saved to the ledger with full audit logging.</li>
+      <li><strong>Opening & Closing Reconciliation:</strong> Tracks physical cash and bank balances day-by-day. Receipts and payments automatically compute an <strong>Expected Closing Balance</strong> reconciled against the <strong>Actual Closing Balance</strong> entered by staff.</li>
+      <li><strong>Security Locks:</strong> Once a day's Day Book is closed, edits are rejected unless the requesting user has the <code>admin</code> role.</li>
     </ul>
 
-    <h3>🎁 9. Loyalty Points Adjustments</h3>
+    <h3>9. Staff Salaries & Monthly Attendance</h3>
     <ul>
-      <li>**Manual Overrides:** In addition to automatic rewards earned via payments (1 point per Rs. 10 paid), Admins can manually add or deduct points via the **Loyalty Ledger** screen with mandatory reason notes.</li>
+      <li><strong>Attendance Log:</strong> Admins record daily attendance (Present, Absent, Half-Day, Paid Leave).</li>
+      <li><strong>Payroll Calculator:</strong> Automatically computes monthly salary based on base salary, attendance, and logged overtime hours, with payslips saved and audit-logged.</li>
+    </ul>
+
+    <h3>10. Loyalty Points Adjustments</h3>
+    <ul>
+      <li>In addition to automatic rewards (1 point per Rs. 10 paid), Admins can manually add or deduct points via the <strong>Loyalty Ledger</strong> with a mandatory reason note.</li>
+    </ul>
+
+    <h3>11. Nepali Calendar Dates</h3>
+    <ul>
+      <li>All dates and timestamps shown across the dashboard &mdash; appointments, invoices, service reminders, audit logs, and reports &mdash; are displayed in the <strong>Bikram Sambat (Nepali)</strong> calendar with English month names and prompts, so staff can read them without manual conversion.</li>
     </ul>
 
     <footer>

@@ -32,7 +32,7 @@ router.get('/', authenticate, authorize('admin', 'technician', 'accountant'), as
       query.$expr = { $lt: ['$qty', '$minQty'] };
     }
 
-    const items = await InventoryStock.find(query).sort({ name: 1 });
+    const items = await InventoryStock.find(query).sort({ name: 1 }).lean();
     res.json(items);
   } catch (err) {
     console.error('Fetch inventory error:', err.message);
@@ -66,7 +66,7 @@ router.post(
 
     try {
       // Check if SKU exists
-      const existingItem = await InventoryStock.findOne({ sku });
+      const existingItem = await InventoryStock.findOne({ sku }).lean();
       if (existingItem) {
         return res.status(400).json({ message: `Inventory item with SKU '${sku}' already exists` });
       }
@@ -129,7 +129,7 @@ router.patch(
 
       // Check SKU uniqueness if updating it
       if (req.body.sku && req.body.sku !== item.sku) {
-        const duplicateSKU = await InventoryStock.findOne({ sku: req.body.sku });
+        const duplicateSKU = await InventoryStock.findOne({ sku: req.body.sku }).lean();
         if (duplicateSKU) {
           return res.status(400).json({ message: `SKU '${req.body.sku}' is already assigned to another item` });
         }
@@ -228,7 +228,7 @@ router.post(
         details: `Restocked ${items.length} parts from supplier ${supplierName}. Total cost: Rs. ${totalCost.toFixed(2)}`
       });
 
-      res.status(251).json({
+      res.status(201).json({
         message: 'Purchase recorded, inventory updated, and expense logged successfully',
         purchase,
         expenditure

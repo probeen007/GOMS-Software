@@ -72,21 +72,25 @@ axios.interceptors.response.use(
 );
 
 // ----------------------------------------------------
-// 3. GLOBAL ANTI DOUBLE-CLICK INTERCEPTOR FOR BUTTONS
+// 3. GLOBAL ANTI DOUBLE-CLICK INTERCEPTOR FOR FORM SUBMISSIONS
 // ----------------------------------------------------
+// Scoped to type="submit" buttons only (the actual double-submit risk, e.g.
+// double-clicking "Save" and creating a duplicate invoice/payment). Applying
+// this to every button — including tab switches, filters, and modal
+// open/close — made the entire app feel sluggish for no reason.
 document.addEventListener('click', (e) => {
   const button = e.target.closest('button');
-  if (button) {
+  if (button && button.type === 'submit') {
     // If button already has a disabled property or loading attribute, let React handle it
     if (button.hasAttribute('disabled') || button.classList.contains('pointer-events-none')) {
       return;
     }
-    
+
     // Add temporary pointer-events-none class to prevent fast double clicking
     button.classList.add('pointer-events-none');
     const originalOpacity = button.style.opacity;
     button.style.opacity = '0.7';
-    
+
     setTimeout(() => {
       button.classList.remove('pointer-events-none');
       button.style.opacity = originalOpacity;

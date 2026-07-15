@@ -30,7 +30,8 @@ router.get('/', authenticate, authorize('admin', 'receptionist', 'technician'), 
     const customers = await Customer.find(query)
       .sort({ createdAt: -1 })
       .skip(skip)
-      .limit(limit);
+      .limit(limit)
+      .lean();
 
     const total = await Customer.countDocuments(query);
 
@@ -70,7 +71,7 @@ router.post(
 
     try {
       // Check if phone or email already registered (if email is provided)
-      const existingCustomer = await Customer.findOne({ phone, deletedAt: null });
+      const existingCustomer = await Customer.findOne({ phone, deletedAt: null }).lean();
       if (existingCustomer) {
         return res.status(400).json({ message: 'Customer with this phone number already exists' });
       }
@@ -106,12 +107,12 @@ router.post(
 // @access  Private (admin, receptionist, technician)
 router.get('/:id', authenticate, authorize('admin', 'receptionist', 'technician'), async (req, res) => {
   try {
-    const customer = await Customer.findById(req.params.id);
+    const customer = await Customer.findById(req.params.id).lean();
     if (!customer || customer.deletedAt) {
       return res.status(404).json({ message: 'Customer not found' });
     }
 
-    const vehicles = await Vehicle.find({ customerId: customer._id });
+    const vehicles = await Vehicle.find({ customerId: customer._id }).lean();
 
     res.json({
       customer,
@@ -148,7 +149,7 @@ router.post(
     }
 
     try {
-      const customer = await Customer.findById(req.params.id);
+      const customer = await Customer.findById(req.params.id).lean();
       if (!customer || customer.deletedAt) {
         return res.status(404).json({ message: 'Customer not found' });
       }
@@ -156,7 +157,7 @@ router.post(
       const { plateNo, make, model, year, vin, colour } = req.body;
 
       // Check if plateNo already exists
-      const existingVehicle = await Vehicle.findOne({ plateNo });
+      const existingVehicle = await Vehicle.findOne({ plateNo }).lean();
       if (existingVehicle) {
         return res.status(400).json({ message: `Vehicle with plate number ${plateNo} is already registered` });
       }

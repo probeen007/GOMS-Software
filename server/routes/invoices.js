@@ -26,7 +26,13 @@ router.post(
   authorize('admin', 'receptionist', 'accountant'),
   [
     body('servicingId').notEmpty().withMessage('Servicing record ID is required'),
-    body('invoiceType').isIn(['vat', 'non-vat']).withMessage('Invoice type must be vat or non-vat')
+    body('invoiceType').isIn(['vat', 'non-vat']).withMessage('Invoice type must be vat or non-vat'),
+    body('nextServiceDate')
+      .optional({ checkFalsy: true })
+      .isISO8601().withMessage('Next service date must be a valid date')
+      .bail()
+      .custom((value) => isWithinSupportedDateRange(value))
+      .withMessage('Next service date is outside the supported date range')
   ],
   async (req, res) => {
     const errors = validationResult(req);
@@ -34,7 +40,7 @@ router.post(
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { servicingId, invoiceType } = req.body;
+    const { servicingId, invoiceType, nextServiceDate } = req.body;
 
     try {
       const servicing = await Servicing.findById(servicingId);
@@ -50,7 +56,7 @@ router.post(
         return res.status(400).json({ message: 'This servicing record has already been invoiced' });
       }
 
-      const settings = await Settings.findOne();
+      const settings = await Settings.findOne().lean();
       const vatRate = settings ? (settings.vatRate / 100) : 0.13;
 
       const subtotal = servicing.subtotal;
@@ -58,9 +64,6 @@ router.post(
       const taxedBase = Math.max(0, subtotal - discount);
       const vat = invoiceType === 'vat' ? Math.round((taxedBase * vatRate) * 100) / 100 : 0;
       const total = taxedBase + vat;
-
-      const defaultNextServiceDate = new Date();
-      defaultNextServiceDate.setDate(defaultNextServiceDate.getDate() + 90);
 
       const invoice = new Invoice({
         servicingId: servicing._id,
@@ -75,14 +78,14 @@ router.post(
         amountDue: total,
         status: 'unpaid',
         odometer: servicing.mileageOut || 0,
-        nextServiceDate: defaultNextServiceDate
+        nextServiceDate: nextServiceDate ? new Date(nextServiceDate) : null
       });
       await invoice.save();
 
       servicing.invoiceId = invoice._id;
       await servicing.save();
 
-      const customer = await Customer.findById(servicing.customerId);
+      const customer = await Customer.findById(servicing.customerId).lean();
 
       await createNotification({
         recipientRoles: ['admin', 'accountant'],
@@ -101,7 +104,8 @@ router.post(
 
       const populated = await Invoice.findById(invoice._id)
         .populate('customerId', 'name phone email')
-        .populate('vehicleId', 'plateNo make model');
+        .populate('vehicleId', 'plateNo make model')
+        .lean();
 
       res.status(201).json(populated);
     } catch (err) {
@@ -126,7 +130,13 @@ router.post(
     body('items.*.qty').isInt({ min: 1 }).withMessage('Quantity must be 1 or more'),
     body('items.*.unitPrice').isFloat({ min: 0 }).withMessage('Unit price must be 0 or more'),
     body('discount').optional().isFloat({ min: 0 }).withMessage('Discount cannot be negative'),
-    body('odometer').optional().isNumeric().withMessage('Odometer must be a number')
+    body('odometer').optional().isNumeric().withMessage('Odometer must be a number'),
+    body('nextServiceDate')
+      .optional({ checkFalsy: true })
+      .isISO8601().withMessage('Next service date must be a valid date')
+      .bail()
+      .custom((value) => isWithinSupportedDateRange(value))
+      .withMessage('Next service date is outside the supported date range')
   ],
   async (req, res) => {
     const errors = validationResult(req);
@@ -134,16 +144,16 @@ router.post(
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { customerId, vehicleId, invoiceType, items, discount, odometer } = req.body;
+    const { customerId, vehicleId, invoiceType, items, discount, odometer, nextServiceDate } = req.body;
 
     try {
-      const customer = await Customer.findById(customerId);
+      const customer = await Customer.findById(customerId).lean();
       if (!customer) {
         return res.status(404).json({ message: 'Customer not found' });
       }
 
       if (vehicleId) {
-        const vehicle = await Vehicle.findById(vehicleId);
+        const vehicle = await Vehicle.findById(vehicleId).lean();
         if (!vehicle) {
           return res.status(404).json({ message: 'Vehicle not found' });
         }
@@ -153,7 +163,7 @@ router.post(
       // To ensure atomicity, we'll verify stock for all parts first.
       for (const item of items) {
         if (item.partId && (item.itemType === 'part' || !item.itemType)) {
-          const part = await InventoryStock.findById(item.partId);
+          const part = await InventoryStock.findById(item.partId).lean();
           if (!part) {
             return res.status(404).json({ message: `Part not found in inventory stock: ${item.name}` });
           }
@@ -188,16 +198,13 @@ router.post(
         };
       });
 
-      const settings = await Settings.findOne();
+      const settings = await Settings.findOne().lean();
       const vatRate = settings ? (settings.vatRate / 100) : 0.13;
 
       const disc = Number(discount) || 0;
       const taxedBase = Math.max(0, calculatedSubtotal - disc);
       const vat = invoiceType === 'vat' ? Math.round((taxedBase * vatRate) * 100) / 100 : 0;
       const total = taxedBase + vat;
-
-      const defaultNextServiceDate = new Date();
-      defaultNextServiceDate.setDate(defaultNextServiceDate.getDate() + 90);
 
       const invoice = new Invoice({
         isPC: true,
@@ -213,7 +220,7 @@ router.post(
         amountDue: total,
         status: 'unpaid',
         odometer: Number(odometer) || 0,
-        nextServiceDate: vehicleId ? defaultNextServiceDate : null
+        nextServiceDate: vehicleId && nextServiceDate ? new Date(nextServiceDate) : null
       });
 
       await invoice.save();
@@ -235,7 +242,8 @@ router.post(
 
       const populated = await Invoice.findById(invoice._id)
         .populate('customerId', 'name phone email')
-        .populate('vehicleId', 'plateNo make model');
+        .populate('vehicleId', 'plateNo make model')
+        .lean();
 
       res.status(201).json(populated);
     } catch (err) {
@@ -264,8 +272,8 @@ router.get('/', authenticate, authorize('admin', 'receptionist', 'accountant'), 
     if (search && search.trim()) {
       const regex = { $regex: search.trim(), $options: 'i' };
       const [matchingCustomers, matchingVehicles] = await Promise.all([
-        Customer.find({ name: regex, deletedAt: null }).select('_id'),
-        Vehicle.find({ $or: [{ plateNo: regex }, { make: regex }, { model: regex }] }).select('_id')
+        Customer.find({ name: regex, deletedAt: null }).select('_id').lean(),
+        Vehicle.find({ $or: [{ plateNo: regex }, { make: regex }, { model: regex }] }).select('_id').lean()
       ]);
       query.$or = [
         { invoiceNo: regex },
@@ -280,7 +288,8 @@ router.get('/', authenticate, authorize('admin', 'receptionist', 'accountant'), 
         .populate('vehicleId', 'plateNo make model')
         .sort({ createdAt: -1 })
         .skip(skip)
-        .limit(limit),
+        .limit(limit)
+        .lean(),
       Invoice.countDocuments(query)
     ]);
 
@@ -304,7 +313,8 @@ router.get('/service-reminders', authenticate, authorize('admin', 'receptionist'
     const invoices = await Invoice.find({ nextServiceDate: { $ne: null } })
       .populate('customerId', 'name phone email')
       .populate('vehicleId', 'plateNo make model')
-      .sort({ nextServiceDate: 1 });
+      .sort({ nextServiceDate: 1 })
+      .lean();
 
     res.json(invoices);
   } catch (err) {
@@ -339,6 +349,34 @@ router.post('/:id/service-reminder-sent', authenticate, authorize('admin', 'rece
   }
 });
 
+// @route   DELETE /api/invoices/:id/service-reminder
+// @desc    Remove a service reminder from the worklist (clears nextServiceDate; does not touch the invoice/payment record)
+// @access  Private (admin, receptionist)
+router.delete('/:id/service-reminder', authenticate, authorize('admin', 'receptionist'), async (req, res) => {
+  try {
+    const invoice = await Invoice.findById(req.params.id);
+    if (!invoice) {
+      return res.status(404).json({ message: 'Invoice not found' });
+    }
+
+    invoice.nextServiceDate = null;
+    invoice.reminderSent = false;
+    await invoice.save();
+
+    await logAction({
+      req,
+      action: 'service_reminder_deleted',
+      module: 'invoices',
+      details: `Service reminder removed for Invoice #${invoice.invoiceNo}`
+    });
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Delete reminder error:', err.message);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 // @route   GET /api/invoices/:id
 // @desc    Get detailed invoice and its payments
 // @access  Private (admin, receptionist, accountant)
@@ -350,7 +388,8 @@ router.get('/:id', authenticate, authorize('admin', 'receptionist', 'accountant'
       .populate({
         path: 'servicingId',
         select: 'parts labour findings'
-      });
+      })
+      .lean();
 
     if (!invoice) {
       return res.status(404).json({ message: 'Invoice not found' });
@@ -359,7 +398,8 @@ router.get('/:id', authenticate, authorize('admin', 'receptionist', 'accountant'
     // Find all payments linked to this invoice
     const payments = await Payment.find({ invoiceId: invoice._id })
       .populate('receivedBy', 'name')
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .lean();
 
     res.json({ invoice, payments });
   } catch (err) {
@@ -451,7 +491,7 @@ router.post(
 
       // Auto-trigger loyalty points if invoice becomes fully paid (only if loyalty system is enabled)
       if (invoice.status === 'paid') {
-        const loyaltySettings = await Settings.findOne();
+        const loyaltySettings = await Settings.findOne().lean();
         if (loyaltySettings?.loyaltySystemEnabled !== false) {
           const pointsEarned = Math.floor(invoice.total / 10); // 1 point per Rs. 10
           if (pointsEarned > 0) {
@@ -472,7 +512,7 @@ router.post(
       }
 
       // Send notifications
-      const customer = await Customer.findById(invoice.customerId);
+      const customer = await Customer.findById(invoice.customerId).lean();
       await createNotification({
         recipientRoles: ['admin', 'accountant'],
         title: 'Payment Received',
@@ -579,7 +619,7 @@ router.post(
 
     try {
       // Check if loyalty system is enabled before allowing redemption
-      const loyaltySettings = await Settings.findOne();
+      const loyaltySettings = await Settings.findOne().lean();
       if (loyaltySettings?.loyaltySystemEnabled === false) {
         return res.status(403).json({ message: 'Loyalty points system is currently disabled in global settings.' });
       }
@@ -665,16 +705,18 @@ router.get('/:id/pdf', authenticate, authorize('admin', 'receptionist', 'account
       .populate({
         path: 'servicingId',
         select: 'parts labour'
-      });
+      })
+      .lean();
 
     if (!invoice) {
       return res.status(404).send('Invoice not found');
     }
 
     const payments = await Payment.find({ invoiceId: invoice._id })
-      .populate('receivedBy', 'name');
+      .populate('receivedBy', 'name')
+      .lean();
 
-    const settings = await Settings.findOne();
+    const settings = await Settings.findOne().lean();
     const garageName = settings ? settings.garageName.toUpperCase() : 'PM AUTOMOBILES';
     const garageAddress = settings ? settings.garageAddress : 'Kathmandu, Nepal';
     const garagePhone = settings ? settings.garagePhone : '+977-1-4444444';

@@ -16,7 +16,8 @@ router.get('/', authenticate, async (req, res) => {
       ]
     })
       .sort({ createdAt: -1 })
-      .limit(100);
+      .limit(100)
+      .lean();
 
     const unreadCount = notifications.filter(
       (n) => !n.readBy.some((id) => id.toString() === req.user._id.toString())
@@ -39,6 +40,15 @@ router.patch('/:id/read', authenticate, async (req, res) => {
   try {
     const notification = await Notification.findById(req.params.id);
     if (!notification) {
+      return res.status(404).json({ message: 'Notification not found' });
+    }
+
+    // Ensure this notification was actually addressed to the requesting user
+    // (by direct recipient or by role) before allowing them to view/mark it.
+    const isRecipient =
+      (notification.recipientId && notification.recipientId.toString() === req.user._id.toString()) ||
+      (notification.recipientRoles && notification.recipientRoles.includes(req.user.role));
+    if (!isRecipient) {
       return res.status(404).json({ message: 'Notification not found' });
     }
 

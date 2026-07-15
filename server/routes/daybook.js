@@ -21,7 +21,7 @@ const normalizeDate = (dateVal) => {
 // @access  Private (admin, accountant, receptionist)
 router.get('/', authenticate, authorize('admin', 'accountant', 'receptionist'), async (req, res) => {
   try {
-    const daybooks = await DayBook.find().sort({ date: -1 });
+    const daybooks = await DayBook.find().sort({ date: -1 }).lean();
     res.json(daybooks);
   } catch (err) {
     console.error('Fetch daybooks error:', err.message);
@@ -44,10 +44,10 @@ router.get('/date/:date', authenticate, authorize('admin', 'accountant', 'recept
     dayEnd.setHours(23, 59, 59, 999);
 
     // 1. Fetch/Find DayBook record
-    let daybook = await DayBook.findOne({ date: targetDate });
+    let daybook = await DayBook.findOne({ date: targetDate }).lean();
     if (!daybook) {
       // Find the most recent closed DayBook to get the closing balances to pre-fill as opening balances
-      const lastClosed = await DayBook.findOne({ isClosed: true, date: { $lt: targetDate } }).sort({ date: -1 });
+      const lastClosed = await DayBook.findOne({ isClosed: true, date: { $lt: targetDate } }).sort({ date: -1 }).lean();
       
       daybook = new DayBook({
         date: targetDate,
@@ -65,9 +65,10 @@ router.get('/date/:date', authenticate, authorize('admin', 'accountant', 'recept
     const [payments, expenditures, purchases] = await Promise.all([
       Payment.find({ createdAt: { $gte: dayStart, $lte: dayEnd } })
         .populate('invoiceId', 'invoiceNo customerId')
-        .populate('receivedBy', 'name'),
-      Expenditure.find({ date: { $gte: dayStart, $lte: dayEnd } }),
-      Purchase.find({ createdAt: { $gte: dayStart, $lte: dayEnd } })
+        .populate('receivedBy', 'name')
+        .lean(),
+      Expenditure.find({ date: { $gte: dayStart, $lte: dayEnd } }).lean(),
+      Purchase.find({ createdAt: { $gte: dayStart, $lte: dayEnd } }).lean()
     ]);
 
     // Aggregate receipts (payments in)

@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import compression from 'compression';
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -47,6 +48,7 @@ const apiLimiter = rateLimit({
 app.use(helmet({
   contentSecurityPolicy: false, // Disable CSP in dev to avoid blocking dev server scripts if needed
 }));
+app.use(compression());
 
 // CORS allow-list. Note: browsers send an Origin header on same-origin
 // state-changing requests too (not just cross-origin ones), so your deployed

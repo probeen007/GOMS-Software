@@ -49,7 +49,8 @@ router.get('/', authenticate, authorize('admin'), async (req, res) => {
     const logs = await AuditLog.find(query)
       .sort({ createdAt: -1 })
       .skip(skip)
-      .limit(limitNumber);
+      .limit(limitNumber)
+      .lean();
 
     res.json({
       logs,

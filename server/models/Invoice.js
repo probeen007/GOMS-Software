@@ -119,6 +119,8 @@ const invoiceSchema = new mongoose.Schema(
 // Indexes
 invoiceSchema.index({ status: 1 });
 invoiceSchema.index({ createdAt: -1 });
+invoiceSchema.index({ invoiceType: 1, createdAt: -1 });
+invoiceSchema.index({ amountDue: 1 });
 
 const Invoice = mongoose.model('Invoice', invoiceSchema);
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Menu, Bell, LogOut, CheckSquare, BellOff, ExternalLink, Loader2 } from 'lucide-react';
+import { Menu, Bell, LogOut, CheckSquare, BellOff, ExternalLink, Loader2, HelpCircle } from 'lucide-react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import { formatNepaliDate } from '../utils/nepaliDate';
@@ -123,6 +123,17 @@ export default function Topbar({ onToggleSidebar }) {
 
       {/* Right side: Notifications bell + User actions */}
       <div className="flex items-center gap-4">
+        {/* User Manual Link */}
+        <a
+          href="/user-manual.html"
+          target="_blank"
+          rel="noreferrer"
+          className="flex items-center justify-center w-7 h-7 rounded-full text-slate-500 hover:text-blue-600 hover:bg-blue-50 border border-slate-200 hover:border-blue-100 transition-all duration-200"
+          title="User Manual"
+        >
+          <HelpCircle className="w-4 h-4" />
+        </a>
+
         {/* Role badge */}
         <div className="hidden sm:block text-[9px] font-bold uppercase tracking-wider text-slate-500 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
           {user.role}

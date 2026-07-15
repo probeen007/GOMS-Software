@@ -37,12 +37,12 @@ router.get('/cash-flow', authenticate, authorize('admin', 'accountant'), async (
     // 1. Fetch Payments (Inflow)
     const payments = await Payment.find({
       createdAt: { $gte: start, $lte: end }
-    });
+    }).lean();
 
     // 2. Fetch Expenditures (Outflow)
     const expenditures = await Expenditure.find({
       date: { $gte: start, $lte: end }
-    });
+    }).lean();
 
     // 3. Aggregate daily values
     const dailyMap = {};
@@ -94,7 +94,7 @@ router.get('/cash-flow', authenticate, authorize('admin', 'accountant'), async (
 // @access  Private (admin, accountant)
 router.get('/expenditures', authenticate, authorize('admin', 'accountant'), async (req, res) => {
   try {
-    const expenditures = await Expenditure.find().sort({ date: -1 });
+    const expenditures = await Expenditure.find().sort({ date: -1 }).lean();
     res.json(expenditures);
   } catch (err) {
     console.error('Fetch expenditures error:', err.message);
@@ -217,20 +217,20 @@ router.get('/summary', authenticate, authorize('admin', 'receptionist', 'account
     // 1. Total Income (Inflow Ledger)
     const payments = await Payment.find({
       createdAt: { $gte: start, $lte: end }
-    });
+    }).lean();
     const totalIncome = payments.reduce((sum, p) => sum + p.amount, 0);
 
     // 2. Total Expenditures
     const expenditures = await Expenditure.find({
       date: { $gte: start, $lte: end }
-    });
+    }).lean();
     const totalExpenditures = expenditures.reduce((sum, e) => sum + e.amount, 0);
 
     // 3. Outstanding Invoices Balance (Unpaid Dues)
-    const invoices = await Invoice.find({ 
+    const invoices = await Invoice.find({
       status: { $ne: 'paid' },
       createdAt: { $gte: start, $lte: end }
-    });
+    }).lean();
     const totalOutstanding = invoices.reduce((sum, inv) => sum + inv.amountDue, 0);
 
     // 4. Vehicles Serviced (Closed Servicing records within the timeframe)
@@ -316,11 +316,12 @@ router.get('/vat-report', authenticate, authorize('admin', 'accountant'), async 
       })
         .populate('customerId', 'name phone')
         .populate('vehicleId', 'plateNo make model')
-        .sort({ createdAt: -1 }),
+        .sort({ createdAt: -1 })
+        .lean(),
       Purchase.find({
         purchaseType: 'vat',
         createdAt: { $gte: start, $lte: end }
-      }).sort({ createdAt: -1 })
+      }).sort({ createdAt: -1 }).lean()
     ]);
 
     const totals = invoices.reduce(
@@ -371,11 +372,12 @@ router.get('/non-vat-report', authenticate, authorize('admin', 'accountant'), as
       })
         .populate('customerId', 'name phone')
         .populate('vehicleId', 'plateNo make model')
-        .sort({ createdAt: -1 }),
+        .sort({ createdAt: -1 })
+        .lean(),
       Purchase.find({
         purchaseType: 'non-vat',
         createdAt: { $gte: start, $lte: end }
-      }).sort({ createdAt: -1 })
+      }).sort({ createdAt: -1 }).lean()
     ]);
 
     const totals = invoices.reduce(
@@ -426,13 +428,13 @@ router.get('/summary-report', authenticate, authorize('admin', 'accountant'), as
       vatPurchases,
       nonVatPurchases
     ] = await Promise.all([
-      Payment.find({ createdAt: { $gte: start, $lte: end } }),
-      Expenditure.find({ date: { $gte: start, $lte: end } }),
-      Invoice.find({ invoiceType: 'vat', createdAt: { $gte: start, $lte: end } }),
-      Invoice.find({ invoiceType: 'non-vat', createdAt: { $gte: start, $lte: end } }),
-      Invoice.find({ status: { $ne: 'paid' }, createdAt: { $gte: start, $lte: end } }),
-      Purchase.find({ purchaseType: 'vat', createdAt: { $gte: start, $lte: end } }),
-      Purchase.find({ purchaseType: 'non-vat', createdAt: { $gte: start, $lte: end } })
+      Payment.find({ createdAt: { $gte: start, $lte: end } }).lean(),
+      Expenditure.find({ date: { $gte: start, $lte: end } }).lean(),
+      Invoice.find({ invoiceType: 'vat', createdAt: { $gte: start, $lte: end } }).lean(),
+      Invoice.find({ invoiceType: 'non-vat', createdAt: { $gte: start, $lte: end } }).lean(),
+      Invoice.find({ status: { $ne: 'paid' }, createdAt: { $gte: start, $lte: end } }).lean(),
+      Purchase.find({ purchaseType: 'vat', createdAt: { $gte: start, $lte: end } }).lean(),
+      Purchase.find({ purchaseType: 'non-vat', createdAt: { $gte: start, $lte: end } }).lean()
     ]);
 
     const totalIncome = payments.reduce((sum, p) => sum + p.amount, 0);
@@ -465,6 +467,80 @@ router.get('/summary-report', authenticate, authorize('admin', 'accountant'), as
     });
   } catch (err) {
     console.error('Fetch summary report error:', err.message);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// @route   GET /api/finance/dues-report
+// @desc    Outstanding customer dues, grouped by customer, optionally filtered by month/year
+// @access  Private (admin, accountant)
+router.get('/dues-report', authenticate, authorize('admin', 'accountant'), async (req, res) => {
+  try {
+    const { month, year } = req.query;
+    const query = { amountDue: { $gt: 0 } };
+
+    if (year) {
+      const yearNum = Number(year);
+      const monthNum = month ? Number(month) : null;
+
+      if (!Number.isInteger(yearNum) || (monthNum !== null && (!Number.isInteger(monthNum) || monthNum < 1 || monthNum > 12))) {
+        return res.status(400).json({ message: 'Invalid month or year filter' });
+      }
+
+      const start = monthNum ? new Date(yearNum, monthNum - 1, 1) : new Date(yearNum, 0, 1);
+      const end = monthNum ? new Date(yearNum, monthNum, 0, 23, 59, 59, 999) : new Date(yearNum, 11, 31, 23, 59, 59, 999);
+
+      if (!isWithinSupportedDateRange(start) || !isWithinSupportedDateRange(end)) {
+        return res.status(400).json({ message: 'Selected month/year is outside the supported date range' });
+      }
+
+      query.createdAt = { $gte: start, $lte: end };
+    }
+
+    const invoices = await Invoice.find(query)
+      .populate('customerId', 'name phone email')
+      .sort({ createdAt: -1 })
+      .lean();
+
+    const byCustomer = new Map();
+    for (const inv of invoices) {
+      if (!inv.customerId) continue; // customer record was deleted
+      const key = inv.customerId._id.toString();
+      if (!byCustomer.has(key)) {
+        byCustomer.set(key, {
+          customerId: key,
+          name: inv.customerId.name,
+          phone: inv.customerId.phone,
+          email: inv.customerId.email,
+          totalDue: 0,
+          invoiceCount: 0,
+          invoices: []
+        });
+      }
+      const entry = byCustomer.get(key);
+      entry.totalDue += inv.amountDue;
+      entry.invoiceCount += 1;
+      entry.invoices.push({
+        _id: inv._id,
+        invoiceNo: inv.invoiceNo,
+        createdAt: inv.createdAt,
+        total: inv.total,
+        amountDue: inv.amountDue,
+        status: inv.status
+      });
+    }
+
+    const customers = Array.from(byCustomer.values()).sort((a, b) => b.totalDue - a.totalDue);
+    const totalDue = customers.reduce((sum, c) => sum + c.totalDue, 0);
+
+    res.json({
+      customers,
+      totalDue,
+      customerCount: customers.length,
+      invoiceCount: invoices.length
+    });
+  } catch (err) {
+    console.error('Fetch dues report error:', err.message);
     res.status(500).json({ message: 'Server error' });
   }
 });

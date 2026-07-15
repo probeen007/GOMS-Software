@@ -18,7 +18,10 @@ import {
   Receipt,
   FileSpreadsheet,
   BarChart3,
-  LayoutGrid
+  LayoutGrid,
+  Users,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 import {
   AreaChart,
@@ -77,6 +80,13 @@ export default function Finance() {
   });
   const [summaryReport, setSummaryReport] = useState(null);
   const [reportLoading, setReportLoading] = useState(false);
+
+  // Customer Dues tab
+  const [duesMonth, setDuesMonth] = useState('');
+  const [duesYear, setDuesYear] = useState('');
+  const [duesReport, setDuesReport] = useState({ customers: [], totalDue: 0, customerCount: 0 });
+  const [duesLoading, setDuesLoading] = useState(false);
+  const [expandedCustomerId, setExpandedCustomerId] = useState(null);
 
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -155,12 +165,31 @@ export default function Finance() {
     }
   };
 
+  const fetchDuesReport = async () => {
+    setDuesLoading(true);
+    try {
+      const res = await axios.get('/api/finance/dues-report', {
+        params: { month: duesMonth || undefined, year: duesYear || undefined }
+      });
+      setDuesReport(res.data);
+    } catch (err) {
+      console.error('Fetch dues report error:', err);
+    } finally {
+      setDuesLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (activeTab === 'vat') fetchVatReport();
     else if (activeTab === 'non-vat') fetchNonVatReport();
     else if (activeTab === 'summary') fetchSummaryReport();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab, startDate, endDate]);
+
+  useEffect(() => {
+    if (activeTab === 'dues') fetchDuesReport();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab, duesMonth, duesYear]);
 
   // Handle Add Expenditure Submit
   const handleAddExpenditure = async (e) => {
@@ -254,7 +283,8 @@ export default function Finance() {
           { id: 'overview', label: 'Overview', icon: LayoutGrid },
           { id: 'vat', label: 'VAT Report', icon: Receipt },
           { id: 'non-vat', label: 'Non-VAT Report', icon: FileSpreadsheet },
-          { id: 'summary', label: 'Summary Report', icon: BarChart3 }
+          { id: 'summary', label: 'Summary Report', icon: BarChart3 },
+          { id: 'dues', label: 'Customer Dues', icon: Users }
         ].map((tab) => {
           const Icon = tab.icon;
           return (
@@ -271,30 +301,72 @@ export default function Finance() {
         })}
       </div>
 
-      {/* Date Filter Panel (shared across tabs) */}
-      <div className="p-4 bg-white border border-slate-200 rounded-2xl flex flex-wrap gap-4 items-center justify-between shadow-sm">
-        <div className="flex items-center gap-2">
-          <Calendar className="w-5 h-5 text-slate-400" />
-          <span className="text-xs font-bold text-slate-500 uppercase tracking-wide">
-            Report Date Range
-          </span>
+      {/* Date Filter Panel (shared across overview/VAT/Non-VAT/Summary tabs) */}
+      {activeTab === 'dues' ? (
+        <div className="p-4 bg-white border border-slate-200 rounded-2xl flex flex-wrap gap-4 items-center justify-between shadow-sm">
+          <div className="flex items-center gap-2">
+            <Calendar className="w-5 h-5 text-slate-400" />
+            <span className="text-xs font-bold text-slate-500 uppercase tracking-wide">
+              Filter Dues By
+            </span>
+          </div>
+          <div className="flex items-center gap-3">
+            <select
+              value={duesMonth}
+              onChange={(e) => setDuesMonth(e.target.value)}
+              className="px-3.5 h-10 rounded-xl border-slate-200 text-sm font-semibold cursor-pointer"
+            >
+              <option value="">All Months</option>
+              {['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'].map((m, i) => (
+                <option key={m} value={i + 1}>{m}</option>
+              ))}
+            </select>
+            <select
+              value={duesYear}
+              onChange={(e) => setDuesYear(e.target.value)}
+              className="px-3.5 h-10 rounded-xl border-slate-200 text-sm font-semibold cursor-pointer"
+            >
+              <option value="">All Years</option>
+              {Array.from({ length: 6 }, (_, i) => new Date().getFullYear() - i).map((y) => (
+                <option key={y} value={y}>{y}</option>
+              ))}
+            </select>
+            {(duesMonth || duesYear) && (
+              <button
+                type="button"
+                onClick={() => { setDuesMonth(''); setDuesYear(''); }}
+                className="px-3.5 h-10 rounded-xl text-xs font-bold text-slate-500 bg-slate-100 hover:bg-slate-200 transition-colors cursor-pointer"
+              >
+                Clear
+              </button>
+            )}
+          </div>
         </div>
-        <div className="flex items-center gap-3">
-          <input
-            type="date"
-            value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
-            className="px-3.5 h-10 rounded-xl border-slate-200 text-sm"
-          />
-          <span className="text-slate-400 text-xs font-bold uppercase tracking-wide">to</span>
-          <input
-            type="date"
-            value={endDate}
-            onChange={(e) => setEndDate(e.target.value)}
-            className="px-3.5 h-10 rounded-xl border-slate-200 text-sm"
-          />
+      ) : (
+        <div className="p-4 bg-white border border-slate-200 rounded-2xl flex flex-wrap gap-4 items-center justify-between shadow-sm">
+          <div className="flex items-center gap-2">
+            <Calendar className="w-5 h-5 text-slate-400" />
+            <span className="text-xs font-bold text-slate-500 uppercase tracking-wide">
+              Report Date Range
+            </span>
+          </div>
+          <div className="flex items-center gap-3">
+            <input
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              className="px-3.5 h-10 rounded-xl border-slate-200 text-sm"
+            />
+            <span className="text-slate-400 text-xs font-bold uppercase tracking-wide">to</span>
+            <input
+              type="date"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              className="px-3.5 h-10 rounded-xl border-slate-200 text-sm"
+            />
+          </div>
         </div>
-      </div>
+      )}
 
       {activeTab === 'overview' && (
       <>
@@ -772,6 +844,101 @@ export default function Finance() {
               </div>
             </>
           )}
+        </div>
+      )}
+
+      {activeTab === 'dues' && (
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="p-6 bg-white border border-slate-200 rounded-2xl shadow-sm">
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-wide block mb-1">Total Outstanding Dues</span>
+              <p className="text-2xl font-bold text-sky-600 font-mono">Rs. {(duesReport.totalDue || 0).toFixed(2)}</p>
+              <span className="text-[10px] text-slate-400 mt-1 block">Across {duesReport.customerCount || 0} customer{duesReport.customerCount === 1 ? '' : 's'}</span>
+            </div>
+            <div className="p-6 bg-white border border-slate-200 rounded-2xl shadow-sm">
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-wide block mb-1">Unpaid / Partially-Paid Invoices</span>
+              <p className="text-2xl font-bold text-slate-900 font-mono">{duesReport.invoiceCount || 0}</p>
+              <span className="text-[10px] text-slate-400 mt-1 block">{duesMonth || duesYear ? 'In the selected period' : 'All time'}</span>
+            </div>
+          </div>
+
+          <div className="p-6 bg-white border border-slate-200 rounded-2xl shadow-sm space-y-4">
+            <div className="flex justify-between items-center pb-3 border-b border-slate-100">
+              <h3 className="text-base font-bold text-slate-900 flex items-center gap-2 tracking-tight">
+                <Users className="w-5 h-5 text-sky-600" />
+                <span>Customers With Outstanding Dues</span>
+              </h3>
+            </div>
+
+            {duesLoading ? (
+              <div className="py-12 text-center"><Loader2 className="w-6 h-6 text-sky-600 animate-spin mx-auto" /></div>
+            ) : duesReport.customers.length === 0 ? (
+              <p className="text-sm text-slate-400 italic text-center py-8">No outstanding dues found{duesMonth || duesYear ? ' for the selected period' : ''}.</p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-slate-200 text-left text-sm">
+                  <thead>
+                    <tr className="text-slate-500 uppercase font-bold tracking-wide text-xs">
+                      <th className="py-2.5 px-3">Customer</th>
+                      <th className="py-2.5 px-3">Phone</th>
+                      <th className="py-2.5 px-3 text-right">Invoices</th>
+                      <th className="py-2.5 px-3 text-right">Amount Due</th>
+                      <th className="py-2.5 px-3"></th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 text-slate-700">
+                    {duesReport.customers.map((c) => {
+                      const isExpanded = expandedCustomerId === c.customerId;
+                      return (
+                        <React.Fragment key={c.customerId}>
+                          <tr
+                            onClick={() => setExpandedCustomerId(isExpanded ? null : c.customerId)}
+                            className="hover:bg-slate-50 transition-colors cursor-pointer"
+                          >
+                            <td className="py-2.5 px-3 font-bold text-slate-900">{c.name}</td>
+                            <td className="py-2.5 px-3 text-slate-500">{c.phone || '—'}</td>
+                            <td className="py-2.5 px-3 text-right">{c.invoiceCount}</td>
+                            <td className="py-2.5 px-3 text-right font-mono font-bold text-sky-700">Rs. {c.totalDue.toFixed(2)}</td>
+                            <td className="py-2.5 px-3 text-right">
+                              {isExpanded ? <ChevronUp className="w-4 h-4 text-slate-400 inline" /> : <ChevronDown className="w-4 h-4 text-slate-400 inline" />}
+                            </td>
+                          </tr>
+                          {isExpanded && (
+                            <tr>
+                              <td colSpan={5} className="px-3 pb-4 bg-slate-50/60">
+                                <table className="min-w-full text-xs">
+                                  <thead>
+                                    <tr className="text-slate-400 uppercase font-bold tracking-wide">
+                                      <th className="py-2 px-2 text-left">Invoice No</th>
+                                      <th className="py-2 px-2 text-left">Date</th>
+                                      <th className="py-2 px-2 text-left">Status</th>
+                                      <th className="py-2 px-2 text-right">Total</th>
+                                      <th className="py-2 px-2 text-right">Due</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody className="divide-y divide-slate-200">
+                                    {c.invoices.map((inv) => (
+                                      <tr key={inv._id}>
+                                        <td className="py-2 px-2 font-mono font-bold text-slate-700">{inv.invoiceNo}</td>
+                                        <td className="py-2 px-2 text-slate-500">{formatNepaliDate(inv.createdAt)}</td>
+                                        <td className="py-2 px-2 text-slate-500 capitalize">{inv.status.replace('-', ' ')}</td>
+                                        <td className="py-2 px-2 text-right font-mono text-slate-700">Rs. {inv.total.toFixed(2)}</td>
+                                        <td className="py-2 px-2 text-right font-mono font-bold text-sky-700">Rs. {inv.amountDue.toFixed(2)}</td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
+                              </td>
+                            </tr>
+                          )}
+                        </React.Fragment>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
         </div>
       )}
 

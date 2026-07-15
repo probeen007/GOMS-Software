@@ -45,7 +45,8 @@ router.get('/', authenticate, async (req, res) => {
         .populate('assignedTo', 'name email role')
         .sort({ dueDate: 1 })
         .skip(skip)
-        .limit(limit),
+        .limit(limit)
+        .lean(),
       Task.countDocuments(query),
       Task.countDocuments({ ...query, status: 'completed' })
     ]);
@@ -111,7 +112,7 @@ router.post(
         details: `Created task: "${task.title}" with priority ${task.priority.toUpperCase()}, assigned to user ${task.assignedTo}`
       });
 
-      const populated = await Task.findById(task._id).populate('assignedTo', 'name email role');
+      const populated = await Task.findById(task._id).populate('assignedTo', 'name email role').lean();
       res.status(201).json(populated);
     } catch (err) {
       console.error('Create task error:', err.message);
@@ -188,7 +189,7 @@ router.patch(
         details: `Updated task: "${task.title}". Status: ${task.status.toUpperCase()}, Priority: ${task.priority.toUpperCase()}`
       });
 
-      const populated = await Task.findById(task._id).populate('assignedTo', 'name email role');
+      const populated = await Task.findById(task._id).populate('assignedTo', 'name email role').lean();
       res.json(populated);
     } catch (err) {
       console.error('Update task error:', err.message);
