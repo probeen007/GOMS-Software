@@ -67,6 +67,12 @@ export function formatNepaliDate(input) {
   return `${NEPALI_MONTHS[month - 1]} ${day}, ${year}`;
 }
 
+/** Formats a compact Bikram Sambat date without the year, e.g. "26 Ashadh" — for space-constrained UI like chart axis ticks. */
+export function formatNepaliShortDate(input) {
+  const { month, day } = adToBs(input);
+  return `${day} ${NEPALI_MONTHS[month - 1]}`;
+}
+
 /** Formats the Nepal Standard Time (UTC+5:45) time-of-day, e.g. "3:45 PM". */
 export function formatNepaliTime(input) {
   const date = input instanceof Date ? input : new Date(input);

@@ -339,6 +339,127 @@ router.post(
   }
 );
 
+// @route   PATCH /api/servicing/:id/parts/:index
+// @desc    Edit the quantity of an already-allocated part line (adjusts inventory stock by the delta)
+// @access  Private (admin, receptionist, technician)
+router.patch(
+  '/:id/parts/:index',
+  authenticate,
+  authorize('admin', 'receptionist', 'technician'),
+  [
+    body('qty').isInt({ min: 1 }).withMessage('Quantity must be at least 1')
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const index = parseInt(req.params.index, 10);
+    const newQty = Number(req.body.qty);
+
+    try {
+      const record = await Servicing.findById(req.params.id);
+      if (!record) {
+        return res.status(404).json({ message: 'Servicing record not found' });
+      }
+
+      if (record.status === 'closed') {
+        return res.status(400).json({ message: 'Cannot edit parts on a closed servicing record' });
+      }
+
+      const line = record.parts[index];
+      if (!line) {
+        return res.status(404).json({ message: 'Part line not found' });
+      }
+
+      const delta = newQty - line.qty;
+      if (delta !== 0) {
+        const part = await InventoryStock.findById(line.partId);
+        if (!part) {
+          return res.status(404).json({ message: 'Part not found in inventory stock' });
+        }
+        if (delta > 0 && part.qty < delta) {
+          return res.status(400).json({
+            message: `Insufficient stock to increase quantity. Additional needed: ${delta}, Available in stock: ${part.qty}`
+          });
+        }
+        part.qty -= delta; // delta negative restores stock automatically
+        await part.save();
+      }
+
+      line.qty = newQty;
+      line.total = newQty * line.unitPrice;
+
+      recalculateServicingTotals(record);
+      await record.save();
+
+      const populated = await Servicing.findById(record._id)
+        .populate('customerId', 'name phone')
+        .populate('vehicleId', 'plateNo make model')
+        .lean();
+
+      await logAction({
+        req,
+        action: 'servicing_part_updated',
+        module: 'servicing',
+        details: `Updated quantity of "${line.name}" to ${newQty} on Servicing record #${record._id.toString().substring(18)}`
+      });
+
+      res.json(populated);
+    } catch (err) {
+      console.error('Edit servicing part error:', err.message);
+      res.status(500).json({ message: 'Server error' });
+    }
+  }
+);
+
+// @route   DELETE /api/servicing/:id/parts/:index
+// @desc    Remove an allocated part line entirely (restores its full quantity back to inventory stock)
+// @access  Private (admin, receptionist, technician)
+router.delete('/:id/parts/:index', authenticate, authorize('admin', 'receptionist', 'technician'), async (req, res) => {
+  const index = parseInt(req.params.index, 10);
+
+  try {
+    const record = await Servicing.findById(req.params.id);
+    if (!record) {
+      return res.status(404).json({ message: 'Servicing record not found' });
+    }
+
+    if (record.status === 'closed') {
+      return res.status(400).json({ message: 'Cannot remove parts from a closed servicing record' });
+    }
+
+    const line = record.parts[index];
+    if (!line) {
+      return res.status(404).json({ message: 'Part line not found' });
+    }
+
+    await InventoryStock.findByIdAndUpdate(line.partId, { $inc: { qty: line.qty } });
+
+    record.parts.splice(index, 1);
+    recalculateServicingTotals(record);
+    await record.save();
+
+    const populated = await Servicing.findById(record._id)
+      .populate('customerId', 'name phone')
+      .populate('vehicleId', 'plateNo make model')
+      .lean();
+
+    await logAction({
+      req,
+      action: 'servicing_part_removed',
+      module: 'servicing',
+      details: `Removed "${line.name}" (qty ${line.qty}) from Servicing record #${record._id.toString().substring(18)}, stock restored`
+    });
+
+    res.json(populated);
+  } catch (err) {
+    console.error('Remove servicing part error:', err.message);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 // @route   POST /api/servicing/:id/labour
 // @desc    Add labor hours to a servicing record
 // @access  Private (admin, receptionist, technician)
@@ -399,6 +520,190 @@ router.post(
     }
   }
 );
+
+// @route   PATCH /api/servicing/:id/labour/:index
+// @desc    Edit an existing labour line's hours/unit rate
+// @access  Private (admin, receptionist, technician)
+router.patch(
+  '/:id/labour/:index',
+  authenticate,
+  authorize('admin', 'receptionist', 'technician'),
+  [
+    body('hours').isFloat({ min: 0.1 }).withMessage('Hours must be greater than 0'),
+    body('unitPrice').isFloat({ min: 0 }).withMessage('Labour rate must be positive')
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const index = parseInt(req.params.index, 10);
+    const hours = Number(req.body.hours);
+    const unitPrice = Number(req.body.unitPrice);
+
+    try {
+      const record = await Servicing.findById(req.params.id);
+      if (!record) {
+        return res.status(404).json({ message: 'Servicing record not found' });
+      }
+
+      if (record.status === 'closed') {
+        return res.status(400).json({ message: 'Cannot edit labour on a closed servicing record' });
+      }
+
+      const line = record.labour[index];
+      if (!line) {
+        return res.status(404).json({ message: 'Labour line not found' });
+      }
+
+      line.hours = hours;
+      line.unitPrice = unitPrice;
+      line.total = hours * unitPrice;
+
+      recalculateServicingTotals(record);
+      await record.save();
+
+      const populated = await Servicing.findById(record._id)
+        .populate('customerId', 'name phone')
+        .populate('vehicleId', 'plateNo make model')
+        .lean();
+
+      await logAction({
+        req,
+        action: 'servicing_labour_updated',
+        module: 'servicing',
+        details: `Updated labour task "${line.name}" (${hours} hrs @ Rs. ${unitPrice}/hr) on Servicing record #${record._id.toString().substring(18)}`
+      });
+
+      res.json(populated);
+    } catch (err) {
+      console.error('Edit servicing labour error:', err.message);
+      res.status(500).json({ message: 'Server error' });
+    }
+  }
+);
+
+// @route   DELETE /api/servicing/:id/labour/:index
+// @desc    Remove a labour line entirely
+// @access  Private (admin, receptionist, technician)
+router.delete('/:id/labour/:index', authenticate, authorize('admin', 'receptionist', 'technician'), async (req, res) => {
+  const index = parseInt(req.params.index, 10);
+
+  try {
+    const record = await Servicing.findById(req.params.id);
+    if (!record) {
+      return res.status(404).json({ message: 'Servicing record not found' });
+    }
+
+    if (record.status === 'closed') {
+      return res.status(400).json({ message: 'Cannot remove labour from a closed servicing record' });
+    }
+
+    const line = record.labour[index];
+    if (!line) {
+      return res.status(404).json({ message: 'Labour line not found' });
+    }
+
+    record.labour.splice(index, 1);
+    recalculateServicingTotals(record);
+    await record.save();
+
+    const populated = await Servicing.findById(record._id)
+      .populate('customerId', 'name phone')
+      .populate('vehicleId', 'plateNo make model')
+      .lean();
+
+    await logAction({
+      req,
+      action: 'servicing_labour_removed',
+      module: 'servicing',
+      details: `Removed labour task "${line.name}" from Servicing record #${record._id.toString().substring(18)}`
+    });
+
+    res.json(populated);
+  } catch (err) {
+    console.error('Remove servicing labour error:', err.message);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// @route   PATCH /api/servicing/:id/findings
+// @desc    Edit the technician findings/diagnosis text
+// @access  Private (admin, receptionist, technician)
+router.patch(
+  '/:id/findings',
+  authenticate,
+  authorize('admin', 'receptionist', 'technician'),
+  [body('findings').trim()],
+  async (req, res) => {
+    try {
+      const record = await Servicing.findById(req.params.id);
+      if (!record) {
+        return res.status(404).json({ message: 'Servicing record not found' });
+      }
+
+      if (record.status === 'closed') {
+        return res.status(400).json({ message: 'Cannot edit findings on a closed servicing record' });
+      }
+
+      record.findings = req.body.findings || '';
+      await record.save();
+
+      const populated = await Servicing.findById(record._id)
+        .populate('customerId', 'name phone')
+        .populate('vehicleId', 'plateNo make model')
+        .lean();
+
+      await logAction({
+        req,
+        action: 'servicing_findings_updated',
+        module: 'servicing',
+        details: `Updated findings on Servicing record #${record._id.toString().substring(18)}`
+      });
+
+      res.json(populated);
+    } catch (err) {
+      console.error('Edit servicing findings error:', err.message);
+      res.status(500).json({ message: 'Server error' });
+    }
+  }
+);
+
+// @route   DELETE /api/servicing/:id
+// @desc    Delete an open (not yet closed/invoiced) servicing record, restoring any allocated part stock
+// @access  Private (admin, receptionist)
+router.delete('/:id', authenticate, authorize('admin', 'receptionist'), async (req, res) => {
+  try {
+    const record = await Servicing.findById(req.params.id);
+    if (!record) {
+      return res.status(404).json({ message: 'Servicing record not found' });
+    }
+
+    if (record.status !== 'open') {
+      return res.status(400).json({ message: 'Only open servicing records can be deleted. This record is already closed/invoiced.' });
+    }
+
+    // Restore any allocated part stock back to inventory
+    for (const line of record.parts) {
+      await InventoryStock.findByIdAndUpdate(line.partId, { $inc: { qty: line.qty } });
+    }
+
+    await record.deleteOne();
+
+    await logAction({
+      req,
+      action: 'servicing_deleted',
+      module: 'servicing',
+      details: `Deleted open Servicing record #${record._id.toString().substring(18)}${record.parts.length > 0 ? `, restored stock for ${record.parts.length} part line(s)` : ''}`
+    });
+
+    res.json({ message: 'Servicing record deleted successfully' });
+  } catch (err) {
+    console.error('Delete servicing record error:', err.message);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
 
 // @route   PATCH /api/servicing/:id/close
 // @desc    Close a servicing record (ready to be invoiced)

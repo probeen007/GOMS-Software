@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
-import { formatNepaliTime } from '../utils/nepaliDate';
+import { formatNepaliTime, formatNepaliDate, formatNepaliShortDate } from '../utils/nepaliDate';
 import {
   Users,
   Calendar,
@@ -407,9 +407,12 @@ export default function Dashboard() {
                           </linearGradient>
                         </defs>
                         <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" opacity={0.6} />
-                        <XAxis dataKey="date" stroke="#64748b" fontSize={10} tickLine={false} />
+                        <XAxis dataKey="date" stroke="#64748b" fontSize={10} tickLine={false} tickFormatter={formatNepaliShortDate} />
                         <YAxis stroke="#64748b" fontSize={10} tickLine={false} />
-                        <Tooltip contentStyle={{ backgroundColor: '#ffffff', borderColor: '#e2e8f0', borderRadius: '8px', color: '#0f172a', fontSize: '11px' }} />
+                        <Tooltip
+                          contentStyle={{ backgroundColor: '#ffffff', borderColor: '#e2e8f0', borderRadius: '8px', color: '#0f172a', fontSize: '11px' }}
+                          labelFormatter={(dateStr) => formatNepaliDate(dateStr)}
+                        />
                         <Area type="monotone" dataKey="income" stroke="#10b981" strokeWidth={2} fillOpacity={1} fill="url(#colorIncome)" />
                         <Area type="monotone" dataKey="expenditure" stroke="#f43f5e" strokeWidth={2} fillOpacity={1} fill="url(#colorExpense)" />
                       </AreaChart>

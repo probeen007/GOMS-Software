@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { formatNepaliDate } from '../utils/nepaliDate';
+import { formatNepaliDate, formatNepaliShortDate } from '../utils/nepaliDate';
 import {
   TrendingUp,
   TrendingDown,
@@ -449,12 +450,13 @@ export default function Finance() {
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                    <XAxis dataKey="date" stroke="#94a3b8" fontSize={11} />
+                    <XAxis dataKey="date" stroke="#94a3b8" fontSize={11} tickFormatter={formatNepaliShortDate} />
                     <YAxis stroke="#94a3b8" fontSize={11} />
                     <Tooltip
                       contentStyle={{ backgroundColor: '#ffffff', borderColor: '#e2e8f0', borderRadius: '12px' }}
                       labelStyle={{ color: '#475569', fontSize: '12px', fontWeight: 'bold' }}
                       itemStyle={{ fontSize: '13px' }}
+                      labelFormatter={(dateStr) => formatNepaliDate(dateStr)}
                     />
                     <Legend wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
                     <Area type="monotone" dataKey="income" name="Income (Rs.)" stroke="#10b981" fillOpacity={1} fill="url(#colorIncome)" strokeWidth={2} />
@@ -911,6 +913,7 @@ export default function Finance() {
                                       <th className="py-2 px-2 text-left">Status</th>
                                       <th className="py-2 px-2 text-right">Total</th>
                                       <th className="py-2 px-2 text-right">Due</th>
+                                      <th className="py-2 px-2 text-right">Actions</th>
                                     </tr>
                                   </thead>
                                   <tbody className="divide-y divide-slate-200">
@@ -921,6 +924,15 @@ export default function Finance() {
                                         <td className="py-2 px-2 text-slate-500 capitalize">{inv.status.replace('-', ' ')}</td>
                                         <td className="py-2 px-2 text-right font-mono text-slate-700">Rs. {inv.total.toFixed(2)}</td>
                                         <td className="py-2 px-2 text-right font-mono font-bold text-sky-700">Rs. {inv.amountDue.toFixed(2)}</td>
+                                        <td className="py-2 px-2 text-right">
+                                          <Link
+                                            to={`/invoices?invoiceId=${inv._id}&pay=1`}
+                                            className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-100 px-2.5 py-1 rounded-lg transition-colors"
+                                          >
+                                            <Receipt className="w-3 h-3" />
+                                            <span>Record Payment</span>
+                                          </Link>
+                                        </td>
                                       </tr>
                                     ))}
                                   </tbody>

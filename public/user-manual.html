@@ -268,7 +268,7 @@
       <div class="brand-logo">PM Auto<span>Mobiles</span></div>
       <div class="doc-title">Operations & User Manual</div>
       <div class="doc-meta">
-        <strong>Version:</strong> v2.0.0
+        <strong>Version:</strong> v2.1.0
         <span>|</span>
         <strong>Release Date:</strong> July 2026
         <span>|</span>
@@ -471,6 +471,19 @@
       </li>
     </ol>
 
+    <p>While a record is still <strong>open</strong>, mistakes can be corrected directly from the Servicing Workspace panel:</p>
+    <ul>
+      <li>Click the pencil icon next to <strong>Diagnoses &amp; Findings Log</strong> to correct the findings text.</li>
+      <li>Click the pencil icon on any allocated part to change its quantity &mdash; stock is automatically adjusted by the difference (more stock is taken if you increase it, and stock is returned if you reduce it). Click the trash icon to remove a part line entirely, which fully restores that quantity to inventory.</li>
+      <li>Labour lines have the same pencil (edit hours/rate) and trash (remove) controls.</li>
+      <li>If an entire servicing record was created in error, an Admin or Receptionist can delete it using the trash icon next to the <strong>Close Servicing Record</strong> button &mdash; any part stock already allocated to it is restored automatically.
+        <div class="alert alert-important">
+          <div class="alert-title">Open Records Only</div>
+          <p>None of the above (findings/part/labour edits, or deleting the whole record) is possible once a record has been closed &mdash; closing locks it down to keep invoiced work auditable. If a closed record needs correcting, contact an Admin.</p>
+        </div>
+      </li>
+    </ul>
+
     <h3>Step 4: Generating the Invoice (VAT / Non-VAT)</h3>
     <p><strong>Primary Roles:</strong> Receptionist, Accountant, Admin</p>
     <ol>
@@ -530,7 +543,7 @@
       <li><strong>Overview:</strong> Interactive cash flow chart, income/expenditure/net-profit KPIs, and an outstanding dues total, all filterable by a date range.</li>
       <li><strong>VAT Report</strong> and <strong>Non-VAT Report:</strong> Separate ledgers listing VAT-applicable versus Non-VAT sales and purchases, for tax filing and auditing.</li>
       <li><strong>Summary Report:</strong> A consolidated view combining income, expenditure, VAT collected/paid, and outstanding dues for the selected date range.</li>
-      <li><strong>Customer Dues:</strong> Shows exactly which customers currently have an outstanding balance and how much is pending, grouped per customer with an expandable breakdown of their individual unpaid invoices. Use the <strong>Month</strong> and <strong>Year</strong> dropdown filters at the top to narrow dues to a specific billing period, or leave both on "All" to see all-time outstanding balances.</li>
+      <li><strong>Customer Dues:</strong> Shows exactly which customers currently have an outstanding balance and how much is pending, grouped per customer with an expandable breakdown of their individual unpaid invoices. Use the <strong>Month</strong> and <strong>Year</strong> dropdown filters at the top to narrow dues to a specific billing period, or leave both on "All" to see all-time outstanding balances. Click <strong>Record Payment</strong> next to any invoice in the expanded view to jump straight into the payment form for that exact invoice &mdash; useful for collecting on an old due without having to search through the full Invoices list.</li>
       <li><strong>Add Expenditure:</strong> Manually log shop overhead costs (rent, utilities, salaries, etc.) from the Overview tab.</li>
     </ul>
 

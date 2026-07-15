@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { formatNepaliDate, formatNepaliDateTime } from '../utils/nepaliDate';
 import {
@@ -20,6 +21,7 @@ import {
 
 export default function Invoices() {
   const { user } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
   const isAccountantOrAdmin = user?.role === 'admin' || user?.role === 'accountant';
   const isStaff = user?.role === 'admin' || user?.role === 'receptionist' || user?.role === 'accountant';
 
@@ -124,10 +126,34 @@ export default function Invoices() {
     try {
       const response = await axios.get(`/api/invoices/${id}`);
       setSelectedInvoiceData(response.data);
+      return response.data;
     } catch (err) {
       console.error('Fetch invoice detail error:', err);
+      return null;
     }
   };
+
+  // Deep-link support: /invoices?invoiceId=xxx&pay=1 opens that invoice's
+  // detail (and its payment modal, pre-filled) directly — used by the
+  // Finance > Customer Dues report to jump straight to collecting a payment.
+  useEffect(() => {
+    const invoiceId = searchParams.get('invoiceId');
+    if (!invoiceId) return;
+
+    const shouldOpenPayment = searchParams.get('pay') === '1';
+
+    (async () => {
+      const data = await fetchInvoiceDetail(invoiceId);
+      if (data && shouldOpenPayment && data.invoice.status !== 'paid' && data.invoice.status !== 'credited') {
+        setPayAmount(data.invoice.amountDue.toString());
+        setIsPaymentModalOpen(true);
+      }
+    })();
+
+    // Clean the URL so a later refresh/back-navigation doesn't re-trigger this
+    setSearchParams({}, { replace: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Reset to page 1 whenever the filter/search criteria change
   useEffect(() => {

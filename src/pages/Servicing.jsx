@@ -17,7 +17,10 @@ import {
   AlertTriangle,
   Filter,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Edit2,
+  Trash2,
+  Check
 } from 'lucide-react';
 
 export default function Servicing() {
@@ -57,6 +60,26 @@ export default function Servicing() {
   const [labourRate, setLabourRate] = useState('');
   const [labourLoading, setLabourLoading] = useState(false);
   const [labourError, setLabourError] = useState('');
+
+  // Findings edit
+  const [isEditingFindings, setIsEditingFindings] = useState(false);
+  const [editFindingsText, setEditFindingsText] = useState('');
+  const [findingsLoading, setFindingsLoading] = useState(false);
+  const [findingsEditError, setFindingsEditError] = useState('');
+
+  // Part line edit
+  const [editingPartIndex, setEditingPartIndex] = useState(null);
+  const [editPartQty, setEditPartQty] = useState('');
+  const [partEditLoading, setPartEditLoading] = useState(false);
+
+  // Labour line edit
+  const [editingLabourIndex, setEditingLabourIndex] = useState(null);
+  const [editLabourHours, setEditLabourHours] = useState('');
+  const [editLabourRate, setEditLabourRate] = useState('');
+  const [labourEditLoading, setLabourEditLoading] = useState(false);
+
+  // Delete whole record
+  const [deleteRecordLoading, setDeleteRecordLoading] = useState(false);
 
   // Close Record Form Modal
   const [isCloseModalOpen, setIsCloseModalOpen] = useState(false);
@@ -284,6 +307,117 @@ export default function Servicing() {
       setLabourError(err.response?.data?.message || 'Failed to log labour');
     } finally {
       setLabourLoading(false);
+    }
+  };
+
+  // Findings edit
+  const startEditFindings = () => {
+    setEditFindingsText(selectedRecord.findings || '');
+    setFindingsEditError('');
+    setIsEditingFindings(true);
+  };
+
+  const handleSaveFindings = async () => {
+    setFindingsLoading(true);
+    setFindingsEditError('');
+    try {
+      const response = await axios.patch(`/api/servicing/${selectedRecord._id}/findings`, {
+        findings: editFindingsText
+      });
+      setSelectedRecord(response.data);
+      setIsEditingFindings(false);
+      fetchRecords();
+    } catch (err) {
+      console.error(err);
+      setFindingsEditError(err.response?.data?.message || 'Failed to update findings');
+    } finally {
+      setFindingsLoading(false);
+    }
+  };
+
+  // Part line edit/remove
+  const startEditPart = (idx, currentQty) => {
+    setEditingPartIndex(idx);
+    setEditPartQty(String(currentQty));
+  };
+
+  const handleSavePartQty = async (idx) => {
+    const qty = parseInt(editPartQty);
+    if (!qty || qty <= 0) return;
+    setPartEditLoading(true);
+    try {
+      const response = await axios.patch(`/api/servicing/${selectedRecord._id}/parts/${idx}`, { qty });
+      setSelectedRecord(response.data);
+      setEditingPartIndex(null);
+      fetchRecords();
+      fetchInventory();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setPartEditLoading(false);
+    }
+  };
+
+  const handleDeletePart = async (idx) => {
+    if (!window.confirm('Remove this part from the record? Allocated stock will be restored.')) return;
+    try {
+      const response = await axios.delete(`/api/servicing/${selectedRecord._id}/parts/${idx}`);
+      setSelectedRecord(response.data);
+      fetchRecords();
+      fetchInventory();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  // Labour line edit/remove
+  const startEditLabour = (idx, currentHours, currentRate) => {
+    setEditingLabourIndex(idx);
+    setEditLabourHours(String(currentHours));
+    setEditLabourRate(String(currentRate));
+  };
+
+  const handleSaveLabour = async (idx) => {
+    const hours = parseFloat(editLabourHours);
+    const unitPrice = parseFloat(editLabourRate);
+    if (!hours || hours <= 0 || unitPrice < 0) return;
+    setLabourEditLoading(true);
+    try {
+      const response = await axios.patch(`/api/servicing/${selectedRecord._id}/labour/${idx}`, { hours, unitPrice });
+      setSelectedRecord(response.data);
+      setEditingLabourIndex(null);
+      fetchRecords();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLabourEditLoading(false);
+    }
+  };
+
+  const handleDeleteLabour = async (idx) => {
+    if (!window.confirm('Remove this labour line from the record?')) return;
+    try {
+      const response = await axios.delete(`/api/servicing/${selectedRecord._id}/labour/${idx}`);
+      setSelectedRecord(response.data);
+      fetchRecords();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  // Delete the whole open servicing record
+  const handleDeleteRecord = async () => {
+    if (!window.confirm('Delete this servicing record? This cannot be undone. Any allocated part stock will be restored.')) return;
+    setDeleteRecordLoading(true);
+    try {
+      await axios.delete(`/api/servicing/${selectedRecord._id}`);
+      setSelectedRecord(null);
+      fetchRecords();
+      fetchInventory();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setDeleteRecordLoading(false);
     }
   };
 
@@ -522,10 +656,52 @@ export default function Servicing() {
 
             {/* Diagnoses / Findings */}
             <div className="space-y-1.5">
-              <span className="text-xs font-bold text-slate-400 uppercase tracking-wide block">Diagnoses &amp; Findings Log</span>
-              <p className="text-sm text-slate-700 bg-slate-50 p-3.5 rounded-xl border border-slate-100 italic font-medium leading-relaxed">
-                {selectedRecord.findings || 'No diagnoses recorded yet.'}
-              </p>
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-slate-400 uppercase tracking-wide block">Diagnoses &amp; Findings Log</span>
+                {canCreate && selectedRecord.status === 'open' && !isEditingFindings && (
+                  <button
+                    type="button"
+                    onClick={startEditFindings}
+                    className="p-1 rounded-md text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
+                    title="Edit findings"
+                  >
+                    <Edit2 className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
+              {isEditingFindings ? (
+                <div className="space-y-2">
+                  {findingsEditError && <p className="text-xs text-rose-600 font-medium">{findingsEditError}</p>}
+                  <textarea
+                    rows="3"
+                    value={editFindingsText}
+                    onChange={(e) => setEditFindingsText(e.target.value)}
+                    className="block w-full rounded-xl border-slate-200 text-sm resize-none py-3 px-3.5"
+                  />
+                  <div className="flex gap-2 justify-end">
+                    <button
+                      type="button"
+                      onClick={() => setIsEditingFindings(false)}
+                      className="px-3.5 h-9 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 transition-colors cursor-pointer"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleSaveFindings}
+                      disabled={findingsLoading}
+                      className="flex items-center gap-1.5 px-3.5 h-9 rounded-lg text-xs font-bold text-white bg-blue-600 hover:bg-blue-500 disabled:opacity-50 transition-colors cursor-pointer"
+                    >
+                      {findingsLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
+                      <span>Save</span>
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-sm text-slate-700 bg-slate-50 p-3.5 rounded-xl border border-slate-100 italic font-medium leading-relaxed">
+                  {selectedRecord.findings || 'No diagnoses recorded yet.'}
+                </p>
+              )}
             </div>
 
             {/* Line allocations display */}
@@ -537,9 +713,66 @@ export default function Servicing() {
                 ) : (
                   <div className="space-y-2">
                     {selectedRecord.parts.map((p, idx) => (
-                      <div key={idx} className="flex justify-between items-center text-sm text-slate-700">
-                        <span className="font-medium">{p.name} <strong className="text-slate-400 text-xs font-normal">({p.qty} x Rs. {p.unitPrice})</strong></span>
-                        <span className="font-mono font-bold">Rs. {p.total.toFixed(2)}</span>
+                      <div key={idx} className="flex justify-between items-center text-sm text-slate-700 gap-2">
+                        {editingPartIndex === idx ? (
+                          <>
+                            <span className="font-medium truncate">{p.name}</span>
+                            <div className="flex items-center gap-1.5 shrink-0">
+                              <input
+                                type="number"
+                                min="1"
+                                autoFocus
+                                value={editPartQty}
+                                onChange={(e) => setEditPartQty(e.target.value)}
+                                className="w-16 h-8 rounded-lg border-slate-200 text-xs text-center"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => handleSavePartQty(idx)}
+                                disabled={partEditLoading}
+                                className="p-1.5 rounded-md text-emerald-600 hover:bg-emerald-50 transition-colors cursor-pointer disabled:opacity-50"
+                                title="Save"
+                              >
+                                {partEditLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setEditingPartIndex(null)}
+                                className="p-1.5 rounded-md text-slate-400 hover:bg-slate-100 transition-colors cursor-pointer"
+                                title="Cancel"
+                              >
+                                <X className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            <span className="font-medium truncate">{p.name} <strong className="text-slate-400 text-xs font-normal">({p.qty} x Rs. {p.unitPrice})</strong></span>
+                            <div className="flex items-center gap-2 shrink-0">
+                              <span className="font-mono font-bold">Rs. {p.total.toFixed(2)}</span>
+                              {canCreate && selectedRecord.status === 'open' && (
+                                <div className="flex items-center gap-1">
+                                  <button
+                                    type="button"
+                                    onClick={() => startEditPart(idx, p.qty)}
+                                    className="p-1 rounded-md text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
+                                    title="Edit quantity"
+                                  >
+                                    <Edit2 className="w-3.5 h-3.5" />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleDeletePart(idx)}
+                                    className="p-1 rounded-md text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                                    title="Remove part"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          </>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -553,9 +786,76 @@ export default function Servicing() {
                 ) : (
                   <div className="space-y-2">
                     {selectedRecord.labour.map((l, idx) => (
-                      <div key={idx} className="flex justify-between items-center text-sm text-slate-700">
-                        <span className="font-medium">{l.name} <strong className="text-slate-400 text-xs font-normal">({l.hours} hrs x Rs. {l.unitPrice})</strong></span>
-                        <span className="font-mono font-bold">Rs. {l.total.toFixed(2)}</span>
+                      <div key={idx} className="flex justify-between items-center text-sm text-slate-700 gap-2">
+                        {editingLabourIndex === idx ? (
+                          <>
+                            <span className="font-medium truncate">{l.name}</span>
+                            <div className="flex items-center gap-1.5 shrink-0">
+                              <input
+                                type="number"
+                                step="0.1"
+                                min="0.1"
+                                autoFocus
+                                value={editLabourHours}
+                                onChange={(e) => setEditLabourHours(e.target.value)}
+                                className="w-14 h-8 rounded-lg border-slate-200 text-xs text-center"
+                                title="Hours"
+                              />
+                              <input
+                                type="number"
+                                min="0"
+                                value={editLabourRate}
+                                onChange={(e) => setEditLabourRate(e.target.value)}
+                                className="w-16 h-8 rounded-lg border-slate-200 text-xs text-center font-mono"
+                                title="Rate"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => handleSaveLabour(idx)}
+                                disabled={labourEditLoading}
+                                className="p-1.5 rounded-md text-emerald-600 hover:bg-emerald-50 transition-colors cursor-pointer disabled:opacity-50"
+                                title="Save"
+                              >
+                                {labourEditLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setEditingLabourIndex(null)}
+                                className="p-1.5 rounded-md text-slate-400 hover:bg-slate-100 transition-colors cursor-pointer"
+                                title="Cancel"
+                              >
+                                <X className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            <span className="font-medium truncate">{l.name} <strong className="text-slate-400 text-xs font-normal">({l.hours} hrs x Rs. {l.unitPrice})</strong></span>
+                            <div className="flex items-center gap-2 shrink-0">
+                              <span className="font-mono font-bold">Rs. {l.total.toFixed(2)}</span>
+                              {canCreate && selectedRecord.status === 'open' && (
+                                <div className="flex items-center gap-1">
+                                  <button
+                                    type="button"
+                                    onClick={() => startEditLabour(idx, l.hours, l.unitPrice)}
+                                    className="p-1 rounded-md text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
+                                    title="Edit labour"
+                                  >
+                                    <Edit2 className="w-3.5 h-3.5" />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleDeleteLabour(idx)}
+                                    className="p-1 rounded-md text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                                    title="Remove labour"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          </>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -667,13 +967,23 @@ export default function Servicing() {
 
                 {/* Close servicing record (Receptionist/Admin only) */}
                 {isReceptionistOrAdmin && (
-                  <button
-                    onClick={() => setIsCloseModalOpen(true)}
-                    className="flex items-center justify-center gap-2 w-full h-11 bg-emerald-600 hover:bg-emerald-500 rounded-xl text-sm font-bold text-white transition-colors shadow-md shadow-emerald-500/10 cursor-pointer"
-                  >
-                    <CheckCircle className="w-4.5 h-4.5" />
-                    <span>Close Servicing Record</span>
-                  </button>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setIsCloseModalOpen(true)}
+                      className="flex items-center justify-center gap-2 flex-1 h-11 bg-emerald-600 hover:bg-emerald-500 rounded-xl text-sm font-bold text-white transition-colors shadow-md shadow-emerald-500/10 cursor-pointer"
+                    >
+                      <CheckCircle className="w-4.5 h-4.5" />
+                      <span>Close Servicing Record</span>
+                    </button>
+                    <button
+                      onClick={handleDeleteRecord}
+                      disabled={deleteRecordLoading}
+                      title="Delete this servicing record"
+                      className="flex items-center justify-center w-11 h-11 shrink-0 bg-white hover:bg-rose-50 border border-slate-200 hover:border-rose-200 rounded-xl text-slate-500 hover:text-rose-600 transition-colors cursor-pointer disabled:opacity-50"
+                    >
+                      {deleteRecordLoading ? <Loader2 className="w-4.5 h-4.5 animate-spin" /> : <Trash2 className="w-4.5 h-4.5" />}
+                    </button>
+                  </div>
                 )}
               </div>
             )}
