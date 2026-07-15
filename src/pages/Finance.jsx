@@ -101,26 +101,23 @@ export default function Finance() {
 
   const fetchFinanceData = async () => {
     setLoading(true);
-    try {
-      // 1. Get cash flow and daily aggregates
-      const cashFlowRes = await axios.get('/api/finance/cash-flow', {
-        params: { startDate, endDate }
-      });
-      setSummary(cashFlowRes.data.summary);
-      setChartData(cashFlowRes.data.chartData);
-
-      // 2. Get list of expenditures
-      const expRes = await axios.get('/api/finance/expenditures');
-      setExpenditures(expRes.data);
-
-      // 3. Get outstanding dues (Unpaid Dues)
-      const summaryRes = await axios.get('/api/analytics/summary');
-      setOutstandingDues(summaryRes.data.metrics.totalOutstanding || 0);
-    } catch (err) {
-      console.error('Fetch finance data error:', err);
-    } finally {
-      setLoading(false);
+    const results = await Promise.allSettled([
+      axios
+        .get('/api/finance/cash-flow', { params: { startDate, endDate } })
+        .then((res) => {
+          setSummary(res.data.summary);
+          setChartData(res.data.chartData);
+        }),
+      axios.get('/api/finance/expenditures').then((res) => setExpenditures(res.data)),
+      axios
+        .get('/api/analytics/summary')
+        .then((res) => setOutstandingDues(res.data.metrics.totalOutstanding || 0))
+    ]);
+    const failed = results.filter((r) => r.status === 'rejected');
+    if (failed.length > 0) {
+      console.error('Fetch finance data error:', failed.map((r) => r.reason));
     }
+    setLoading(false);
   };
 
   useEffect(() => {

@@ -53,43 +53,62 @@ export default function Dashboard() {
   const [actionLoading, setActionLoading] = useState(null);
 
   const fetchDashboardData = async (filterVal = timeFilter) => {
-    try {
-      setLoading(true);
-      
-      // Fetch summary statistics if authorized (role is admin, receptionist, or accountant)
-      if (user.role === 'admin' || user.role === 'receptionist' || user.role === 'accountant') {
-        const summaryRes = await axios.get('/api/analytics/summary', {
-          params: { filter: filterVal }
-        });
-        setMetrics(summaryRes.data.metrics);
-      }
+    setLoading(true);
 
-      if (user.role === 'admin' || user.role === 'accountant') {
-        const cashFlowRes = await axios.get('/api/finance/cash-flow');
-        setCashFlow(cashFlowRes.data);
-        const invoiceRes = await axios.get('/api/invoices', { params: { limit: 20 } });
-        setUnpaidInvoices(invoiceRes.data.invoices.filter((inv) => inv.status !== 'paid').slice(0, 5));
-      }
+    // Fire every section's request in parallel instead of awaiting them one at
+    // a time — the previous sequential-await chain could add 1-2+ seconds of
+    // pure network waterfall for an admin who sees every section.
+    const tasks = [];
 
-      if (user.role === 'admin' || user.role === 'receptionist') {
-        const apptRes = await axios.get('/api/appointments');
-        const todayStr = new Date().toISOString().split('T')[0];
-        const todaysAppts = apptRes.data.filter((a) => a.dateTime.startsWith(todayStr));
-        setAppointments(todaysAppts.slice(0, 5));
-      }
-
-      if (user.role === 'admin' || user.role === 'technician') {
-        const servicingRes = await axios.get('/api/servicing', { params: { status: 'open', limit: 5 } });
-        setJobCards(servicingRes.data.records);
-      }
-
-      const notiRes = await axios.get('/api/notifications');
-      setNotifications(notiRes.data.notifications.slice(0, 4));
-    } catch (err) {
-      console.error('Error fetching dashboard data:', err);
-    } finally {
-      setLoading(false);
+    // Fetch summary statistics if authorized (role is admin, receptionist, or accountant)
+    if (user.role === 'admin' || user.role === 'receptionist' || user.role === 'accountant') {
+      tasks.push(
+        axios
+          .get('/api/analytics/summary', { params: { filter: filterVal } })
+          .then((res) => setMetrics(res.data.metrics))
+      );
     }
+
+    if (user.role === 'admin' || user.role === 'accountant') {
+      tasks.push(
+        axios.get('/api/finance/cash-flow').then((res) => setCashFlow(res.data))
+      );
+      tasks.push(
+        axios.get('/api/invoices', { params: { limit: 20 } }).then((res) => {
+          setUnpaidInvoices(res.data.invoices.filter((inv) => inv.status !== 'paid').slice(0, 5));
+        })
+      );
+    }
+
+    if (user.role === 'admin' || user.role === 'receptionist') {
+      tasks.push(
+        axios.get('/api/appointments').then((res) => {
+          const todayStr = new Date().toISOString().split('T')[0];
+          const todaysAppts = res.data.filter((a) => a.dateTime.startsWith(todayStr));
+          setAppointments(todaysAppts.slice(0, 5));
+        })
+      );
+    }
+
+    if (user.role === 'admin' || user.role === 'technician') {
+      tasks.push(
+        axios
+          .get('/api/servicing', { params: { status: 'open', limit: 5 } })
+          .then((res) => setJobCards(res.data.records))
+      );
+    }
+
+    tasks.push(
+      axios.get('/api/notifications').then((res) => setNotifications(res.data.notifications.slice(0, 4)))
+    );
+
+    const results = await Promise.allSettled(tasks);
+    const failed = results.filter((r) => r.status === 'rejected');
+    if (failed.length > 0) {
+      console.error('Error fetching dashboard data:', failed.map((r) => r.reason));
+    }
+
+    setLoading(false);
   };
 
   useEffect(() => {
