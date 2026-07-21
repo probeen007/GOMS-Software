@@ -107,16 +107,18 @@ export default function BrandLogos() {
                   target.src = b.fallbackUrl
                 }
               }}
-              className="h-14 md:h-18 w-auto object-contain transition-all duration-300 transform group-hover:scale-115"
+              className="h-12 md:h-16 w-auto object-contain transition-all duration-300 transform group-hover:scale-110"
               style={{
-                filter: 'brightness(0) invert(1)',
-                opacity: 0.55,
+                filter: 'grayscale(100%)',
+                opacity: 0.6,
               }}
               onMouseEnter={(e) => {
+                e.currentTarget.style.filter = 'none'
                 e.currentTarget.style.opacity = '1'
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.opacity = '0.55'
+                e.currentTarget.style.filter = 'grayscale(100%)'
+                e.currentTarget.style.opacity = '0.6'
               }}
             />
           </div>
@@ -125,3 +127,4 @@ export default function BrandLogos() {
     </div>
   )
 }
+

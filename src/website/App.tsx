@@ -13,7 +13,7 @@ import Contact from './pages/Contact'
 function App() {
   return (
     <Router>
-      <div className="min-h-screen flex flex-col" style={{ background: '#0A0A0A' }}>
+      <div className="min-h-screen flex flex-col bg-white text-gray-900">
         <Navbar />
         <main className="flex-grow">
           <Routes>
@@ -32,5 +32,6 @@ function App() {
     </Router>
   )
 }
+
 
 export default App

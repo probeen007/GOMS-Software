@@ -87,7 +87,7 @@ export default function Gallery() {
       />
 
       {/* Filter Bar */}
-      <section style={{ background: '#111111', padding: '40px 0', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+      <section style={{ background: '#F8FAFC', padding: '40px 0', borderBottom: '1px solid #E2E8F0' }}>
         <div className="pm-container">
           <div className="flex flex-wrap gap-3 justify-center">
             {categories.map((cat) => (
@@ -96,16 +96,17 @@ export default function Gallery() {
                 onClick={() => setActiveCategory(cat)}
                 style={{
                   padding: '9px 22px',
-                  borderRadius: '4px',
+                  borderRadius: '6px',
                   fontSize: '11px',
-                  fontWeight: 700,
+                  fontWeight: 800,
                   letterSpacing: '0.12em',
                   textTransform: 'uppercase',
                   cursor: 'pointer',
                   transition: 'all 0.2s',
-                  background: activeCategory === cat ? '#E63946' : 'transparent',
-                  color: activeCategory === cat ? 'white' : 'rgba(255,255,255,0.5)',
-                  border: activeCategory === cat ? '1px solid #E63946' : '1px solid rgba(255,255,255,0.12)',
+                  background: activeCategory === cat ? '#E63946' : '#FFFFFF',
+                  color: activeCategory === cat ? 'white' : '#475569',
+                  border: activeCategory === cat ? '1px solid #E63946' : '1px solid #CBD5E1',
+                  boxShadow: activeCategory === cat ? '0 4px 12px rgba(230,57,70,0.25)' : 'none',
                 }}
               >
                 {cat}
@@ -116,14 +117,14 @@ export default function Gallery() {
       </section>
 
       {/* Grid */}
-      <section style={{ background: '#0A0A0A', padding: '60px 0 120px' }}>
+      <section style={{ background: '#FFFFFF', padding: '60px 0 120px' }}>
         <div className="pm-container">
           <motion.div
             layout
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
           >
             <AnimatePresence mode="popLayout">
-              {filtered.map((item, i) => (
+              {filtered.map((item) => (
                 <motion.div
                   key={item.src}
                   layout
@@ -131,20 +132,22 @@ export default function Gallery() {
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.9 }}
                   transition={{ duration: 0.4 }}
-                  className="relative group cursor-pointer overflow-hidden"
-                  style={{ borderRadius: '6px', aspectRatio: '4/3' }}
+                  className="relative group cursor-pointer overflow-hidden shadow-md hover:shadow-xl transition-shadow rounded-xl"
+                  style={{ aspectRatio: '4/3' }}
                   onClick={() => setLightbox(galleryItems.indexOf(item))}
                 >
                   <img
                     src={item.src}
                     alt={item.title}
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                    style={{ filter: 'brightness(0.7)' }}
+                    onError={(e) => {
+                      e.currentTarget.src = "https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?w=600&h=450&fit=crop&q=80";
+                    }}
                   />
                   {/* Overlay */}
                   <div
                     className="absolute inset-0 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                    style={{ background: 'rgba(0,0,0,0.6)' }}
+                    style={{ background: 'rgba(15,23,42,0.75)' }}
                   >
                     <div
                       style={{
@@ -156,6 +159,7 @@ export default function Gallery() {
                         alignItems: 'center',
                         justifyContent: 'center',
                         marginBottom: '10px',
+                        boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
                       }}
                     >
                       <ZoomIn size={20} color="white" />
@@ -163,7 +167,7 @@ export default function Gallery() {
                     <span
                       style={{
                         fontSize: '13px',
-                        fontWeight: 700,
+                        fontWeight: 800,
                         color: 'white',
                         textTransform: 'uppercase',
                         letterSpacing: '0.08em',
@@ -179,14 +183,14 @@ export default function Gallery() {
                       position: 'absolute',
                       top: '14px',
                       left: '14px',
-                      background: 'rgba(0,0,0,0.7)',
-                      borderRadius: '3px',
+                      background: 'rgba(15,23,42,0.85)',
+                      borderRadius: '4px',
                       padding: '4px 10px',
                       fontSize: '10px',
-                      fontWeight: 700,
+                      fontWeight: 800,
                       letterSpacing: '0.1em',
                       textTransform: 'uppercase',
-                      color: 'rgba(255,255,255,0.7)',
+                      color: 'white',
                     }}
                   >
                     {item.category}
@@ -206,7 +210,7 @@ export default function Gallery() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 flex items-center justify-center p-4"
-            style={{ background: 'rgba(0,0,0,0.95)' }}
+            style={{ background: 'rgba(15,23,42,0.95)' }}
             onClick={() => setLightbox(null)}
           >
             <motion.div
@@ -219,7 +223,10 @@ export default function Gallery() {
               <img
                 src={galleryItems[lightbox].src}
                 alt={galleryItems[lightbox].title}
-                style={{ width: '100%', borderRadius: '8px' }}
+                style={{ width: '100%', borderRadius: '12px' }}
+                onError={(e) => {
+                  e.currentTarget.src = "https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?w=1000&h=750&fit=crop&q=80";
+                }}
               />
               <button
                 onClick={() => setLightbox(null)}
@@ -237,15 +244,16 @@ export default function Gallery() {
                   alignItems: 'center',
                   justifyContent: 'center',
                   color: 'white',
+                  boxShadow: '0 4px 15px rgba(0,0,0,0.3)',
                 }}
               >
                 <X size={20} />
               </button>
               <div
                 style={{
-                  marginTop: '12px',
-                  fontSize: '14px',
-                  fontWeight: 600,
+                  marginTop: '16px',
+                  fontSize: '15px',
+                  fontWeight: 800,
                   color: 'white',
                   textAlign: 'center',
                   textTransform: 'uppercase',
@@ -261,3 +269,4 @@ export default function Gallery() {
     </div>
   )
 }
+

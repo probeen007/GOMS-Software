@@ -15,12 +15,12 @@ export default function FAQPage() {
       <FAQ showTitle={false} dark={false} />
 
       {/* Still Have Questions? */}
-      <section style={{ background: '#111111', padding: '80px 0', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+      <section style={{ background: '#F8FAFC', padding: '80px 0', borderTop: '1px solid #E2E8F0' }}>
         <div className="pm-container text-center" style={{ maxWidth: '600px', margin: '0 auto' }}>
           <div className="section-label" style={{ textAlign: 'center' }}>Still Have Questions?</div>
-          <h2 className="heading-section text-white mb-4">We Are Here to Help</h2>
+          <h2 className="heading-section text-slate-900 mb-4">We Are Here to Help</h2>
           <div className="red-line red-line-center" />
-          <p style={{ fontSize: '15px', color: '#9CA3AF', lineHeight: 1.7, margin: '20px 0 36px' }}>
+          <p style={{ fontSize: '15px', color: '#475569', lineHeight: 1.7, margin: '20px 0 36px' }}>
             Can't find the answer you are looking for? Reach out to our team directly —
             we are always happy to help you with any queries about your vehicle.
           </p>
@@ -33,3 +33,4 @@ export default function FAQPage() {
     </div>
   )
 }
+

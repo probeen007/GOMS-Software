@@ -20,7 +20,7 @@ const navItems = [
     ],
   },
   { label: 'Gallery', href: '/gallery' },
-  { label: 'Contact Us', href: '/contact' },
+  { label: 'Contact', href: '/contact' },
 ]
 
 export default function Navbar() {
@@ -42,47 +42,35 @@ export default function Navbar() {
   }, [location.pathname])
 
   return (
-    <header
-      className="sticky top-0 z-50 transition-all duration-300"
-      style={{
-        background: scrolled ? 'rgba(5,5,5,0.98)' : '#0A0A0A',
-        backdropFilter: scrolled ? 'blur(12px)' : 'none',
-        borderBottom: '1px solid rgba(255,255,255,0.06)',
-      }}
-    >
-      {/* Top Bar */}
-      <div style={{ background: '#E63946', padding: '8px 0' }}>
+    <header className="sticky top-0 z-50 transition-all duration-300">
+      {/* Top Bar - Dark Navy Background */}
+      <div className="bg-[#0F172A] text-white py-2 border-b border-slate-800">
         <div className="pm-container">
-          <div className="flex items-center justify-between text-white">
+          <div className="flex items-center justify-between text-xs font-medium">
             <div className="flex items-center gap-6">
               <a
-                href="tel:+9779851234567"
-                className="flex items-center gap-2 text-white hover:text-white/80 transition-colors"
-                style={{ fontSize: '12px', fontWeight: 500 }}
+                href="tel:01-4525461"
+                className="flex items-center gap-2 text-gray-200 hover:text-white transition-colors"
               >
-                <Phone size={13} />
-                <span>+977 985-123-4567</span>
+                <Phone size={13} className="text-[#E63946]" />
+                <span>01-4525461/980-3296067</span>
               </a>
               <a
-                href="mailto:info@pmautomobileworks.com.np"
-                className="hidden md:flex items-center gap-2 text-white hover:text-white/80 transition-colors"
-                style={{ fontSize: '12px', fontWeight: 500 }}
+                href="mailto:pmautomobileworks@gmail.com"
+                className="hidden md:flex items-center gap-2 text-gray-200 hover:text-white transition-colors"
               >
-                <Mail size={13} />
-                <span>info@pmautomobileworks.com.np</span>
+                <Mail size={13} className="text-[#E63946]" />
+                <span>pmautomobileworks@gmail.com</span>
               </a>
             </div>
-            <div className="flex items-center gap-4">
-              <div
-                className="hidden md:flex items-center gap-2 text-white/90"
-                style={{ fontSize: '12px' }}
-              >
-                <MapPin size={13} />
-                <span>Tripureshwor, Kathmandu, Nepal</span>
+            <div className="flex items-center gap-6">
+              <div className="hidden lg:flex items-center gap-2 text-gray-200">
+                <MapPin size={13} className="text-[#E63946]" />
+                <span>Dhobidhara marg, Kathmandu, Nepal</span>
               </div>
               <Link
                 to={user ? "/dashboard" : "/login"}
-                className="flex items-center gap-1.5 bg-black/25 hover:bg-black/40 text-white px-3 py-1 rounded transition-colors text-xs font-semibold"
+                className="flex items-center gap-1.5 bg-white/10 hover:bg-white/20 text-white px-2.5 py-1 rounded transition-colors text-xs font-semibold"
               >
                 {user ? <LayoutDashboard size={13} /> : <User size={13} />}
                 <span>{user ? `Portal (${user.name})` : 'Staff Login'}</span>
@@ -92,97 +80,106 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Main Nav */}
-      <div className="pm-container">
-        <div className="flex items-center justify-between" style={{ height: '72px' }}>
-          {/* Logo */}
-          <Link to="/" className="flex items-center">
-            <img
-              src="/logo.png"
-              alt="P.M. Automobile Works"
-              style={{
-                height: '52px',
-                width: 'auto',
-                objectFit: 'contain',
-              }}
-            />
-          </Link>
-
-          {/* Desktop Nav Links */}
-          <nav className="hidden lg:flex items-center gap-8">
-            {navItems.map((item) => (
-              <div
-                key={item.href}
-                className="relative"
-                onMouseEnter={() => item.children && setActiveDropdown(item.label)}
-                onMouseLeave={() => setActiveDropdown(null)}
-              >
-                <Link
-                  to={item.href}
-                  className={`nav-link flex items-center gap-1 ${
-                    location.pathname === item.href ||
-                    (location.pathname.startsWith(item.href + '/') && item.href !== '/')
-                      ? 'active'
-                      : ''
-                  }`}
-                >
-                  {item.label}
-                  {item.children && <ChevronDown size={14} />}
-                </Link>
-
-                {/* Dropdown */}
-                <AnimatePresence>
-                  {item.children && activeDropdown === item.label && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: 8 }}
-                      transition={{ duration: 0.15 }}
-                      className="absolute top-full left-0 mt-2 py-2"
-                      style={{
-                        background: '#111111',
-                        border: '1px solid rgba(255,255,255,0.08)',
-                        borderRadius: '6px',
-                        minWidth: '200px',
-                        boxShadow: '0 20px 60px rgba(0,0,0,0.8)',
-                      }}
-                    >
-                      {item.children.map((child) => (
-                        <Link
-                          key={child.href}
-                          to={child.href}
-                          className="block px-5 py-3 text-sm text-white/60 hover:text-white hover:bg-white/5 transition-colors"
-                          style={{ fontSize: '13px', fontWeight: 500 }}
-                        >
-                          {child.label}
-                        </Link>
-                      ))}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            ))}
-          </nav>
-
-          {/* CTA */}
-          <div className="hidden lg:flex items-center gap-3">
-            <Link
-              to="/book"
-              className="btn-primary"
-              style={{ padding: '10px 20px', fontSize: '12px' }}
-            >
-              Book Appointment
+      {/* Main Nav - Clean White Background */}
+      <div
+        className="bg-white transition-shadow duration-300 border-b border-gray-100"
+        style={{
+          boxShadow: scrolled ? '0 4px 20px rgba(0, 0, 0, 0.08)' : '0 2px 10px rgba(0,0,0,0.03)',
+        }}
+      >
+        <div className="pm-container">
+          <div className="flex items-center justify-between h-20">
+            {/* Logo */}
+            <Link to="/" className="flex items-center">
+              <img
+                src="/logo.png"
+                alt="P.M. Automobile Works"
+                className="h-12 w-auto object-contain"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                  const parent = e.currentTarget.parentElement;
+                  if (parent && !parent.querySelector('.logo-fallback')) {
+                    const span = document.createElement('span');
+                    span.className = 'logo-fallback font-black text-xl text-gray-900 tracking-tight flex items-center gap-2';
+                    span.innerHTML = '<span style="color:#E63946">P.M.</span> AUTOMOBILE WORKS';
+                    parent.appendChild(span);
+                  }
+                }}
+              />
             </Link>
-          </div>
 
-          {/* Mobile Toggle */}
-          <button
-            className="lg:hidden text-white p-2"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            aria-label="Toggle menu"
-          >
-            {mobileMenuOpen ? <X size={26} /> : <Menu size={26} />}
-          </button>
+            {/* Desktop Nav Links */}
+            <nav className="hidden lg:flex items-center gap-8">
+              {navItems.map((item) => {
+                const isActive =
+                  location.pathname === item.href ||
+                  (location.pathname.startsWith(item.href + '/') && item.href !== '/')
+
+                return (
+                  <div
+                    key={item.href}
+                    className="relative"
+                    onMouseEnter={() => item.children && setActiveDropdown(item.label)}
+                    onMouseLeave={() => setActiveDropdown(null)}
+                  >
+                    <Link
+                      to={item.href}
+                      className={`flex items-center gap-1 text-sm font-bold tracking-wide transition-colors py-2 ${
+                        isActive
+                          ? 'text-[#E63946]'
+                          : 'text-gray-800 hover:text-[#E63946]'
+                      }`}
+                    >
+                      {item.label}
+                      {item.children && <ChevronDown size={14} className="opacity-70" />}
+                    </Link>
+
+                    {/* Dropdown */}
+                    <AnimatePresence>
+                      {item.children && activeDropdown === item.label && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 8 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: 8 }}
+                          transition={{ duration: 0.15 }}
+                          className="absolute top-full left-0 mt-1 py-2 bg-white rounded-xl shadow-xl border border-gray-100 min-w-[220px] z-50"
+                        >
+                          {item.children.map((child) => (
+                            <Link
+                              key={child.href}
+                              to={child.href}
+                              className="block px-5 py-2.5 text-xs font-semibold text-gray-700 hover:text-[#E63946] hover:bg-red-50/50 transition-colors"
+                            >
+                              {child.label}
+                            </Link>
+                          ))}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                )
+              })}
+            </nav>
+
+            {/* CTA Button */}
+            <div className="hidden lg:flex items-center gap-4">
+              <Link
+                to="/book"
+                className="bg-[#E63946] hover:bg-[#CC2936] text-white font-bold text-xs uppercase tracking-wider px-6 py-3 rounded-lg shadow-md hover:shadow-lg transition-all"
+              >
+                Book Appointment
+              </Link>
+            </div>
+
+            {/* Mobile Toggle */}
+            <button
+              className="lg:hidden text-gray-800 p-2 hover:text-[#E63946] transition-colors"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              aria-label="Toggle menu"
+            >
+              {mobileMenuOpen ? <X size={26} /> : <Menu size={26} />}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -194,33 +191,27 @@ export default function Navbar() {
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.25 }}
-            className="lg:hidden overflow-hidden"
-            style={{
-              background: '#111111',
-              borderTop: '1px solid rgba(255,255,255,0.06)',
-            }}
+            className="lg:hidden overflow-hidden bg-white border-b border-gray-200 shadow-xl"
           >
             <div className="pm-container py-6">
               {navItems.map((item) => (
                 <div key={item.href}>
                   <Link
                     to={item.href}
-                    className={`block py-3 font-semibold uppercase tracking-wide transition-colors ${
-                      location.pathname === item.href ? 'text-red-500' : 'text-white/70'
+                    className={`block py-3 font-bold text-sm tracking-wide transition-colors ${
+                      location.pathname === item.href ? 'text-[#E63946]' : 'text-gray-800'
                     }`}
-                    style={{ fontSize: '13px', letterSpacing: '0.1em' }}
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     {item.label}
                   </Link>
                   {item.children && (
-                    <div className="pl-4 border-l border-white/10">
+                    <div className="pl-4 border-l-2 border-red-100 my-1 space-y-1">
                       {item.children.map((child) => (
                         <Link
                           key={child.href}
                           to={child.href}
-                          className="block py-2 text-white/50 hover:text-white transition-colors"
-                          style={{ fontSize: '13px' }}
+                          className="block py-2 text-xs font-medium text-gray-600 hover:text-[#E63946] transition-colors"
                           onClick={() => setMobileMenuOpen(false)}
                         >
                           {child.label}
@@ -230,33 +221,14 @@ export default function Navbar() {
                   )}
                 </div>
               ))}
-              <div className="mt-6 pt-6 border-t border-white/10 space-y-3">
+              <div className="mt-6 pt-6 border-t border-gray-100 space-y-3">
                 <Link
                   to="/book"
-                  className="btn-primary w-full justify-center"
+                  className="bg-[#E63946] text-white font-bold text-xs uppercase tracking-wider py-3.5 px-6 rounded-lg w-full text-center block shadow-md"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Book Appointment
                 </Link>
-                {user ? (
-                  <Link
-                    to="/dashboard"
-                    className="btn-secondary w-full justify-center flex items-center gap-2"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    <LayoutDashboard size={14} />
-                    Staff Dashboard
-                  </Link>
-                ) : (
-                  <Link
-                    to="/login"
-                    className="btn-secondary w-full justify-center flex items-center gap-2"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    <User size={14} />
-                    Staff Login
-                  </Link>
-                )}
               </div>
             </div>
           </motion.div>

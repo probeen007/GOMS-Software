@@ -31,8 +31,8 @@ export default function Footer() {
   return (
     <footer
       style={{
-        background: '#050505',
-        borderTop: '1px solid rgba(255,255,255,0.06)',
+        background: '#0F172A',
+        borderTop: '1px solid rgba(255,255,255,0.1)',
       }}
     >
       {/* Main Footer */}
@@ -53,7 +53,7 @@ export default function Footer() {
             </Link>
             <p
               className="mb-6"
-              style={{ fontSize: '13px', color: '#6B7280', lineHeight: 1.7 }}
+              style={{ fontSize: '13px', color: '#94A3B8', lineHeight: 1.7 }}
             >
               P.M. Automobile Works has been providing trusted, premium automotive
               care to Kathmandu since 1978. Complete auto care for every journey.
@@ -68,10 +68,10 @@ export default function Footer() {
                   style={{
                     width: '36px',
                     height: '36px',
-                    borderRadius: '4px',
-                    background: 'rgba(255,255,255,0.06)',
-                    color: 'rgba(255,255,255,0.5)',
-                    border: '1px solid rgba(255,255,255,0.08)',
+                    borderRadius: '6px',
+                    background: 'rgba(255,255,255,0.08)',
+                    color: '#94A3B8',
+                    border: '1px solid rgba(255,255,255,0.12)',
                   }}
                   onMouseEnter={(e) => {
                     const el = e.currentTarget as HTMLAnchorElement
@@ -81,9 +81,9 @@ export default function Footer() {
                   }}
                   onMouseLeave={(e) => {
                     const el = e.currentTarget as HTMLAnchorElement
-                    el.style.background = 'rgba(255,255,255,0.06)'
-                    el.style.color = 'rgba(255,255,255,0.5)'
-                    el.style.borderColor = 'rgba(255,255,255,0.08)'
+                    el.style.background = 'rgba(255,255,255,0.08)'
+                    el.style.color = '#94A3B8'
+                    el.style.borderColor = 'rgba(255,255,255,0.12)'
                   }}
                 >
                   <Icon size={16} />
@@ -97,8 +97,8 @@ export default function Footer() {
             <h4
               style={{
                 fontFamily: 'Barlow Condensed, sans-serif',
-                fontSize: '13px',
-                fontWeight: 700,
+                fontSize: '14px',
+                fontWeight: 800,
                 letterSpacing: '0.2em',
                 textTransform: 'uppercase',
                 color: 'white',
@@ -113,9 +113,9 @@ export default function Footer() {
                   <Link
                     to={href}
                     className="flex items-center gap-2 transition-colors duration-200"
-                    style={{ fontSize: '13px', color: '#6B7280' }}
-                    onMouseEnter={(e) => ((e.currentTarget as HTMLAnchorElement).style.color = 'white')}
-                    onMouseLeave={(e) => ((e.currentTarget as HTMLAnchorElement).style.color = '#6B7280')}
+                    style={{ fontSize: '13px', color: '#CBD5E1' }}
+                    onMouseEnter={(e) => ((e.currentTarget as HTMLAnchorElement).style.color = '#E63946')}
+                    onMouseLeave={(e) => ((e.currentTarget as HTMLAnchorElement).style.color = '#CBD5E1')}
                   >
                     <span
                       style={{
@@ -138,8 +138,8 @@ export default function Footer() {
             <h4
               style={{
                 fontFamily: 'Barlow Condensed, sans-serif',
-                fontSize: '13px',
-                fontWeight: 700,
+                fontSize: '14px',
+                fontWeight: 800,
                 letterSpacing: '0.2em',
                 textTransform: 'uppercase',
                 color: 'white',
@@ -154,9 +154,9 @@ export default function Footer() {
                   <Link
                     to={href}
                     className="flex items-center gap-2 transition-colors duration-200"
-                    style={{ fontSize: '13px', color: '#6B7280' }}
-                    onMouseEnter={(e) => ((e.currentTarget as HTMLAnchorElement).style.color = 'white')}
-                    onMouseLeave={(e) => ((e.currentTarget as HTMLAnchorElement).style.color = '#6B7280')}
+                    style={{ fontSize: '13px', color: '#CBD5E1' }}
+                    onMouseEnter={(e) => ((e.currentTarget as HTMLAnchorElement).style.color = '#E63946')}
+                    onMouseLeave={(e) => ((e.currentTarget as HTMLAnchorElement).style.color = '#CBD5E1')}
                   >
                     <span
                       style={{
@@ -179,8 +179,8 @@ export default function Footer() {
             <h4
               style={{
                 fontFamily: 'Barlow Condensed, sans-serif',
-                fontSize: '13px',
-                fontWeight: 700,
+                fontSize: '14px',
+                fontWeight: 800,
                 letterSpacing: '0.2em',
                 textTransform: 'uppercase',
                 color: 'white',
@@ -189,39 +189,39 @@ export default function Footer() {
             >
               Book Appointment
             </h4>
-            <p style={{ fontSize: '13px', color: '#6B7280', marginBottom: '20px', lineHeight: 1.7 }}>
+            <p style={{ fontSize: '13px', color: '#94A3B8', marginBottom: '20px', lineHeight: 1.7 }}>
               Get your vehicle serviced by our expert technicians. Book your slot today.
             </p>
             <ul className="space-y-4 mb-6">
               <li className="flex items-start gap-3">
                 <MapPin size={16} color="#E63946" style={{ marginTop: '2px', flexShrink: 0 }} />
-                <span style={{ fontSize: '13px', color: '#6B7280' }}>
-                  Tripureshwor, Kathmandu-11, Nepal
+                <span style={{ fontSize: '13px', color: '#CBD5E1' }}>
+                  Dhobidhara marg, Kathmandu, Nepal
                 </span>
               </li>
               <li className="flex items-center gap-3">
                 <Phone size={16} color="#E63946" style={{ flexShrink: 0 }} />
                 <a
-                  href="tel:+9779851234567"
-                  style={{ fontSize: '13px', color: '#6B7280' }}
+                  href="tel:01-4525461"
+                  style={{ fontSize: '13px', color: '#CBD5E1' }}
                   className="hover:text-white transition-colors"
                 >
-                  +977 985-123-4567
+                  01-4525461 / 980-3296067
                 </a>
               </li>
               <li className="flex items-center gap-3">
                 <Mail size={16} color="#E63946" style={{ flexShrink: 0 }} />
                 <a
-                  href="mailto:info@pmautomobileworks.com.np"
-                  style={{ fontSize: '13px', color: '#6B7280' }}
+                  href="mailto:pmautomobileworks@gmail.com"
+                  style={{ fontSize: '13px', color: '#CBD5E1' }}
                   className="hover:text-white transition-colors"
                 >
-                  info@pmautomobileworks.com.np
+                  pmautomobileworks@gmail.com
                 </a>
               </li>
               <li className="flex items-start gap-3">
                 <Clock size={16} color="#E63946" style={{ marginTop: '2px', flexShrink: 0 }} />
-                <div style={{ fontSize: '13px', color: '#6B7280' }}>
+                <div style={{ fontSize: '13px', color: '#CBD5E1' }}>
                   <div>Sun–Fri: 8:00 AM – 7:00 PM</div>
                   <div>Saturday: 9:00 AM – 5:00 PM</div>
                 </div>
@@ -237,7 +237,8 @@ export default function Footer() {
       {/* Bottom Bar */}
       <div
         style={{
-          borderTop: '1px solid rgba(255,255,255,0.06)',
+          borderTop: '1px solid rgba(255,255,255,0.08)',
+          background: '#0B1120',
           padding: '20px 0',
         }}
       >
@@ -245,20 +246,20 @@ export default function Footer() {
           className="pm-container flex flex-col md:flex-row items-center justify-between gap-4"
           style={{ padding: '0 40px' }}
         >
-          <p style={{ fontSize: '12px', color: '#4B5563' }}>
+          <p style={{ fontSize: '12px', color: '#94A3B8' }}>
             © {new Date().getFullYear()} P.M. Automobile Works. All Rights Reserved.
           </p>
           <div className="flex gap-6">
             <a
               href="#"
-              style={{ fontSize: '12px', color: '#4B5563' }}
+              style={{ fontSize: '12px', color: '#94A3B8' }}
               className="hover:text-white transition-colors"
             >
               Privacy Policy
             </a>
             <a
               href="#"
-              style={{ fontSize: '12px', color: '#4B5563' }}
+              style={{ fontSize: '12px', color: '#94A3B8' }}
               className="hover:text-white transition-colors"
             >
               Terms of Service
@@ -269,3 +270,4 @@ export default function Footer() {
     </footer>
   )
 }
+

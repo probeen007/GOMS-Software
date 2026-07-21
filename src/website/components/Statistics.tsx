@@ -17,13 +17,13 @@ const defaultStats: Stat[] = [
   { number: '100%', label: 'Customer Satisfaction' },
 ]
 
-export default function Statistics({ stats = defaultStats, dark = true }: StatisticsProps) {
+export default function Statistics({ stats = defaultStats, dark = false }: StatisticsProps) {
   return (
     <section
       style={{
-        background: dark ? '#111111' : 'rgba(255,255,255,0.03)',
-        borderTop: '1px solid rgba(255,255,255,0.06)',
-        borderBottom: '1px solid rgba(255,255,255,0.06)',
+        background: dark ? '#0F172A' : '#F8FAFC',
+        borderTop: dark ? '1px solid rgba(255,255,255,0.06)' : '1px solid #E2E8F0',
+        borderBottom: dark ? '1px solid rgba(255,255,255,0.06)' : '1px solid #E2E8F0',
         padding: '64px 0',
       }}
     >
@@ -42,10 +42,10 @@ export default function Statistics({ stats = defaultStats, dark = true }: Statis
               <div
                 style={{
                   fontSize: '12px',
-                  fontWeight: 600,
+                  fontWeight: 700,
                   letterSpacing: '0.1em',
                   textTransform: 'uppercase',
-                  color: '#6B7280',
+                  color: dark ? '#94A3B8' : '#475569',
                 }}
               >
                 {stat.label}
@@ -57,3 +57,4 @@ export default function Statistics({ stats = defaultStats, dark = true }: Statis
     </section>
   )
 }
+

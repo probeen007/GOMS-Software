@@ -43,14 +43,14 @@ interface FAQProps {
   dark?: boolean
 }
 
-export default function FAQ({ limit, showTitle = true, dark = true }: FAQProps) {
+export default function FAQ({ limit, showTitle = true, dark = false }: FAQProps) {
   const [openIndex, setOpenIndex] = useState<number | null>(null)
   const displayFaqs = limit ? faqs.slice(0, limit) : faqs
 
   return (
     <section
       style={{
-        background: dark ? '#111111' : '#0A0A0A',
+        background: dark ? '#0F172A' : '#FFFFFF',
         padding: '120px 0',
       }}
     >
@@ -58,11 +58,11 @@ export default function FAQ({ limit, showTitle = true, dark = true }: FAQProps) 
         {showTitle && (
           <div className="mb-16">
             <div className="section-label">FAQ</div>
-            <h2 className="heading-section text-white mb-4" style={{ maxWidth: '500px' }}>
+            <h2 className={`heading-section mb-4 ${dark ? 'text-white' : 'text-slate-900'}`} style={{ maxWidth: '500px' }}>
               Frequently Asked Questions
             </h2>
             <div className="red-line" />
-            <p style={{ fontSize: '15px', color: '#6B7280', marginTop: '16px', maxWidth: '520px' }}>
+            <p style={{ fontSize: '15px', color: dark ? '#94A3B8' : '#475569', marginTop: '16px', maxWidth: '520px' }}>
               Got questions? We've got answers. Find everything you need to know about our services.
             </p>
           </div>
@@ -77,6 +77,7 @@ export default function FAQ({ limit, showTitle = true, dark = true }: FAQProps) 
                 answer={faq.a}
                 isOpen={openIndex === i}
                 onToggle={() => setOpenIndex(openIndex === i ? null : i)}
+                dark={dark}
               />
             ))}
           </div>
@@ -90,6 +91,7 @@ export default function FAQ({ limit, showTitle = true, dark = true }: FAQProps) 
                   answer={faq.a}
                   isOpen={openIndex === idx}
                   onToggle={() => setOpenIndex(openIndex === idx ? null : idx)}
+                  dark={dark}
                 />
               )
             })}
@@ -105,26 +107,27 @@ interface FAQItemProps {
   answer: string
   isOpen: boolean
   onToggle: () => void
+  dark?: boolean
 }
 
-export function FAQItem({ question, answer, isOpen, onToggle }: FAQItemProps) {
+export function FAQItem({ question, answer, isOpen, onToggle, dark = false }: FAQItemProps) {
   return (
-    <div className="faq-item">
+    <div className="faq-item" style={{ borderBottomColor: dark ? 'rgba(255,255,255,0.08)' : '#E2E8F0' }}>
       <button
         className="faq-question w-full text-left"
         onClick={onToggle}
-        style={{ color: isOpen ? '#E63946' : 'white' }}
+        style={{ color: isOpen ? '#E63946' : (dark ? '#FFFFFF' : '#0F172A') }}
       >
-        <span style={{ paddingRight: '16px', fontSize: '14px', fontWeight: 600 }}>{question}</span>
+        <span style={{ paddingRight: '16px', fontSize: '15px', fontWeight: 700 }}>{question}</span>
         <span
           className="flex-shrink-0 flex items-center justify-center transition-all duration-200"
           style={{
             width: '28px',
             height: '28px',
             borderRadius: '50%',
-            border: `1px solid ${isOpen ? '#E63946' : 'rgba(255,255,255,0.15)'}`,
-            background: isOpen ? 'rgba(230,57,70,0.1)' : 'transparent',
-            color: isOpen ? '#E63946' : 'rgba(255,255,255,0.5)',
+            border: `1px solid ${isOpen ? '#E63946' : (dark ? 'rgba(255,255,255,0.2)' : '#CBD5E1')}`,
+            background: isOpen ? 'rgba(230,57,70,0.1)' : (dark ? 'transparent' : '#F8FAFC'),
+            color: isOpen ? '#E63946' : (dark ? 'rgba(255,255,255,0.6)' : '#64748B'),
           }}
         >
           {isOpen ? <Minus size={14} /> : <Plus size={14} />}
@@ -139,10 +142,11 @@ export function FAQItem({ question, answer, isOpen, onToggle }: FAQItemProps) {
             transition={{ duration: 0.25 }}
             className="overflow-hidden"
           >
-            <p className="faq-answer">{answer}</p>
+            <p className="faq-answer" style={{ color: dark ? '#94A3B8' : '#475569' }}>{answer}</p>
           </motion.div>
         )}
       </AnimatePresence>
     </div>
   )
 }
+

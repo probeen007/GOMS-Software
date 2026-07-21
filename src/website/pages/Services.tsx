@@ -2,11 +2,11 @@ import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import {
   Wrench,
-  Shield,
-  Zap,
-  CheckCircle,
-  Star,
-  Clock,
+  ShieldCheck,
+  Cpu,
+  Disc,
+  Paintbrush,
+  Droplet,
   ArrowRight,
   Phone,
 } from 'lucide-react'
@@ -29,7 +29,7 @@ export const allServices = [
   },
   {
     slug: 'general-servicing',
-    icon: Shield,
+    icon: ShieldCheck,
     title: 'General Servicing',
     shortDesc: 'Full vehicle health checks, fluid replacements, and preventive maintenance.',
     image: '/assets/general.jpg',
@@ -43,7 +43,7 @@ export const allServices = [
   },
   {
     slug: 'electrical-repair',
-    icon: Zap,
+    icon: Cpu,
     title: 'Electrical Repair',
     shortDesc: 'Battery, ECU diagnostics, wiring repairs, and advanced electrical systems.',
     image: '/assets/wirring.jpg',
@@ -57,7 +57,7 @@ export const allServices = [
   },
   {
     slug: 'brake-suspension',
-    icon: CheckCircle,
+    icon: Disc,
     title: 'Brake & Suspension',
     shortDesc: 'Brake pad replacements, disc servicing, and full suspension tuning.',
     image: '/assets/break.png',
@@ -71,7 +71,7 @@ export const allServices = [
   },
   {
     slug: 'denting-painting',
-    icon: Star,
+    icon: Paintbrush,
     title: 'Denting & Painting',
     shortDesc: 'Professional dent removal, scratch repair, and premium automotive painting.',
     image: '/assets/paint.png',
@@ -85,7 +85,7 @@ export const allServices = [
   },
   {
     slug: 'oil-lubrication',
-    icon: Clock,
+    icon: Droplet,
     title: 'Oil & Lubrication',
     shortDesc: 'Engine oil changes, drivetrain lubrication, and complete fluid maintenance.',
     image: '/assets/oil.png',
@@ -98,6 +98,7 @@ export const allServices = [
     ],
   },
 ]
+
 
 const fadeUp = {
   hidden: { opacity: 0, y: 28 },
@@ -119,17 +120,17 @@ export default function Services() {
       />
 
       {/* Intro */}
-      <section style={{ background: '#0D0D0D', padding: '80px 0 60px' }}>
+      <section style={{ background: '#FFFFFF', padding: '80px 0 60px' }}>
         <div className="pm-container">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
               <div className="section-label">What We Do</div>
-              <h2 className="heading-section text-white mb-4">
+              <h2 className="heading-section text-slate-900 mb-4">
                 Complete Automotive Solutions
               </h2>
               <div className="red-line" />
             </div>
-            <p style={{ fontSize: '15px', color: '#9CA3AF', lineHeight: 1.8 }}>
+            <p style={{ fontSize: '15px', color: '#475569', lineHeight: 1.8 }}>
               We offer a complete range of automotive services to keep your vehicle in the best
               condition. Our expert technicians use advanced tools, genuine spare parts, and
               follow manufacturer-approved procedures for reliable, long-lasting results.
@@ -139,9 +140,9 @@ export default function Services() {
       </section>
 
       {/* Services Grid */}
-      <section style={{ background: '#0A0A0A', padding: '0 0 120px' }}>
+      <section style={{ background: '#F8FAFC', padding: '0 0 120px' }}>
         <div className="pm-container">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {allServices.map((service, i) => (
               <motion.div
                 key={service.slug}
@@ -153,8 +154,8 @@ export default function Services() {
               >
                 <Link
                   to={`/services/${service.slug}`}
-                  className="pm-card block group"
-                  style={{ overflow: 'hidden', height: '100%' }}
+                  className="block group overflow-hidden border border-slate-200 shadow-md hover:shadow-2xl hover:border-[#E63946] transition-all duration-300 rounded-2xl"
+                  style={{ background: '#FFFFFF', color: '#0F172A', height: '100%' }}
                 >
                   {/* Image */}
                   <div style={{ height: '200px', overflow: 'hidden', position: 'relative' }}>
@@ -162,7 +163,9 @@ export default function Services() {
                       src={service.image}
                       alt={service.title}
                       className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                      style={{ filter: 'brightness(0.7)' }}
+                      onError={(e) => {
+                        e.currentTarget.src = "https://images.unsplash.com/photo-1486006920555-c77dce18193b?w=600&h=400&fit=crop&q=80";
+                      }}
                     />
                     {/* Red badge */}
                     <div
@@ -171,10 +174,10 @@ export default function Services() {
                         top: '16px',
                         left: '16px',
                         background: '#E63946',
-                        borderRadius: '3px',
+                        borderRadius: '4px',
                         padding: '4px 10px',
                         fontSize: '10px',
-                        fontWeight: 700,
+                        fontWeight: 800,
                         letterSpacing: '0.1em',
                         textTransform: 'uppercase',
                         color: 'white',
@@ -185,14 +188,15 @@ export default function Services() {
                   </div>
 
                   {/* Body */}
-                  <div style={{ padding: '24px' }}>
+                  <div style={{ padding: '24px', background: '#FFFFFF' }}>
                     <div className="flex items-center gap-3 mb-4">
                       <div
                         style={{
                           width: '40px',
                           height: '40px',
-                          background: 'rgba(230,57,70,0.12)',
-                          borderRadius: '6px',
+                          background: 'rgba(230,57,70,0.1)',
+                          border: '1px solid rgba(230,57,70,0.15)',
+                          borderRadius: '8px',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
@@ -205,16 +209,16 @@ export default function Services() {
                         style={{
                           fontFamily: 'Barlow Condensed, sans-serif',
                           fontSize: '1.3rem',
-                          fontWeight: 700,
+                          fontWeight: 800,
                           textTransform: 'uppercase',
                           letterSpacing: '0.04em',
-                          color: 'white',
+                          color: '#0F172A',
                         }}
                       >
                         {service.title}
                       </h3>
                     </div>
-                    <p style={{ fontSize: '13px', color: '#6B7280', lineHeight: 1.7, marginBottom: '16px' }}>
+                    <p style={{ fontSize: '13px', color: '#64748B', lineHeight: 1.7, marginBottom: '16px' }}>
                       {service.shortDesc}
                     </p>
 
@@ -224,26 +228,27 @@ export default function Services() {
                         <li key={fi} className="flex items-center gap-2">
                           <div
                             style={{
-                              width: '4px',
-                              height: '4px',
+                              width: '5px',
+                              height: '5px',
                               borderRadius: '50%',
                               background: '#E63946',
                               flexShrink: 0,
                             }}
                           />
-                          <span style={{ fontSize: '12px', color: '#9CA3AF' }}>{f}</span>
+                          <span style={{ fontSize: '13px', color: '#475569', fontWeight: 500 }}>{f}</span>
                         </li>
                       ))}
                     </ul>
 
                     <div
-                      className="flex items-center gap-2 font-semibold uppercase tracking-widest transition-all duration-200 group-hover:gap-3"
+                      className="flex items-center gap-2 font-bold uppercase tracking-widest transition-all duration-200 group-hover:gap-3"
                       style={{ fontSize: '11px', color: '#E63946' }}
                     >
                       Learn More <ArrowRight size={14} />
                     </div>
                   </div>
                 </Link>
+
               </motion.div>
             ))}
           </div>
@@ -254,17 +259,17 @@ export default function Services() {
       <section
         className="relative"
         style={{
-          background: '#111111',
+          background: '#FFFFFF',
           padding: '80px 0',
-          borderTop: '1px solid rgba(255,255,255,0.05)',
+          borderTop: '1px solid #E2E8F0',
         }}
       >
         <div className="pm-container">
           <div
-            className="flex flex-col lg:flex-row items-center justify-between gap-8"
+            className="flex flex-col lg:flex-row items-center justify-between gap-8 shadow-xl"
             style={{
               background: '#E63946',
-              borderRadius: '8px',
+              borderRadius: '12px',
               padding: '48px 56px',
             }}
           >
@@ -281,7 +286,7 @@ export default function Services() {
               >
                 Need Immediate Assistance?
               </h3>
-              <p style={{ fontSize: '15px', color: 'rgba(255,255,255,0.8)' }}>
+              <p style={{ fontSize: '15px', color: 'rgba(255,255,255,0.9)' }}>
                 Our team is ready to help you. Book your appointment today.
               </p>
             </div>
@@ -300,15 +305,16 @@ export default function Services() {
                   fontWeight: 700,
                   letterSpacing: '0.12em',
                   textTransform: 'uppercase',
-                  borderRadius: '4px',
+                  borderRadius: '6px',
                   whiteSpace: 'nowrap',
+                  boxShadow: '0 4px 15px rgba(0,0,0,0.15)',
                   transition: 'transform 0.2s',
                 }}
               >
                 Book Appointment
               </Link>
               <a
-                href="tel:+9779851234567"
+                href="tel:01-4525461"
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
@@ -321,8 +327,8 @@ export default function Services() {
                   fontWeight: 700,
                   letterSpacing: '0.12em',
                   textTransform: 'uppercase',
-                  border: '1px solid rgba(255,255,255,0.4)',
-                  borderRadius: '4px',
+                  border: '1px solid rgba(255,255,255,0.6)',
+                  borderRadius: '6px',
                   whiteSpace: 'nowrap',
                 }}
               >
@@ -335,3 +341,4 @@ export default function Services() {
     </div>
   )
 }
+

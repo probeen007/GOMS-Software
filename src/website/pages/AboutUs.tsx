@@ -1,28 +1,37 @@
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { Shield, Star, Zap, CheckCircle, Users, Award, Clock } from 'lucide-react'
+import {
+  ShieldCheck,
+  BadgeCheck,
+  Cpu,
+  HeartHandshake,
+  UserCheck,
+  Trophy,
+  Timer,
+  Medal,
+} from 'lucide-react'
 import PageHero from '../components/PageHero'
 import Statistics from '../components/Statistics'
 import BrandLogos from '../components/BrandLogos'
 
 const values = [
   {
-    icon: Shield,
+    icon: ShieldCheck,
     title: 'Integrity',
     desc: 'We are transparent in every service, every quote, and every interaction with our customers.',
   },
   {
-    icon: Star,
+    icon: BadgeCheck,
     title: 'Quality',
     desc: 'We use only genuine, certified parts and follow manufacturer-approved service procedures.',
   },
   {
-    icon: Zap,
+    icon: Cpu,
     title: 'Innovation',
     desc: 'We continuously update our tools, techniques, and training to stay ahead in automotive care.',
   },
   {
-    icon: CheckCircle,
+    icon: HeartHandshake,
     title: 'Commitment',
     desc: 'We stand behind every repair with guarantees and a dedication to long-term relationships.',
   },
@@ -56,11 +65,12 @@ const team = [
 ]
 
 const achievements = [
-  { icon: Award, label: 'Best Auto Workshop', sub: 'Kathmandu — 2019, 2022' },
-  { icon: Users, label: '15,000+ Customers', sub: 'Served over four decades' },
-  { icon: Clock, label: 'Since 1978', sub: 'Over 45 years in business' },
-  { icon: CheckCircle, label: 'ISO Certified', sub: 'Quality management system' },
+  { icon: Trophy, label: 'Best Auto Workshop', sub: 'Kathmandu — 2019, 2022' },
+  { icon: UserCheck, label: '15,000+ Customers', sub: 'Served over four decades' },
+  { icon: Timer, label: 'Since 1978', sub: 'Over 45 years in business' },
+  { icon: Medal, label: 'ISO Certified', sub: 'Quality management system' },
 ]
+
 
 const brandLogos = [
   { name: 'Toyota', logo: 'https://upload.wikimedia.org/wikipedia/commons/9/9d/Toyota_carlogo.svg' },
@@ -92,7 +102,7 @@ export default function AboutUs() {
       />
 
       {/* ── Our Story ── */}
-      <section style={{ background: '#0A0A0A', padding: '120px 0' }}>
+      <section style={{ background: '#FFFFFF', padding: '120px 0' }}>
         <div className="pm-container">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
             <motion.div
@@ -102,14 +112,14 @@ export default function AboutUs() {
               viewport={{ once: true }}
             >
               <div className="section-label">Our Story</div>
-              <h2 className="heading-section text-white mb-4">
+              <h2 className="heading-section text-slate-900 mb-4">
                 P.M. Automobile Works
               </h2>
               <h3
                 style={{
                   fontFamily: 'Barlow Condensed, sans-serif',
                   fontSize: '1.3rem',
-                  fontWeight: 600,
+                  fontWeight: 700,
                   color: '#E63946',
                   letterSpacing: '0.05em',
                   marginBottom: '20px',
@@ -118,19 +128,19 @@ export default function AboutUs() {
                 Built on Trust. Driven by Quality.
               </h3>
               <div className="red-line" />
-              <p style={{ fontSize: '15px', color: '#9CA3AF', lineHeight: 1.8, margin: '20px 0 16px' }}>
+              <p style={{ fontSize: '15px', color: '#475569', lineHeight: 1.8, margin: '20px 0 16px' }}>
                 P.M. Automobile Works was founded in 1978 by Prakash Maharjan in the heart of
-                Tripureshwor, Kathmandu. What began as a humble two-bay repair shop grew steadily
+                Kathmandu. What began as a humble two-bay repair shop grew steadily
                 over the decades, built on a foundation of honest workmanship and genuine care
                 for every customer's vehicle.
               </p>
-              <p style={{ fontSize: '15px', color: '#9CA3AF', lineHeight: 1.8, marginBottom: '16px' }}>
+              <p style={{ fontSize: '15px', color: '#475569', lineHeight: 1.8, marginBottom: '16px' }}>
                 Today, we operate from a fully equipped, modern workshop with over 25 trained
                 technicians, computerized diagnostic systems, and a commitment to using only
                 genuine OEM parts. We service all major vehicle brands — from Japanese sedans
                 to European SUVs.
               </p>
-              <p style={{ fontSize: '15px', color: '#9CA3AF', lineHeight: 1.8, marginBottom: '36px' }}>
+              <p style={{ fontSize: '15px', color: '#475569', lineHeight: 1.8, marginBottom: '36px' }}>
                 Over 15,000 vehicles have passed through our workshop. Each one received the same
                 meticulous attention that earned us Kathmandu's trust — and we intend to keep it
                 that way for the next 45 years.
@@ -146,7 +156,7 @@ export default function AboutUs() {
               ].map((item, i) => (
                 <div key={i} className="flex items-center gap-3 mb-3">
                   <CheckCircle size={16} color="#E63946" style={{ flexShrink: 0 }} />
-                  <span style={{ fontSize: '14px', color: '#D1D5DB' }}>{item}</span>
+                  <span style={{ fontSize: '14px', color: '#1E293B', fontWeight: 600 }}>{item}</span>
                 </div>
               ))}
             </motion.div>
@@ -159,13 +169,16 @@ export default function AboutUs() {
             >
               {/* Main Image */}
               <div
-                style={{ borderRadius: '8px', overflow: 'hidden', marginBottom: '16px', aspectRatio: '4/3' }}
+                className="shadow-xl"
+                style={{ borderRadius: '12px', overflow: 'hidden', marginBottom: '16px', aspectRatio: '4/3' }}
               >
                 <img
                   src="/assets/about.jpg"
                   alt="P.M. Automobile Works Workshop"
                   className="w-full h-full object-cover"
-                  style={{ filter: 'brightness(0.8)' }}
+                  onError={(e) => {
+                    e.currentTarget.src = "https://images.unsplash.com/photo-1517524206127-48bbd363f3d7?w=800&h=600&fit=crop&q=80";
+                  }}
                 />
               </div>
 
@@ -175,12 +188,14 @@ export default function AboutUs() {
                   '/assets/img6.jpg',
                   '/assets/img7.jpg',
                 ].map((src, i) => (
-                  <div key={i} style={{ borderRadius: '6px', overflow: 'hidden', aspectRatio: '4/3' }}>
+                  <div key={i} className="shadow-md" style={{ borderRadius: '10px', overflow: 'hidden', aspectRatio: '4/3' }}>
                     <img
                       src={src}
                       alt={`Workshop ${i + 1}`}
                       className="w-full h-full object-cover"
-                      style={{ filter: 'brightness(0.75)' }}
+                      onError={(e) => {
+                        e.currentTarget.src = "https://images.unsplash.com/photo-1486006920555-c77dce18193b?w=400&h=300&fit=crop&q=80";
+                      }}
                     />
                   </div>
                 ))}
@@ -191,14 +206,14 @@ export default function AboutUs() {
       </section>
 
       {/* ── Statistics ── */}
-      <Statistics />
+      <Statistics dark={false} />
 
       {/* ── Our Values ── */}
-      <section style={{ background: '#111111', padding: '120px 0' }}>
+      <section style={{ background: '#F8FAFC', padding: '120px 0', borderTop: '1px solid #E2E8F0', borderBottom: '1px solid #E2E8F0' }}>
         <div className="pm-container">
           <div className="text-center mb-16">
             <div className="section-label">Our Values</div>
-            <h2 className="heading-section text-white mb-4">What Drives Us</h2>
+            <h2 className="heading-section text-slate-900 mb-4">What Drives Us</h2>
             <div className="red-line red-line-center" />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -211,15 +226,24 @@ export default function AboutUs() {
                 variants={fadeUp}
                 viewport={{ once: true }}
                 style={{
-                  background: '#0D0D0D',
-                  border: '1px solid rgba(255,255,255,0.06)',
-                  borderRadius: '8px',
+                  background: '#FFFFFF',
+                  border: '1px solid #E2E8F0',
+                  borderRadius: '12px',
                   padding: '36px 28px',
                   textAlign: 'center',
-                  transition: 'border-color 0.3s ease',
+                  boxShadow: '0 4px 15px rgba(0,0,0,0.03)',
+                  transition: 'border-color 0.3s ease, box-shadow 0.3s ease',
                 }}
-                onMouseEnter={(e) => ((e.currentTarget as HTMLDivElement).style.borderColor = 'rgba(230,57,70,0.3)')}
-                onMouseLeave={(e) => ((e.currentTarget as HTMLDivElement).style.borderColor = 'rgba(255,255,255,0.06)')}
+                onMouseEnter={(e) => {
+                  const el = e.currentTarget as HTMLDivElement
+                  el.style.borderColor = 'rgba(230,57,70,0.4)'
+                  el.style.boxShadow = '0 12px 30px rgba(15,23,42,0.08)'
+                }}
+                onMouseLeave={(e) => {
+                  const el = e.currentTarget as HTMLDivElement
+                  el.style.borderColor = '#E2E8F0'
+                  el.style.boxShadow = '0 4px 15px rgba(0,0,0,0.03)'
+                }}
               >
                 <div
                   className="mx-auto mb-5"
@@ -227,7 +251,7 @@ export default function AboutUs() {
                     width: '56px',
                     height: '56px',
                     background: 'rgba(230,57,70,0.1)',
-                    borderRadius: '10px',
+                    borderRadius: '12px',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -238,17 +262,17 @@ export default function AboutUs() {
                 <h3
                   style={{
                     fontFamily: 'Barlow Condensed, sans-serif',
-                    fontSize: '1.1rem',
-                    fontWeight: 700,
+                    fontSize: '1.2rem',
+                    fontWeight: 800,
                     textTransform: 'uppercase',
                     letterSpacing: '0.08em',
-                    color: 'white',
+                    color: '#0F172A',
                     marginBottom: '10px',
                   }}
                 >
                   {v.title}
                 </h3>
-                <p style={{ fontSize: '13px', color: '#6B7280', lineHeight: 1.7 }}>{v.desc}</p>
+                <p style={{ fontSize: '13px', color: '#64748B', lineHeight: 1.7 }}>{v.desc}</p>
               </motion.div>
             ))}
           </div>
@@ -256,12 +280,7 @@ export default function AboutUs() {
       </section>
 
       {/* ── Well Equipped Workshop ── */}
-      <section className="relative py-32 bg-gray-900 overflow-hidden">
-        <img
-          src="/assets/general.jpg"
-          alt="Well Equipped Workshop"
-          className="absolute inset-0 w-full h-full object-cover opacity-20"
-        />
+      <section className="relative py-32 bg-white overflow-hidden">
         <div className="pm-container relative z-10">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <motion.div
@@ -271,33 +290,36 @@ export default function AboutUs() {
               viewport={{ once: true }}
               style={{ position: 'relative' }}
             >
-              <div style={{ borderRadius: '8px', overflow: 'hidden', aspectRatio: '16/11' }}>
+              <div className="shadow-xl" style={{ borderRadius: '12px', overflow: 'hidden', aspectRatio: '16/11' }}>
                 <img
                   src="/assets/engine.jpg"
                   alt="Well Equipped Workshop"
                   className="w-full h-full object-cover"
-                  style={{ filter: 'brightness(0.7)' }}
+                  onError={(e) => {
+                    e.currentTarget.src = "https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?w=800&h=600&fit=crop&q=80";
+                  }}
                 />
               </div>
 
               {/* Achievement badges */}
               <div
-                className="absolute -right-8 bottom-8 grid grid-cols-2 gap-3"
-                style={{ maxWidth: '240px' }}
+                className="absolute -right-6 bottom-6 grid grid-cols-2 gap-3"
+                style={{ maxWidth: '260px' }}
               >
                 {achievements.map(({ icon: Icon, label, sub }, i) => (
                   <div
                     key={i}
+                    className="shadow-lg"
                     style={{
-                      background: '#111111',
-                      border: '1px solid rgba(255,255,255,0.08)',
-                      borderRadius: '6px',
+                      background: '#FFFFFF',
+                      border: '1px solid #E2E8F0',
+                      borderRadius: '10px',
                       padding: '14px',
                     }}
                   >
                     <Icon size={20} color="#E63946" style={{ marginBottom: '6px' }} />
-                    <div style={{ fontSize: '12px', fontWeight: 700, color: 'white', lineHeight: 1.3 }}>{label}</div>
-                    <div style={{ fontSize: '10px', color: '#6B7280', marginTop: '2px' }}>{sub}</div>
+                    <div style={{ fontSize: '12px', fontWeight: 800, color: '#0F172A', lineHeight: 1.3 }}>{label}</div>
+                    <div style={{ fontSize: '10px', color: '#64748B', marginTop: '2px' }}>{sub}</div>
                   </div>
                 ))}
               </div>
@@ -310,16 +332,16 @@ export default function AboutUs() {
               viewport={{ once: true }}
             >
               <div className="section-label">Our Workshop</div>
-              <h2 className="heading-section text-white mb-6">
+              <h2 className="heading-section text-slate-900 mb-6">
                 Well Equipped Workshop
               </h2>
               <div className="red-line" />
-              <p style={{ fontSize: '15px', color: '#9CA3AF', lineHeight: 1.8, margin: '20px 0 16px' }}>
-                Our workshop in Tripureshwor, Kathmandu is equipped with modern computerized
+              <p style={{ fontSize: '15px', color: '#475569', lineHeight: 1.8, margin: '20px 0 16px' }}>
+                Our workshop in Kathmandu is equipped with modern computerized
                 diagnostic machines, hydraulic lifts, wheel alignment equipment, and a
                 dedicated paint booth for body and paint work.
               </p>
-              <p style={{ fontSize: '15px', color: '#9CA3AF', lineHeight: 1.8, marginBottom: '32px' }}>
+              <p style={{ fontSize: '15px', color: '#475569', lineHeight: 1.8, marginBottom: '32px' }}>
                 We invest continuously in the latest automotive technology to ensure our
                 technicians have everything they need to diagnose and repair your vehicle
                 correctly the first time — saving you time and money.
@@ -335,9 +357,9 @@ export default function AboutUs() {
                   <div
                     key={i}
                     style={{
-                      background: '#111111',
-                      border: '1px solid rgba(255,255,255,0.06)',
-                      borderRadius: '6px',
+                      background: '#F8FAFC',
+                      border: '1px solid #E2E8F0',
+                      borderRadius: '10px',
                       padding: '20px',
                     }}
                   >
@@ -353,7 +375,7 @@ export default function AboutUs() {
                     >
                       {s.n}
                     </div>
-                    <div style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#6B7280' }}>
+                    <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#64748B' }}>
                       {s.l}
                     </div>
                   </div>
@@ -367,10 +389,10 @@ export default function AboutUs() {
       {/* ── Brands We Service ── */}
       <section
         style={{
-          background: '#111111',
+          background: '#F8FAFC',
           padding: '64px 0',
-          borderTop: '1px solid rgba(255,255,255,0.05)',
-          borderBottom: '1px solid rgba(255,255,255,0.05)',
+          borderTop: '1px solid #E2E8F0',
+          borderBottom: '1px solid #E2E8F0',
         }}
       >
         <div className="pm-container">
@@ -396,7 +418,7 @@ export default function AboutUs() {
           >
             Ready to Experience the Difference?
           </h2>
-          <p style={{ fontSize: '15px', color: 'rgba(255,255,255,0.8)', marginBottom: '32px' }}>
+          <p style={{ fontSize: '15px', color: 'rgba(255,255,255,0.9)', marginBottom: '32px' }}>
             Book your appointment today and let Kathmandu's most trusted workshop take care of your vehicle.
           </p>
           <Link
@@ -413,7 +435,8 @@ export default function AboutUs() {
               fontWeight: 700,
               letterSpacing: '0.12em',
               textTransform: 'uppercase',
-              borderRadius: '4px',
+              borderRadius: '6px',
+              boxShadow: '0 4px 15px rgba(0,0,0,0.15)',
               transition: 'transform 0.2s ease',
             }}
           >
@@ -424,3 +447,4 @@ export default function AboutUs() {
     </div>
   )
 }
+

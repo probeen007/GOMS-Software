@@ -5,7 +5,7 @@ import Footer from './components/Footer';
 
 export default function WebsiteLayout() {
   return (
-    <div className="min-h-screen flex flex-col bg-[#0A0A0A] text-white selection:bg-[#E63946] selection:text-white">
+    <div className="min-h-screen flex flex-col bg-white text-gray-900 selection:bg-[#E63946] selection:text-white">
       <Navbar />
       <main className="flex-grow">
         <Outlet />
@@ -14,3 +14,4 @@ export default function WebsiteLayout() {
     </div>
   );
 }
+

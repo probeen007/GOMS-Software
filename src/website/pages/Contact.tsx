@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { MapPin, Phone, Mail, Clock, Send, Facebook, Instagram, Twitter, Youtube } from 'lucide-react'
+import { MapPin, PhoneCall, MailCheck, CalendarClock, Send, Facebook, Instagram, Twitter, Youtube } from 'lucide-react'
 import PageHero from '../components/PageHero'
 
 export default function Contact() {
@@ -26,26 +26,27 @@ export default function Contact() {
     {
       icon: MapPin,
       label: 'Location',
-      value: 'Tripureshwor, Kathmandu-11, Bagmati Province, Nepal',
+      value: 'Dhobidhara marg, Kathmandu, Nepal',
     },
     {
-      icon: Phone,
+      icon: PhoneCall,
       label: 'Phone',
-      value: '+977 985-123-4567',
-      href: 'tel:+9779851234567',
+      value: '01-4525461 / 980-3296067',
+      href: 'tel:01-4525461',
     },
     {
-      icon: Mail,
+      icon: MailCheck,
       label: 'Email',
-      value: 'info@pmautomobileworks.com.np',
-      href: 'mailto:info@pmautomobileworks.com.np',
+      value: 'pmautomobileworks@gmail.com',
+      href: 'mailto:pmautomobileworks@gmail.com',
     },
     {
-      icon: Clock,
+      icon: CalendarClock,
       label: 'Working Hours',
       value: 'Sun–Fri: 8 AM–7 PM · Sat: 9 AM–5 PM',
     },
   ]
+
 
   return (
     <div>
@@ -56,7 +57,7 @@ export default function Contact() {
         backgroundImage="/assets/hero.png"
       />
 
-      <section style={{ background: '#0A0A0A', padding: '80px 0 120px' }}>
+      <section style={{ background: '#F8FAFC', padding: '80px 0 120px' }}>
         <div className="pm-container">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
             {/* Left — Info */}
@@ -66,10 +67,10 @@ export default function Contact() {
               transition={{ duration: 0.7 }}
             >
               <div className="section-label">Get in Touch</div>
-              <h2 className="heading-section text-white mb-4">Contact Information</h2>
+              <h2 className="heading-section text-slate-900 mb-4">Contact Information</h2>
               <div className="red-line" style={{ marginBottom: '32px' }} />
 
-              <p style={{ fontSize: '15px', color: '#9CA3AF', lineHeight: 1.8, marginBottom: '36px' }}>
+              <p style={{ fontSize: '15px', color: '#475569', lineHeight: 1.8, marginBottom: '36px' }}>
                 Have questions about your vehicle, our services, or pricing? Reach out to us directly.
                 Our team is available Sunday through Saturday to assist you.
               </p>
@@ -79,13 +80,14 @@ export default function Contact() {
                 {contactInfo.map(({ icon: Icon, label, value, href }, i) => (
                   <div
                     key={i}
+                    className="shadow-sm"
                     style={{
                       display: 'flex',
                       alignItems: 'flex-start',
                       gap: '16px',
-                      background: '#111111',
-                      border: '1px solid rgba(255,255,255,0.07)',
-                      borderRadius: '6px',
+                      background: '#FFFFFF',
+                      border: '1px solid #E2E8F0',
+                      borderRadius: '10px',
                       padding: '20px',
                     }}
                   >
@@ -93,7 +95,7 @@ export default function Contact() {
                       style={{
                         width: '44px',
                         height: '44px',
-                        background: 'rgba(230,57,70,0.12)',
+                        background: 'rgba(230,57,70,0.1)',
                         borderRadius: '8px',
                         display: 'flex',
                         alignItems: 'center',
@@ -107,10 +109,10 @@ export default function Contact() {
                       <div
                         style={{
                           fontSize: '11px',
-                          fontWeight: 700,
+                          fontWeight: 800,
                           letterSpacing: '0.15em',
                           textTransform: 'uppercase',
-                          color: '#6B7280',
+                          color: '#64748B',
                           marginBottom: '4px',
                         }}
                       >
@@ -119,13 +121,13 @@ export default function Contact() {
                       {href ? (
                         <a
                           href={href}
-                          style={{ fontSize: '14px', color: 'white', fontWeight: 500 }}
-                          className="hover:text-red-400 transition-colors"
+                          style={{ fontSize: '15px', color: '#0F172A', fontWeight: 700 }}
+                          className="hover:text-[#E63946] transition-colors"
                         >
                           {value}
                         </a>
                       ) : (
-                        <div style={{ fontSize: '14px', color: 'white', fontWeight: 500 }}>{value}</div>
+                        <div style={{ fontSize: '15px', color: '#0F172A', fontWeight: 700 }}>{value}</div>
                       )}
                     </div>
                   </div>
@@ -137,10 +139,10 @@ export default function Contact() {
                 <div
                   style={{
                     fontSize: '11px',
-                    fontWeight: 700,
+                    fontWeight: 800,
                     letterSpacing: '0.15em',
                     textTransform: 'uppercase',
-                    color: '#6B7280',
+                    color: '#64748B',
                     marginBottom: '16px',
                   }}
                 >
@@ -154,14 +156,15 @@ export default function Contact() {
                       style={{
                         width: '40px',
                         height: '40px',
-                        borderRadius: '6px',
-                        background: '#111111',
-                        border: '1px solid rgba(255,255,255,0.08)',
+                        borderRadius: '8px',
+                        background: '#FFFFFF',
+                        border: '1px solid #E2E8F0',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        color: 'rgba(255,255,255,0.5)',
+                        color: '#475569',
                         transition: 'all 0.2s',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.03)',
                       }}
                       onMouseEnter={(e) => {
                         const el = e.currentTarget as HTMLAnchorElement
@@ -171,9 +174,9 @@ export default function Contact() {
                       }}
                       onMouseLeave={(e) => {
                         const el = e.currentTarget as HTMLAnchorElement
-                        el.style.background = '#111111'
-                        el.style.color = 'rgba(255,255,255,0.5)'
-                        el.style.borderColor = 'rgba(255,255,255,0.08)'
+                        el.style.background = '#FFFFFF'
+                        el.style.color = '#475569'
+                        el.style.borderColor = '#E2E8F0'
                       }}
                     >
                       <Icon size={18} />
@@ -184,12 +187,13 @@ export default function Contact() {
 
               {/* Map */}
               <div
+                className="shadow-md"
                 style={{
                   marginTop: '32px',
-                  borderRadius: '8px',
+                  borderRadius: '12px',
                   overflow: 'hidden',
                   height: '240px',
-                  border: '1px solid rgba(255,255,255,0.07)',
+                  border: '1px solid #E2E8F0',
                 }}
               >
                 <iframe
@@ -197,7 +201,7 @@ export default function Contact() {
                   src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3532.1!2d85.3096!3d27.6966!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMjfCsDQxJzQ4LjAiTiA4NcKwMTgnMzQuNiJF!5e0!3m2!1sen!2snp!4v1625000000000!5m2!1sen!2snp"
                   width="100%"
                   height="240"
-                  style={{ border: 0, filter: 'invert(90%) hue-rotate(180deg)' }}
+                  style={{ border: 0 }}
                   allowFullScreen
                   loading="lazy"
                 />
@@ -212,10 +216,11 @@ export default function Contact() {
             >
               <div
                 style={{
-                  background: '#111111',
-                  border: '1px solid rgba(255,255,255,0.07)',
-                  borderRadius: '8px',
+                  background: '#FFFFFF',
+                  border: '1px solid #E2E8F0',
+                  borderRadius: '12px',
                   padding: '48px',
+                  boxShadow: '0 4px 20px rgba(0,0,0,0.03)',
                 }}
               >
                 <div className="section-label">Send a Message</div>
@@ -223,9 +228,9 @@ export default function Contact() {
                   style={{
                     fontFamily: 'Barlow Condensed, sans-serif',
                     fontSize: '1.8rem',
-                    fontWeight: 700,
+                    fontWeight: 800,
                     textTransform: 'uppercase',
-                    color: 'white',
+                    color: '#0F172A',
                     marginBottom: '8px',
                     letterSpacing: '0.04em',
                   }}
@@ -250,10 +255,10 @@ export default function Contact() {
                     >
                       <Send size={28} color="#E63946" />
                     </div>
-                    <h4 style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: '1.4rem', fontWeight: 700, color: 'white', marginBottom: '12px', textTransform: 'uppercase' }}>
+                    <h4 style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: '1.4rem', fontWeight: 800, color: '#0F172A', marginBottom: '12px', textTransform: 'uppercase' }}>
                       Message Sent!
                     </h4>
-                    <p style={{ fontSize: '14px', color: '#9CA3AF', marginBottom: '24px' }}>
+                    <p style={{ fontSize: '14px', color: '#475569', marginBottom: '24px' }}>
                       Thank you for reaching out. We will get back to you within 24 hours.
                     </p>
                     <button onClick={() => setSent(false)} className="btn-secondary" style={{ fontSize: '12px' }}>
@@ -264,7 +269,7 @@ export default function Contact() {
                   <form onSubmit={handleSubmit} className="space-y-5">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                       <div>
-                        <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: '#9CA3AF', marginBottom: '8px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+                        <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#475569', marginBottom: '8px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
                           Full Name *
                         </label>
                         <input
@@ -278,7 +283,7 @@ export default function Contact() {
                         />
                       </div>
                       <div>
-                        <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: '#9CA3AF', marginBottom: '8px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+                        <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#475569', marginBottom: '8px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
                           Email Address *
                         </label>
                         <input
@@ -295,7 +300,7 @@ export default function Contact() {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                       <div>
-                        <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: '#9CA3AF', marginBottom: '8px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+                        <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#475569', marginBottom: '8px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
                           Phone
                         </label>
                         <input
@@ -303,12 +308,12 @@ export default function Contact() {
                           name="phone"
                           value={form.phone}
                           onChange={handleChange}
-                          placeholder="+977 98X-XXX-XXXX"
+                          placeholder="01-4525461 or 98X-XXX-XXXX"
                           className="pm-input"
                         />
                       </div>
                       <div>
-                        <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: '#9CA3AF', marginBottom: '8px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+                        <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#475569', marginBottom: '8px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
                           Subject
                         </label>
                         <input
@@ -323,7 +328,7 @@ export default function Contact() {
                     </div>
 
                     <div>
-                      <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: '#9CA3AF', marginBottom: '8px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+                      <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#475569', marginBottom: '8px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
                         Your Message *
                       </label>
                       <textarea
@@ -355,3 +360,4 @@ export default function Contact() {
     </div>
   )
 }
+
