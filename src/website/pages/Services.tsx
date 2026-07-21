@@ -18,7 +18,7 @@ export const allServices = [
     icon: Wrench,
     title: 'Engine Repair',
     shortDesc: 'Expert engine diagnostics, overhaul, and precision repair for all brands.',
-    image: 'assets/hero.png',
+    image: '/assets/engine.jpg',
     features: [
       'Engine Overhaul',
       'Timing Belt Replacement',
@@ -32,7 +32,7 @@ export const allServices = [
     icon: Shield,
     title: 'General Servicing',
     shortDesc: 'Full vehicle health checks, fluid replacements, and preventive maintenance.',
-    image: 'assets/service-engine.jpg',
+    image: '/assets/general.jpg',
     features: [
       'Oil & Filter Change',
       'Air Filter Replacement',
@@ -46,7 +46,7 @@ export const allServices = [
     icon: Zap,
     title: 'Electrical Repair',
     shortDesc: 'Battery, ECU diagnostics, wiring repairs, and advanced electrical systems.',
-    image: 'assets/service-general.jpg',
+    image: '/assets/wirring.jpg',
     features: [
       'Battery Replacement',
       'Alternator Repair',
@@ -60,7 +60,7 @@ export const allServices = [
     icon: CheckCircle,
     title: 'Brake & Suspension',
     shortDesc: 'Brake pad replacements, disc servicing, and full suspension tuning.',
-    image: 'assets/image.jpg',
+    image: '/assets/break.png',
     features: [
       'Brake Pad Replacement',
       'Disc Resurfacing',
@@ -74,7 +74,7 @@ export const allServices = [
     icon: Star,
     title: 'Denting & Painting',
     shortDesc: 'Professional dent removal, scratch repair, and premium automotive painting.',
-    image: 'assets/image.jpg',
+    image: '/assets/paint.png',
     features: [
       'Dent Removal',
       'Panel Beating',
@@ -88,7 +88,7 @@ export const allServices = [
     icon: Clock,
     title: 'Oil & Lubrication',
     shortDesc: 'Engine oil changes, drivetrain lubrication, and complete fluid maintenance.',
-    image: 'assets/image.jpg',
+    image: '/assets/oil.png',
     features: [
       'Synthetic Oil Change',
       'Gear Box Oil',
@@ -115,7 +115,7 @@ export default function Services() {
         title="Our Services"
         subtitle="A complete range of automotive services delivered by expert technicians using genuine parts."
         breadcrumbs={[{ label: 'Services' }]}
-        backgroundImage="assets/hero.png"
+        backgroundImage="/assets/hero.png"
       />
 
       {/* Intro */}

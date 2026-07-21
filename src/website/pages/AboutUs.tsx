@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import { Shield, Star, Zap, CheckCircle, Users, Award, Clock } from 'lucide-react'
 import PageHero from '../components/PageHero'
 import Statistics from '../components/Statistics'
+import BrandLogos from '../components/BrandLogos'
 
 const values = [
   {
@@ -32,25 +33,25 @@ const team = [
     name: 'Prakash Maharjan',
     role: 'Founder & Chief Mechanic',
     exp: '45+ Years',
-    image: 'assets/team-1.jpg',
+    image: '/assets/im5.jpg',
   },
   {
     name: 'Bikash Shrestha',
     role: 'Head of Engine Diagnostics',
     exp: '20+ Years',
-    image: 'assets/team-2.jpg',
+    image: '/assets/img6.jpg',
   },
   {
     name: 'Sushil Tamang',
     role: 'Electrical Systems Expert',
     exp: '15+ Years',
-    image: 'assets/team-3.jpg',
+    image: '/assets/img7.jpg',
   },
   {
     name: 'Raju Gurung',
     role: 'Body & Paint Specialist',
     exp: '18+ Years',
-    image: 'assets/team-4.jpg',
+    image: '/assets/img8.jpg',
   },
 ]
 
@@ -87,7 +88,7 @@ export default function AboutUs() {
         title="About Us"
         subtitle="Kathmandu's most trusted automotive service center since 1978."
         breadcrumbs={[{ label: 'About Us' }]}
-        backgroundImage="assets/hero.png"
+        backgroundImage="/assets/hero.png"
       />
 
       {/* ── Our Story ── */}
@@ -161,7 +162,7 @@ export default function AboutUs() {
                 style={{ borderRadius: '8px', overflow: 'hidden', marginBottom: '16px', aspectRatio: '4/3' }}
               >
                 <img
-                  src="https://images.unsplash.com/photo-1489824904134-891ab64532f1?w=1920&h=1080&fit=crop"
+                  src="/assets/about.jpg"
                   alt="P.M. Automobile Works Workshop"
                   className="w-full h-full object-cover"
                   style={{ filter: 'brightness(0.8)' }}
@@ -171,8 +172,8 @@ export default function AboutUs() {
               {/* Two-col image row */}
               <div className="grid grid-cols-2 gap-4">
                 {[
-                  'assets/image.jpg',
-                  'assets/image.jpg',
+                  '/assets/img6.jpg',
+                  '/assets/img7.jpg',
                 ].map((src, i) => (
                   <div key={i} style={{ borderRadius: '6px', overflow: 'hidden', aspectRatio: '4/3' }}>
                     <img
@@ -257,7 +258,7 @@ export default function AboutUs() {
       {/* ── Well Equipped Workshop ── */}
       <section className="relative py-32 bg-gray-900 overflow-hidden">
         <img
-          src="https://images.unsplash.com/photo-1544829099-b9a0c07fad1a?w=1920&h=1080&fit=crop"
+          src="/assets/general.jpg"
           alt="Well Equipped Workshop"
           className="absolute inset-0 w-full h-full object-cover opacity-20"
         />
@@ -272,7 +273,7 @@ export default function AboutUs() {
             >
               <div style={{ borderRadius: '8px', overflow: 'hidden', aspectRatio: '16/11' }}>
                 <img
-                  src="https://images.unsplash.com/photo-1489824904134-891ab64532f1?w=1920&h=1080&fit=crop"
+                  src="/assets/engine.jpg"
                   alt="Well Equipped Workshop"
                   className="w-full h-full object-cover"
                   style={{ filter: 'brightness(0.7)' }}
@@ -376,19 +377,7 @@ export default function AboutUs() {
           <div className="text-center mb-10">
             <div className="section-label">Brands We Service</div>
           </div>
-          <div className="flex flex-wrap items-center justify-center gap-12">
-            {brandLogos.map((brand) => (
-              <img
-                key={brand.name}
-                src={brand.logo}
-                alt={brand.name}
-                title={brand.name}
-                style={{ height: '28px', filter: 'brightness(0) invert(1)', opacity: 0.3, transition: 'opacity 0.3s' }}
-                onMouseEnter={(e) => ((e.currentTarget as HTMLImageElement).style.opacity = '0.75')}
-                onMouseLeave={(e) => ((e.currentTarget as HTMLImageElement).style.opacity = '0.3')}
-              />
-            ))}
-          </div>
+          <BrandLogos />
         </div>
       </section>
 

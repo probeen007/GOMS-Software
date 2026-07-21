@@ -7,62 +7,62 @@ const categories = ['All', 'Workshop', 'Engine Work', 'Body Work', 'Cars', 'Team
 
 const galleryItems = [
   {
-    src: 'assets/gallery-placeholder.jpg',
+    src: '/assets/img1.jpg',
     category: 'Workshop',
     title: 'Main Workshop Bay',
   },
   {
-    src: 'assets/gallery-placeholder.jpg',
+    src: '/assets/engine.jpg',
     category: 'Engine Work',
     title: 'Engine Diagnostics',
   },
   {
-    src: 'assets/gallery-placeholder.jpg',
+    src: '/assets/img2.jpg',
     category: 'Engine Work',
     title: 'Engine Bay Inspection',
   },
   {
-    src: 'assets/gallery-placeholder.jpg',
+    src: '/assets/img3.jpg',
     category: 'Cars',
     title: 'Luxury Service',
   },
   {
-    src: 'assets/gallery-placeholder.jpg',
+    src: '/assets/paint.png',
     category: 'Body Work',
     title: 'Paint & Body Work',
   },
   {
-    src: 'assets/gallery-placeholder.jpg',
+    src: '/assets/img4.jpg',
     category: 'Cars',
     title: 'Premium Vehicles',
   },
   {
-    src: 'assets/gallery-placeholder.jpg',
+    src: '/assets/break.png',
     category: 'Workshop',
     title: 'Brake Service Bay',
   },
   {
-    src: 'assets/gallery-placeholder.jpg',
+    src: '/assets/wirring.jpg',
     category: 'Engine Work',
     title: 'Electrical Systems',
   },
   {
-    src: 'assets/gallery-placeholder.jpg',
+    src: '/assets/im5.jpg',
     category: 'Team',
     title: 'Expert Technicians',
   },
   {
-    src: 'assets/gallery-placeholder.jpg',
+    src: '/assets/img6.jpg',
     category: 'Workshop',
     title: 'Wheel Alignment Bay',
   },
   {
-    src: 'assets/gallery-placeholder.jpg',
+    src: '/assets/im9.jpg',
     category: 'Cars',
     title: 'Performance Testing',
   },
   {
-    src: 'assets/gallery-placeholder.jpg',
+    src: '/assets/about.jpg',
     category: 'Body Work',
     title: 'Detail & Polish',
   },
@@ -83,7 +83,7 @@ export default function Gallery() {
         title="Gallery"
         subtitle="Take a look at our state-of-the-art facility, expert team, and the vehicles we service."
         breadcrumbs={[{ label: 'Gallery' }]}
-        backgroundImage="assets/hero.png"
+        backgroundImage="/assets/hero.png"
       />
 
       {/* Filter Bar */}

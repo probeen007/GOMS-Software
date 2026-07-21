@@ -53,7 +53,7 @@ export default function Contact() {
         title="Contact Us"
         subtitle="Get in touch with our team. We are here to help with any enquiry about your vehicle."
         breadcrumbs={[{ label: 'Contact Us' }]}
-        backgroundImage="assets/hero.png"
+        backgroundImage="/assets/hero.png"
       />
 
       <section style={{ background: '#0A0A0A', padding: '80px 0 120px' }}>

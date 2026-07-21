@@ -13,6 +13,7 @@ import {
 import Statistics from '../components/Statistics'
 import FAQ from '../components/FAQ'
 import Button from '../components/Button'
+import BrandLogos from '../components/BrandLogos'
 
 /* ─── DATA ─── */
 
@@ -23,8 +24,7 @@ const services = [
     title: 'Engine Repair',
     description:
       'Expert engine diagnostics, overhaul, and precision repair for all engine types and brands.',
-    image:
-      'assets/service-engine.jpg',
+    image: '/assets/engine.jpg',
   },
   {
     slug: 'general-servicing',
@@ -32,8 +32,7 @@ const services = [
     title: 'General Servicing',
     description:
       'Full vehicle health checks, fluid top-ups, filter replacements, and preventive maintenance.',
-    image:
-      'assets/service-general.jpg',
+    image: '/assets/general.jpg',
   },
   {
     slug: 'electrical-repair',
@@ -41,8 +40,7 @@ const services = [
     title: 'Electrical Repair',
     description:
       'Battery servicing, ECU diagnostics, wiring repairs, and advanced electrical systems.',
-    image:
-      'assets/service-electrical.jpg',
+    image: '/assets/wirring.jpg',
   },
   {
     slug: 'brake-suspension',
@@ -50,8 +48,7 @@ const services = [
     title: 'Brake & Suspension',
     description:
       'Brake pad replacements, disc resurfacing, shock absorber and suspension tuning.',
-    image:
-      'assets/service-brake.jpg',
+    image: '/assets/break.png',
   },
   {
     slug: 'denting-painting',
@@ -59,8 +56,7 @@ const services = [
     title: 'Denting & Painting',
     description:
       'Professional body dent removal, scratch repair, and premium automotive painting.',
-    image:
-      'assets/service-denting.jpg',
+    image: '/assets/paint.png',
   },
   {
     slug: 'oil-lubrication',
@@ -68,8 +64,7 @@ const services = [
     title: 'Oil & Lubrication',
     description:
       'Engine oil changes, lubrication of all moving parts, and complete drivetrain care.',
-    image:
-      'assets/service-oil.jpg',
+    image: '/assets/oil.png',
   },
 ]
 
@@ -112,10 +107,10 @@ const brands = [
 ]
 
 const galleryImages = [
-  'assets/gallery-placeholder.jpg',
-  'assets/gallery-placeholder.jpg',
-  'assets/gallery-placeholder.jpg',
-  'assets/gallery-placeholder.jpg',
+  '/assets/img1.jpg',
+  '/assets/img2.jpg',
+  '/assets/img3.jpg',
+  '/assets/img4.jpg',
 ]
 
 /* ─── ANIMATION VARIANTS ─── */
@@ -139,7 +134,7 @@ export default function Home() {
         {/* Background */}
         <div className="absolute inset-0">
           <img
-            src="assets/hero.png"
+            src="/assets/hero.png"
             alt="P.M. Automobile Works Workshop"
             className="w-full h-full object-cover"
             style={{ filter: 'brightness(0.30)' }}
@@ -303,7 +298,7 @@ export default function Home() {
                 style={{ borderRadius: '8px', aspectRatio: '4/3' }}
               >
                 <img
-                  src="assets/about.jpg"
+                  src="/assets/about.jpg"
                   alt="P.M. Automobile Works — Workshop"
                   className="w-full h-full object-cover"
                   style={{ filter: 'brightness(0.85)' }}
@@ -677,19 +672,7 @@ export default function Home() {
               Brands We Service
             </p>
           </div>
-          <div className="flex flex-wrap items-center justify-center gap-12">
-            {brands.map((brand) => (
-              <img
-                key={brand.name}
-                src={brand.logo}
-                alt={brand.name}
-                title={brand.name}
-                style={{ height: '32px', filter: 'brightness(0) invert(1)', opacity: 0.35, transition: 'opacity 0.3s' }}
-                onMouseEnter={(e) => ((e.currentTarget as HTMLImageElement).style.opacity = '0.8')}
-                onMouseLeave={(e) => ((e.currentTarget as HTMLImageElement).style.opacity = '0.35')}
-              />
-            ))}
-          </div>
+          <BrandLogos />
         </div>
       </section>
 

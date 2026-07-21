@@ -9,7 +9,7 @@ export default function FAQPage() {
         title="Frequently Asked Questions"
         subtitle="Everything you need to know about our services, pricing, and booking process."
         breadcrumbs={[{ label: 'FAQ' }]}
-        backgroundImage="assets/hero.png"
+        backgroundImage="/assets/hero.png"
       />
 
       <FAQ showTitle={false} dark={false} />

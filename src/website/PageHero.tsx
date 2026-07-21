@@ -18,7 +18,7 @@ export default function PageHero({
   title,
   subtitle,
   breadcrumbs = [],
-  backgroundImage = 'assets/hero.png',
+  backgroundImage = '/assets/hero.png',
   overlay = true,
 }: PageHeroProps) {
   return (

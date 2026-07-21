@@ -81,7 +81,7 @@ export default function BookAppointment() {
         <PageHero
           title="Book Appointment"
           breadcrumbs={[{ label: 'Book Appointment' }]}
-          backgroundImage="assets/hero.png"
+          backgroundImage="/assets/hero.png"
         />
         <section style={{ background: '#0A0A0A', padding: '120px 0', minHeight: '60vh' }}>
           <div className="pm-container">
@@ -117,7 +117,7 @@ export default function BookAppointment() {
         title="Book Appointment"
         subtitle="Schedule your vehicle service with Kathmandu's most trusted auto workshop."
         breadcrumbs={[{ label: 'Book Appointment' }]}
-        backgroundImage="assets/hero.png"
+        backgroundImage="/assets/hero.png"
       />
 
       <section style={{ background: '#0A0A0A', padding: '80px 0 120px' }}>
@@ -227,7 +227,7 @@ export default function BookAppointment() {
                 </div>
               </div>
               <div style={{ borderRadius: '8px', overflow: 'hidden', aspectRatio: '4/3' }}>
-                <img src="https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?w=1920&h=800&fit=crop" alt="Book Your Appointment" className="w-full h-full object-cover" style={{ filter: 'brightness(0.6)' }} />
+                <img src="/assets/general.jpg" alt="Book Your Appointment" className="w-full h-full object-cover" style={{ filter: 'brightness(0.6)' }} />
               </div>
             </motion.div>
           </div>
