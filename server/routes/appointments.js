@@ -51,6 +51,145 @@ const upload = multer({
   limits: { fileSize: 5 * 1024 * 1024 } // 5MB limit
 });
 
+// @route   POST /api/appointments/public
+// @desc    Public appointment booking from main website
+// @access  Public
+router.post(
+  '/public',
+  [
+    body('fullName').notEmpty().withMessage('Full name is required').trim(),
+    body('phone').notEmpty().withMessage('Phone number is required').trim(),
+    body('vehicleMake').notEmpty().withMessage('Vehicle make is required').trim(),
+    body('vehicleModel').notEmpty().withMessage('Vehicle model is required').trim(),
+    body('service').notEmpty().withMessage('Service required is required').trim(),
+    body('preferredDate').notEmpty().withMessage('Preferred date is required')
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const {
+      fullName,
+      phone,
+      email,
+      vehicleMake,
+      vehicleModel,
+      year,
+      service,
+      preferredDate,
+      preferredTime,
+      additionalNotes
+    } = req.body;
+
+    try {
+      // 1. Find or create customer by phone
+      let customer = await Customer.findOne({ phone, deletedAt: null });
+      if (!customer) {
+        customer = new Customer({
+          name: fullName,
+          phone,
+          email: email || ''
+        });
+        await customer.save();
+      } else if (email && !customer.email) {
+        customer.email = email;
+        await customer.save();
+      }
+
+      // 2. Find or create vehicle for customer
+      let vehicle = await Vehicle.findOne({
+        customerId: customer._id,
+        make: new RegExp(`^${vehicleMake.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')}$`, 'i'),
+        model: new RegExp(`^${vehicleModel.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')}$`, 'i'),
+        deletedAt: null
+      });
+
+      if (!vehicle) {
+        const randomPlate = 'ONLINE-' + Math.floor(1000 + Math.random() * 9000);
+        vehicle = new Vehicle({
+          customerId: customer._id,
+          plateNo: randomPlate,
+          make: vehicleMake,
+          model: vehicleModel,
+          year: Number(year) || new Date().getFullYear()
+        });
+        await vehicle.save();
+      }
+
+      // 3. Find an active technician or assign to admin
+      let tech = await User.findOne({ role: 'technician', isActive: true });
+      if (!tech) {
+        tech = await User.findOne({ role: 'admin', isActive: true });
+      }
+
+      // 4. Construct appointment Date
+      let apptDate = new Date(preferredDate);
+      if (isNaN(apptDate.getTime())) {
+        apptDate = new Date();
+      }
+
+      if (preferredTime) {
+        const match = preferredTime.match(/(\d+):(\d+)\s*(AM|PM)/i);
+        if (match) {
+          let hours = parseInt(match[1]);
+          const minutes = parseInt(match[2]);
+          const ampm = match[3].toUpperCase();
+          if (ampm === 'PM' && hours < 12) hours += 12;
+          if (ampm === 'AM' && hours === 12) hours = 0;
+          apptDate.setHours(hours, minutes, 0, 0);
+        }
+      }
+
+      // 5. Create Appointment
+      const appointment = new Appointment({
+        customerId: customer._id,
+        vehicleId: vehicle._id,
+        technicianId: tech ? tech._id : null,
+        dateTime: apptDate,
+        serviceType: service,
+        note: additionalNotes ? `[Online Web Booking]: ${additionalNotes}` : '[Online Web Booking]',
+        status: 'scheduled'
+      });
+
+      await appointment.save();
+
+      const populatedAppointment = await Appointment.findById(appointment._id)
+        .populate('customerId', 'name phone email')
+        .populate('vehicleId', 'plateNo make model year')
+        .populate('technicianId', 'name email')
+        .lean();
+
+      // 6. Send in-app notification to Admin & Receptionist
+      await createNotification({
+        recipientRoles: ['admin', 'receptionist'],
+        title: 'New Online Booking Request',
+        message: `Online booking from ${fullName} (${phone}) for ${vehicleMake} ${vehicleModel} - ${service}`,
+        type: 'appointment',
+        link: '/appointments'
+      });
+
+      // 7. Write to audit log
+      await logAction({
+        req,
+        action: 'public_appointment_booked',
+        module: 'appointments',
+        details: `Public online appointment booked by ${fullName} (${phone}) for ${vehicleMake} ${vehicleModel}`
+      });
+
+      res.status(201).json({
+        success: true,
+        message: 'Appointment request submitted successfully',
+        appointment: populatedAppointment
+      });
+    } catch (err) {
+      console.error('Public appointment booking error:', err);
+      res.status(500).json({ message: 'Failed to process online booking request' });
+    }
+  }
+);
+
 // @route   GET /api/appointments/technicians
 // @desc    Fetch all registered technicians
 // @access  Private (admin, receptionist)

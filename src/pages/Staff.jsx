@@ -357,7 +357,7 @@ export default function Staff() {
               <p className="text-slate-500 text-sm mt-1">Start by registering your first crew member.</p>
             </div>
           ) : (
-            <div className="overflow-hidden rounded-2xl bg-white border border-slate-200 shadow-sm">
+            <div className="overflow-hidden rounded-2xl bg-white border border-slate-200 shadow-sm max-h-[calc(100vh-340px)] min-h-[350px] overflow-y-auto pr-1">
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-slate-200 text-left">
                   <thead className="bg-slate-50">
@@ -501,7 +501,7 @@ export default function Staff() {
               <p className="text-slate-500 text-sm font-medium">Please add active staff members to the directory before logging attendance.</p>
             </div>
           ) : (
-            <div className="overflow-hidden rounded-2xl bg-white border border-slate-200 shadow-sm">
+            <div className="overflow-hidden rounded-2xl bg-white border border-slate-200 shadow-sm max-h-[calc(100vh-340px)] min-h-[350px] overflow-y-auto pr-1">
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-slate-200 text-left">
                   <thead className="bg-slate-50">
@@ -636,7 +636,7 @@ export default function Staff() {
               <p className="text-slate-500 text-sm">No active staff profiles are available to compute salaries.</p>
             </div>
           ) : (
-            <div className="overflow-hidden rounded-2xl bg-white border border-slate-200 shadow-sm">
+            <div className="overflow-hidden rounded-2xl bg-white border border-slate-200 shadow-sm max-h-[calc(100vh-340px)] min-h-[350px] overflow-y-auto pr-1">
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-slate-200 text-left">
                   <thead className="bg-slate-50">

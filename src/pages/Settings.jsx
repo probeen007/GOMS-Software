@@ -32,8 +32,8 @@ export default function SettingsPage() {
 
   // Global settings state (from backend)
   const [globalSettings, setGlobalSettings] = useState({
-    garageName: 'PM Auto Mobiles',
-    garagePhone: '9800000000',
+    garageName: 'PM Automobiles Works',
+    garagePhone: '+977 985-123-4567',
     garageAddress: 'Kathmandu, Nepal',
     lowStockAlerts: true,
     daybookClosureReminder: true,

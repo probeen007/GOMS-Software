@@ -6,11 +6,21 @@ import Layout from './components/Layout';
 import ErrorBoundary from './components/ErrorBoundary';
 import PageLoader from './components/PageLoader';
 
-// Login stays eagerly loaded since it's the entry point for unauthenticated
-// sessions; every other page is code-split and fetched on demand.
+// Eager loaded public Auth page
 import Login from './pages/Login';
 
-// Pages (lazy-loaded per-route to keep the initial bundle small)
+// Website Pages (Public React Frontend)
+const WebsiteLayout = lazy(() => import('./website/WebsiteLayout'));
+const Home = lazy(() => import('./website/pages/Home'));
+const AboutUs = lazy(() => import('./website/pages/AboutUs'));
+const Services = lazy(() => import('./website/pages/Services'));
+const ServiceDetail = lazy(() => import('./website/pages/ServiceDetail'));
+const Gallery = lazy(() => import('./website/pages/Gallery'));
+const BookAppointment = lazy(() => import('./website/pages/BookAppointment'));
+const FAQPage = lazy(() => import('./website/pages/FAQPage'));
+const Contact = lazy(() => import('./website/pages/Contact'));
+
+// Management Portal Pages
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const Customers = lazy(() => import('./pages/Customers'));
 const CustomerProfile = lazy(() => import('./pages/CustomerProfile'));
@@ -26,192 +36,165 @@ const Notifications = lazy(() => import('./pages/Notifications'));
 const AuditLogs = lazy(() => import('./pages/AuditLogs'));
 const DayBook = lazy(() => import('./pages/DayBook'));
 const Settings = lazy(() => import('./pages/Settings'));
-
-// Elegant placeholder for unbuilt modules
-function ModulePlaceholder({ name, step }) {
-  return (
-    <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-8 bg-slate-900/40 rounded-3xl border border-slate-800/80">
-      <div className="w-16 h-16 rounded-2xl bg-slate-800/80 flex items-center justify-center border border-slate-700/50 mb-6">
-        <svg className="w-8 h-8 text-primary-400 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
-        </svg>
-      </div>
-      <h2 className="text-xl font-bold text-white">{name}</h2>
-      <p className="text-sm text-slate-400 mt-2 max-w-md">
-        This module is scheduled to be built in <span className="text-primary-400 font-semibold">{step}</span> of the implementation roadmap.
-      </p>
-      <div className="mt-6 px-4 py-2 rounded-full text-xxs font-bold uppercase tracking-wider bg-slate-800 text-slate-400 border border-slate-700/60">
-        Feature Locked
-      </div>
-    </div>
-  );
-}
+const UserManual = lazy(() => import('./pages/UserManual'));
 
 export default function App() {
   return (
     <AuthProvider>
       <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <ErrorBoundary>
-        <Suspense fallback={<PageLoader />}>
-        <Routes>
-          {/* Public Auth Route */}
-          <Route path="/login" element={<Login />} />
+          <Suspense fallback={<PageLoader />}>
+            <Routes>
+              {/* Public Website Routes */}
+              <Route element={<WebsiteLayout />}>
+                <Route path="/" element={<Home />} />
+                <Route path="/about" element={<AboutUs />} />
+                <Route path="/services" element={<Services />} />
+                <Route path="/services/:slug" element={<ServiceDetail />} />
+                <Route path="/gallery" element={<Gallery />} />
+                <Route path="/book" element={<BookAppointment />} />
+                <Route path="/faq" element={<FAQPage />} />
+                <Route path="/contact" element={<Contact />} />
+              </Route>
 
-          {/* Secure Portal Layout */}
-          <Route
-            path="/"
-            element={
-              <ProtectedRoute>
-                <Layout />
-              </ProtectedRoute>
-            }
-          >
-            {/* Dashboard (Home) */}
-            <Route index element={<Dashboard />} />
+              {/* Public Auth Route */}
+              <Route path="/login" element={<Login />} />
 
-            {/* Module 2: Customers & Vehicles */}
-            <Route
-              path="customers"
-              element={
-                <ProtectedRoute allowedRoles={['admin', 'receptionist', 'technician']}>
-                  <Customers />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="customers/:id"
-              element={
-                <ProtectedRoute allowedRoles={['admin', 'receptionist', 'technician']}>
-                  <CustomerProfile />
-                </ProtectedRoute>
-              }
-            />
+              {/* Protected Management System Portal Layout */}
+              <Route
+                element={
+                  <ProtectedRoute>
+                    <Layout />
+                  </ProtectedRoute>
+                }
+              >
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route
+                  path="/customers"
+                  element={
+                    <ProtectedRoute allowedRoles={['admin', 'receptionist', 'technician']}>
+                      <Customers />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/customers/:id"
+                  element={
+                    <ProtectedRoute allowedRoles={['admin', 'receptionist', 'technician']}>
+                      <CustomerProfile />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/inventory"
+                  element={
+                    <ProtectedRoute allowedRoles={['admin', 'technician', 'accountant']}>
+                      <Inventory />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/appointments"
+                  element={
+                    <ProtectedRoute allowedRoles={['admin', 'receptionist', 'technician']}>
+                      <Appointments />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/servicing"
+                  element={
+                    <ProtectedRoute allowedRoles={['admin', 'receptionist', 'technician', 'accountant']}>
+                      <Servicing />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/invoices"
+                  element={
+                    <ProtectedRoute allowedRoles={['admin', 'receptionist', 'accountant']}>
+                      <Invoices />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/loyalty"
+                  element={
+                    <ProtectedRoute allowedRoles={['admin', 'receptionist', 'accountant']}>
+                      <Loyalty />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/finance"
+                  element={
+                    <ProtectedRoute allowedRoles={['admin', 'accountant']}>
+                      <Finance />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/staff"
+                  element={
+                    <ProtectedRoute allowedRoles={['admin']}>
+                      <Staff />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/tasks"
+                  element={
+                    <ProtectedRoute allowedRoles={['admin', 'receptionist', 'accountant', 'technician']}>
+                      <Tasks />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/notifications"
+                  element={
+                    <ProtectedRoute allowedRoles={['admin', 'receptionist', 'technician', 'accountant']}>
+                      <Notifications />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/audit-logs"
+                  element={
+                    <ProtectedRoute allowedRoles={['admin']}>
+                      <AuditLogs />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/daybook"
+                  element={
+                    <ProtectedRoute allowedRoles={['admin', 'accountant', 'receptionist']}>
+                      <DayBook />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/settings"
+                  element={
+                    <ProtectedRoute allowedRoles={['admin', 'accountant', 'receptionist', 'technician']}>
+                      <Settings />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/user-manual"
+                  element={
+                    <ProtectedRoute allowedRoles={['admin', 'accountant', 'receptionist', 'technician']}>
+                      <UserManual />
+                    </ProtectedRoute>
+                  }
+                />
+              </Route>
 
-            {/* Module 3: Inventory / Parts */}
-            <Route
-              path="inventory"
-              element={
-                <ProtectedRoute allowedRoles={['admin', 'technician', 'accountant']}>
-                  <Inventory />
-                </ProtectedRoute>
-              }
-            />
-
-            {/* Module 4: Appointments & Check-In */}
-            <Route
-              path="appointments"
-              element={
-                <ProtectedRoute allowedRoles={['admin', 'receptionist', 'technician']}>
-                  <Appointments />
-                </ProtectedRoute>
-              }
-            />
-
-            {/* Module 5/6: Servicing */}
-            <Route
-              path="servicing"
-              element={
-                <ProtectedRoute allowedRoles={['admin', 'receptionist', 'technician', 'accountant']}>
-                  <Servicing />
-                </ProtectedRoute>
-              }
-            />
-
-            {/* Module 7: Invoices & Payments */}
-            <Route
-              path="invoices"
-              element={
-                <ProtectedRoute allowedRoles={['admin', 'receptionist', 'accountant']}>
-                  <Invoices />
-                </ProtectedRoute>
-              }
-            />
-
-            {/* Module 8: Loyalty Points */}
-            <Route
-              path="loyalty"
-              element={
-                <ProtectedRoute allowedRoles={['admin', 'receptionist', 'accountant']}>
-                  <Loyalty />
-                </ProtectedRoute>
-              }
-            />
-
-            {/* Module 9: Finance (Expenditures & Cash Flow) */}
-            <Route
-              path="finance"
-              element={
-                <ProtectedRoute allowedRoles={['admin', 'accountant']}>
-                  <Finance />
-                </ProtectedRoute>
-              }
-            />
-
-            {/* Module 10: Staff & Role Management */}
-            <Route
-              path="staff"
-              element={
-                <ProtectedRoute allowedRoles={['admin']}>
-                  <Staff />
-                </ProtectedRoute>
-              }
-            />
-
-            {/* To-Do List Flow */}
-            <Route
-              path="tasks"
-              element={
-                <ProtectedRoute allowedRoles={['admin', 'receptionist', 'accountant', 'technician']}>
-                  <Tasks />
-                </ProtectedRoute>
-              }
-            />
-
-            {/* Module 11: In-App Notifications */}
-            <Route
-              path="notifications"
-              element={
-                <ProtectedRoute allowedRoles={['admin', 'receptionist', 'technician', 'accountant']}>
-                  <Notifications />
-                </ProtectedRoute>
-              }
-            />
-
-            {/* Module 12: Audit Log */}
-            <Route
-              path="audit-logs"
-              element={
-                <ProtectedRoute allowedRoles={['admin']}>
-                  <AuditLogs />
-                </ProtectedRoute>
-              }
-            />
-
-            {/* Daily Day Book Tracker */}
-            <Route
-              path="daybook"
-              element={
-                <ProtectedRoute allowedRoles={['admin', 'accountant', 'receptionist']}>
-                  <DayBook />
-                </ProtectedRoute>
-              }
-            />
-
-            {/* System Settings */}
-            <Route
-              path="settings"
-              element={
-                <ProtectedRoute allowedRoles={['admin', 'accountant', 'receptionist', 'technician']}>
-                  <Settings />
-                </ProtectedRoute>
-              }
-            />
-
-            {/* Fallback route */}
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Route>
-        </Routes>
-        </Suspense>
+              {/* Fallback route */}
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </Suspense>
         </ErrorBoundary>
       </Router>
     </AuthProvider>

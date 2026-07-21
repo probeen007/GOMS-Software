@@ -520,7 +520,7 @@ export default function Finance() {
                 <p className="text-sm text-slate-400 italic">No expenditures logged.</p>
               </div>
             ) : (
-              <div className="overflow-x-auto">
+              <div className="overflow-x-auto max-h-[350px] overflow-y-auto pr-1">
                 <table className="min-w-full divide-y divide-slate-200 text-left text-sm">
                   <thead>
                     <tr className="text-slate-500 uppercase font-bold tracking-wide text-xs">
@@ -874,7 +874,14 @@ export default function Finance() {
             ) : duesReport.customers.length === 0 ? (
               <p className="text-sm text-slate-400 italic text-center py-8">No outstanding dues found{duesMonth || duesYear ? ' for the selected period' : ''}.</p>
             ) : (
-              <div className="overflow-x-auto">
+              <div className="space-y-2">
+                <div className="flex items-center justify-between px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl">
+                  <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                    {duesReport.customers.length} Customer Record(s) Found
+                  </span>
+                  <span className="text-[11px] text-slate-400 font-semibold">Click row to reveal invoice details</span>
+                </div>
+                <div className="overflow-x-auto max-h-[calc(100vh-340px)] min-h-[350px] overflow-y-auto pr-1">
                 <table className="min-w-full divide-y divide-slate-200 text-left text-sm">
                   <thead>
                     <tr className="text-slate-500 uppercase font-bold tracking-wide text-xs">
@@ -946,7 +953,8 @@ export default function Finance() {
                   </tbody>
                 </table>
               </div>
-            )}
+            </div>
+          )}
           </div>
         </div>
       )}

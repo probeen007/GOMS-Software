@@ -223,15 +223,19 @@ export default function Inventory() {
     setPurchaseData(prev => ({ ...prev, items: list }));
   };
 
-  // Count low stock items
+  // Count low stock items and valuation
   const lowStockCount = items.filter(item => item.qty < item.minQty).length;
+  const totalValuation = items.reduce((sum, item) => sum + (item.qty * item.unitCost), 0);
 
   return (
     <div className="space-y-6">
       {/* Header and Callout Controls */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">Parts Inventory</h1>
+          <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2.5">
+            <Package className="w-7 h-7 text-blue-600" />
+            <span>Parts Inventory</span>
+          </h1>
           <p className="text-sm text-slate-500 mt-1">
             Monitor auto component stock, update values, and log restocking directly to accounts.
           </p>
@@ -241,59 +245,82 @@ export default function Inventory() {
           <div className="flex items-center gap-3">
             <button
               onClick={() => setIsPurchaseModalOpen(true)}
-              className="flex items-center justify-center gap-2 px-5 h-11 rounded-xl text-sm font-bold text-slate-600 bg-white hover:bg-slate-50 border border-slate-200 transition-colors cursor-pointer"
+              className="flex items-center justify-center gap-2 px-4 h-10 rounded-xl text-xs font-bold text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 transition-colors shadow-sm cursor-pointer"
             >
-              <ShoppingBag className="w-4.5 h-4.5" />
-              <span>Record Purchase</span>
+              <ShoppingBag className="w-4 h-4 text-slate-500" />
+              <span>Record Restock</span>
             </button>
             <button
               onClick={() => setIsAddModalOpen(true)}
-              className="flex items-center justify-center gap-2 px-5 h-11 rounded-xl text-sm font-bold text-white bg-blue-600 hover:bg-blue-500 transition-all duration-200 shadow-md shadow-blue-500/10 hover:-translate-y-0.5 cursor-pointer"
+              className="flex items-center justify-center gap-2 px-4 h-10 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-500 transition-all duration-200 shadow-sm shadow-blue-500/10 cursor-pointer"
             >
-              <Plus className="w-5 h-5" />
-              <span>Add Part</span>
+              <Plus className="w-4 h-4" />
+              <span>Add Part SKU</span>
             </button>
           </div>
         )}
       </div>
 
+      {/* Analytics Summary Banner */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="p-4 bg-white border border-slate-200 rounded-2xl shadow-sm flex items-center justify-between">
+          <div>
+            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wide">Total Catalog SKUs</span>
+            <p className="text-xl font-bold text-slate-900 mt-0.5">{items.length}</p>
+          </div>
+          <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 font-bold">
+            <Package className="w-5 h-5" />
+          </div>
+        </div>
+
+        <div className="p-4 bg-white border border-slate-200 rounded-2xl shadow-sm flex items-center justify-between">
+          <div>
+            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wide">Stock Reorder Alerts</span>
+            <p className="text-xl font-bold text-amber-600 mt-0.5">{lowStockCount}</p>
+          </div>
+          <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-100 flex items-center justify-center text-amber-600 font-bold">
+            <AlertTriangle className="w-5 h-5" />
+          </div>
+        </div>
+
+        <div className="p-4 bg-white border border-slate-200 rounded-2xl shadow-sm flex items-center justify-between">
+          <div>
+            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wide">Total Stock Valuation</span>
+            <p className="text-xl font-bold text-emerald-600 font-mono mt-0.5">Rs. {totalValuation.toLocaleString()}</p>
+          </div>
+          <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600 font-bold">
+            <ShoppingBag className="w-5 h-5" />
+          </div>
+        </div>
+      </div>
+
       {/* Control Panel: Search & Filters */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="lg:col-span-2 relative">
-          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
-            <Search className="w-5 h-5" />
+      <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between p-4 bg-white border border-slate-200 rounded-2xl shadow-sm">
+        <div className="relative flex-1">
+          <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+            <Search className="w-4.5 h-4.5" />
           </div>
           <input
             type="text"
             placeholder="Search parts by SKU, description, or supplier..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-12 block w-full h-12 rounded-2xl border-slate-200 text-base"
+            className="pl-10 block w-full h-10 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:bg-white focus:border-blue-500 outline-none transition-all placeholder-slate-400"
           />
         </div>
 
-        <div className="h-12 bg-white border border-slate-200 rounded-2xl flex items-center justify-between px-4 shadow-sm">
-          <label className="flex items-center gap-3.5 cursor-pointer select-none">
-            <div className="relative flex items-center">
-              <input
-                type="checkbox"
-                checked={lowStock}
-                onChange={(e) => setLowStock(e.target.checked)}
-                className="sr-only peer"
-              />
-              <div className="relative w-11 h-6 bg-slate-200 rounded-full peer peer-checked:bg-amber-500 transition-all after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-5 shadow-inner"></div>
-            </div>
-            <span className="text-sm font-bold text-slate-600 uppercase tracking-wide">
-              Low Stock Only
+        <div className="flex items-center gap-3">
+          <label className="flex items-center gap-2 cursor-pointer select-none px-3 h-10 bg-slate-50 border border-slate-200 rounded-xl">
+            <input
+              type="checkbox"
+              checked={lowStock}
+              onChange={(e) => setLowStock(e.target.checked)}
+              className="rounded text-amber-500 focus:ring-amber-400 cursor-pointer"
+            />
+            <span className="text-xs font-bold text-slate-600">
+              Low Stock Only ({lowStockCount})
             </span>
           </label>
-        </div>
-
-        <div className="h-12 bg-white border border-slate-200 rounded-2xl flex items-center justify-between px-5 shadow-sm">
-          <span className="text-xs font-bold text-slate-500 uppercase tracking-wide">Low Stock</span>
-          <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${lowStockCount > 0 ? 'bg-amber-50 text-amber-700 border border-amber-200' : 'bg-slate-100 text-slate-500'}`}>
-            {lowStockCount}
-          </span>
         </div>
       </div>
 
@@ -316,10 +343,10 @@ export default function Inventory() {
       ) : (
         <div className="space-y-4">
           {/* Table for larger screens */}
-          <div className="hidden md:block overflow-hidden rounded-2xl bg-white border border-slate-200 shadow-sm">
+          <div className="hidden md:block overflow-hidden rounded-2xl bg-white border border-slate-200 shadow-sm max-h-[calc(100vh-340px)] min-h-[350px] overflow-y-auto pr-1">
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-slate-200 text-left">
-                <thead className="bg-slate-50">
+                <thead className="bg-slate-50 sticky top-0 z-10 border-b border-slate-200">
                   <tr>
                     <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wide">SKU</th>
                     <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wide">Description</th>

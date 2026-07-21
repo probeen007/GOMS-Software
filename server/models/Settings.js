@@ -4,11 +4,11 @@ const settingsSchema = new mongoose.Schema(
   {
     garageName: {
       type: String,
-      default: 'PM Auto Mobiles'
+      default: 'PM Automobiles Works'
     },
     garagePhone: {
       type: String,
-      default: '9800000000'
+      default: '+977 985-123-4567'
     },
     garageAddress: {
       type: String,

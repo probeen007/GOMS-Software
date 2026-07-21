@@ -52,7 +52,7 @@ export default function Tasks() {
   const fetchTasks = async () => {
     try {
       const res = await axios.get('/api/tasks', {
-        params: { search, status: statusFilter, priority: priorityFilter, page, limit: 15 }
+        params: { search, status: statusFilter, priority: priorityFilter, page, limit: 25 }
       });
       setTasks(res.data.tasks);
       setTotalPages(res.data.pages || 1);
@@ -268,7 +268,7 @@ export default function Tasks() {
           <p className="text-slate-500 text-xs font-medium">No tasks match your selected filter criteria.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-[calc(100vh-340px)] min-h-[350px] overflow-y-auto pr-1">
           {tasks.map((task) => {
             const isCompleted = task.status === 'completed';
             const isOverdue = new Date(task.dueDate) < new Date() && !isCompleted;

@@ -1,0 +1,464 @@
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,700&family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700;800;900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================================
+   GLOBAL RESET & BASE STYLES
+   ============================================================ */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --color-bg: #0A0A0A;
+  --color-bg-card: #111111;
+  --color-bg-elevated: #1A1A1A;
+  --color-red: #E63946;
+  --color-red-hover: #CC2936;
+  --color-white: #FFFFFF;
+  --color-gray: #9CA3AF;
+  --color-border: rgba(255,255,255,0.08);
+  --font-heading: 'Barlow Condensed', 'Poppins', sans-serif;
+  --font-body: 'Inter', sans-serif;
+  --section-spacing: 120px;
+  --container-max: 1280px;
+  scroll-behavior: smooth;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: var(--color-bg);
+  color: var(--color-white);
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  line-height: 1.1;
+  font-weight: 700;
+  color: var(--color-white);
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* ============================================================
+   SCROLLBAR STYLING
+   ============================================================ */
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0A0A0A;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #E63946;
+  border-radius: 3px;
+}
+
+/* ============================================================
+   SECTION LABEL COMPONENT
+   ============================================================ */
+
+.section-label {
+  display: inline-block;
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-red);
+  margin-bottom: 16px;
+}
+
+/* ============================================================
+   TYPOGRAPHY UTILITIES
+   ============================================================ */
+
+.heading-display {
+  font-family: var(--font-heading);
+  font-size: clamp(3rem, 8vw, 7rem);
+  font-weight: 800;
+  line-height: 0.95;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+}
+
+.heading-hero {
+  font-family: var(--font-heading);
+  font-size: clamp(2.5rem, 6vw, 5.5rem);
+  font-weight: 800;
+  line-height: 0.95;
+  text-transform: uppercase;
+}
+
+.heading-section {
+  font-family: var(--font-heading);
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 700;
+  line-height: 1.1;
+  text-transform: uppercase;
+}
+
+.heading-card {
+  font-family: var(--font-heading);
+  font-size: 1.4rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+/* ============================================================
+   CARD STYLES
+   ============================================================ */
+
+.pm-card {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.pm-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+  border-color: rgba(230,57,70,0.3);
+}
+
+/* ============================================================
+   BUTTON STYLES
+   ============================================================ */
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 32px;
+  background: var(--color-red);
+  color: white;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 4px 16px rgba(230,57,70,0.3);
+}
+
+.btn-primary:hover {
+  background: var(--color-red-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(230,57,70,0.5);
+}
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 13px 30px;
+  background: transparent;
+  color: white;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border: 1px solid rgba(255,255,255,0.3);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+}
+
+.btn-secondary:hover {
+  border-color: white;
+  background: rgba(255,255,255,0.05);
+  transform: translateY(-2px);
+}
+
+/* ============================================================
+   SECTION SPACING
+   ============================================================ */
+
+.section-padding {
+  padding: 120px 0;
+}
+
+.section-padding-sm {
+  padding: 80px 0;
+}
+
+/* ============================================================
+   CONTAINER
+   ============================================================ */
+
+.pm-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 40px;
+}
+
+@media (max-width: 768px) {
+  .pm-container {
+    padding: 0 20px;
+  }
+  
+  .section-padding {
+    padding: 80px 0;
+  }
+}
+
+/* ============================================================
+   DIVIDER
+   ============================================================ */
+
+.red-line {
+  width: 48px;
+  height: 3px;
+  background: var(--color-red);
+  margin: 20px 0;
+}
+
+.red-line-center {
+  margin: 20px auto;
+}
+
+/* ============================================================
+   BREADCRUMB
+   ============================================================ */
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: rgba(255,255,255,0.5);
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.breadcrumb .active {
+  color: var(--color-red);
+}
+
+/* ============================================================
+   OVERLAY GRADIENT
+   ============================================================ */
+
+.overlay-dark {
+  background: linear-gradient(180deg, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.85) 100%);
+}
+
+.overlay-left {
+  background: linear-gradient(90deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.4) 60%, transparent 100%);
+}
+
+/* ============================================================
+   FAQ STYLES
+   ============================================================ */
+
+.faq-item {
+  border-bottom: 1px solid var(--color-border);
+}
+
+.faq-question {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px 0;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 600;
+  color: white;
+  transition: color 0.2s ease;
+}
+
+.faq-question:hover {
+  color: var(--color-red);
+}
+
+.faq-answer {
+  padding-bottom: 24px;
+  color: var(--color-gray);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+/* ============================================================
+   FORM STYLES
+   ============================================================ */
+
+.pm-input {
+  width: 100%;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 4px;
+  padding: 14px 18px;
+  color: white;
+  font-family: var(--font-body);
+  font-size: 14px;
+  transition: border-color 0.2s ease;
+  outline: none;
+}
+
+.pm-input::placeholder {
+  color: rgba(255,255,255,0.3);
+}
+
+.pm-input:focus {
+  border-color: var(--color-red);
+  background: rgba(230,57,70,0.05);
+}
+
+.pm-select {
+  width: 100%;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 4px;
+  padding: 14px 18px;
+  color: white;
+  font-family: var(--font-body);
+  font-size: 14px;
+  transition: border-color 0.2s ease;
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+}
+
+.pm-select option {
+  background: #1A1A1A;
+  color: white;
+}
+
+.pm-select:focus {
+  border-color: var(--color-red);
+}
+
+.pm-textarea {
+  width: 100%;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 4px;
+  padding: 14px 18px;
+  color: white;
+  font-family: var(--font-body);
+  font-size: 14px;
+  transition: border-color 0.2s ease;
+  outline: none;
+  resize: vertical;
+  min-height: 120px;
+}
+
+.pm-textarea::placeholder {
+  color: rgba(255,255,255,0.3);
+}
+
+.pm-textarea:focus {
+  border-color: var(--color-red);
+}
+
+/* ============================================================
+   STAT NUMBER
+   ============================================================ */
+
+.stat-number {
+  font-family: var(--font-heading);
+  font-size: clamp(2.5rem, 5vw, 4rem);
+  font-weight: 800;
+  color: var(--color-red);
+  line-height: 1;
+}
+
+/* ============================================================
+   NAV STYLES
+   ============================================================ */
+
+.nav-link {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.7);
+  transition: color 0.2s ease;
+}
+
+.nav-link:hover, .nav-link.active {
+  color: var(--color-red);
+}
+
+/* ============================================================
+   BRAND LOGO FILTER
+   ============================================================ */
+
+.brand-logo {
+  filter: brightness(0) invert(1);
+  opacity: 0.4;
+  transition: opacity 0.3s ease;
+}
+
+.brand-logo:hover {
+  opacity: 0.8;
+}
+
+/* ============================================================
+   IMAGE ASPECT RATIOS
+   ============================================================ */
+
+.aspect-service {
+  aspect-ratio: 16/10;
+}
+
+.aspect-gallery {
+  aspect-ratio: 4/3;
+}
+
+/* ============================================================
+   ANIMATIONS
+   ============================================================ */
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.animate-shimmer {
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.03) 50%, transparent 100%);
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+}
+
+/* ============================================================
+   RESPONSIVE NAV
+   ============================================================ */
+
+@media (max-width: 1024px) {
+  .pm-container {
+    padding: 0 24px;
+  }
+}

@@ -60,7 +60,7 @@ export default function Customers() {
     setLoading(true);
     try {
       const response = await axios.get('/api/customers', {
-        params: { page, search, limit: 8 }
+        params: { page, search, limit: 25 }
       });
       setCustomers(response.data.customers);
       setTotalPages(response.data.pages);
@@ -213,23 +213,54 @@ export default function Customers() {
       </form>
 
       {/* Control Panel (Search and Stats) */}
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
-        <div className="lg:col-span-3 relative">
-          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
-            <Search className="w-5 h-5" />
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="p-4 bg-white border border-slate-200 rounded-2xl shadow-sm flex items-center justify-between">
+          <div>
+            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wide">Total Client Accounts</span>
+            <p className="text-xl font-bold text-slate-900 mt-0.5">{totalCustomers}</p>
           </div>
-          <input
-            type="text"
-            placeholder="Search by customer name, phone number, or email..."
-            value={search}
-            onChange={handleSearchChange}
-            className="block w-full h-14 bg-white border border-slate-200 hover:border-slate-300 text-slate-800 pl-11 pr-4 rounded-2xl text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all placeholder-slate-400 shadow-sm"
-          />
+          <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 font-bold">
+            <User className="w-5 h-5" />
+          </div>
         </div>
-        <div className="h-14 bg-white border border-slate-200 rounded-2xl flex items-center justify-between px-6 shadow-sm">
-          <span className="text-xs font-extrabold text-slate-500 uppercase tracking-wider">Total records</span>
-          <span className="text-2xl font-bold text-blue-600">{totalCustomers}</span>
+
+        <div className="p-4 bg-white border border-slate-200 rounded-2xl shadow-sm flex items-center justify-between">
+          <div>
+            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wide">Individual Clients</span>
+            <p className="text-xl font-bold text-sky-600 mt-0.5">
+              {customers.filter(c => c.type !== 'corporate').length}
+            </p>
+          </div>
+          <div className="w-10 h-10 rounded-xl bg-sky-50 border border-sky-100 flex items-center justify-center text-sky-600 font-bold">
+            <User className="w-5 h-5" />
+          </div>
         </div>
+
+        <div className="p-4 bg-white border border-slate-200 rounded-2xl shadow-sm flex items-center justify-between">
+          <div>
+            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wide">Corporate Accounts</span>
+            <p className="text-xl font-bold text-violet-600 mt-0.5">
+              {customers.filter(c => c.type === 'corporate').length}
+            </p>
+          </div>
+          <div className="w-10 h-10 rounded-xl bg-violet-50 border border-violet-100 flex items-center justify-center text-violet-600 font-bold">
+            <Building className="w-5 h-5" />
+          </div>
+        </div>
+      </div>
+
+      {/* Search Input Bar */}
+      <div className="relative">
+        <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+          <Search className="w-4.5 h-4.5" />
+        </div>
+        <input
+          type="text"
+          placeholder="Search by customer name, phone number, or email..."
+          value={search}
+          onChange={handleSearchChange}
+          className="block w-full h-11 bg-white border border-slate-200 hover:border-slate-300 text-slate-800 pl-10 pr-4 rounded-xl text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all placeholder-slate-400 shadow-sm"
+        />
       </div>
 
       {/* Customers Table / Card List */}
@@ -251,9 +282,9 @@ export default function Customers() {
       ) : (
         <div className="space-y-4">
           {/* Table Container for large screens */}
-          <div className="hidden md:block overflow-hidden rounded-2xl bg-white border border-slate-200 shadow-sm">
+          <div className="hidden md:block overflow-hidden rounded-2xl bg-white border border-slate-200 shadow-sm max-h-[calc(100vh-340px)] min-h-[350px] overflow-y-auto pr-1">
             <table className="min-w-full divide-y divide-slate-100 text-left">
-              <thead className="bg-slate-50/75">
+              <thead className="bg-slate-50 sticky top-0 z-10 border-b border-slate-200">
                 <tr>
                   <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Client Info</th>
                   <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Contact Details</th>
@@ -357,7 +388,7 @@ export default function Customers() {
           </div>
 
           {/* Card list for small screens */}
-          <div className="grid grid-cols-1 gap-4 md:hidden">
+          <div className="grid grid-cols-1 gap-3 md:hidden max-h-[calc(100vh-340px)] min-h-[350px] overflow-y-auto pr-1">
             {customers.map((customer) => (
               <div
                 key={customer._id}

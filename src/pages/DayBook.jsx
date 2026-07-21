@@ -327,7 +327,7 @@ export default function DayBook() {
                 <div className="p-4 bg-slate-50 border-b border-slate-100">
                   <span className="text-xs font-bold text-slate-500 uppercase tracking-wide">Receipts Inflow Log</span>
                 </div>
-                <div className="divide-y divide-slate-100">
+                <div className="divide-y divide-slate-100 max-h-[50vh] overflow-y-auto pr-1">
                   {daybookData?.transactions?.payments?.map((txn) => (
                     <div key={txn._id} className="p-4 flex items-center justify-between text-xs hover:bg-slate-50/50">
                       <div className="space-y-1">
@@ -350,7 +350,7 @@ export default function DayBook() {
                 <div className="p-4 bg-slate-50 border-b border-slate-100">
                   <span className="text-xs font-bold text-slate-500 uppercase tracking-wide">Payments Outflow Log</span>
                 </div>
-                <div className="divide-y divide-slate-100">
+                <div className="divide-y divide-slate-100 max-h-[50vh] overflow-y-auto pr-1">
                   {/* Manual expenditures */}
                   {daybookData?.transactions?.expenditures?.map((txn) => (
                     <div key={txn._id} className="p-4 flex items-center justify-between text-xs hover:bg-slate-50/50">

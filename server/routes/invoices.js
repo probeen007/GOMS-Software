@@ -717,9 +717,9 @@ router.get('/:id/pdf', authenticate, authorize('admin', 'receptionist', 'account
       .lean();
 
     const settings = await Settings.findOne().lean();
-    const garageName = settings ? settings.garageName.toUpperCase() : 'PM AUTOMOBILES';
+    const garageName = settings ? settings.garageName.toUpperCase() : 'PM AUTOMOBILES WORKS';
     const garageAddress = settings ? settings.garageAddress : 'Kathmandu, Nepal';
-    const garagePhone = settings ? settings.garagePhone : '+977-1-4444444';
+    const garagePhone = settings ? settings.garagePhone : '+977 985-123-4567';
 
     const htmlContent = `
       <!DOCTYPE html>
@@ -929,7 +929,7 @@ router.get('/:id/pdf', authenticate, authorize('admin', 'receptionist', 'account
 
         <div class="footer">
           <p>This is a computer-generated tax invoice. No signature required.</p>
-          <p>&copy; ${new Date().getFullYear()} PM Auto Mobiles. All rights reserved.</p>
+          <p>&copy; ${new Date().getFullYear()} PM Automobiles. All rights reserved.</p>
         </div>
       </body>
       </html>

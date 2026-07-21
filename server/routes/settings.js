@@ -10,9 +10,22 @@ const router = express.Router();
 // @access  Private
 router.get('/', authenticate, async (req, res) => {
   try {
-    let settings = await Settings.findOne().lean();
+    let settings = await Settings.findOne();
     if (!settings) {
       settings = await new Settings({}).save();
+    } else {
+      let updated = false;
+      if (settings.garageName === 'PM Auto Mobiles' || settings.garageName === 'PM Automobiles') {
+        settings.garageName = 'PM Automobiles Works';
+        updated = true;
+      }
+      if (settings.garagePhone === '9800000000' || !settings.garagePhone) {
+        settings.garagePhone = '+977 985-123-4567';
+        updated = true;
+      }
+      if (updated) {
+        await settings.save();
+      }
     }
     res.json(settings);
   } catch (err) {

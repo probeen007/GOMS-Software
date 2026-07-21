@@ -34,7 +34,8 @@ export default function Topbar({ onToggleSidebar }) {
     if (path.startsWith('/tasks')) return 'To-Do List';
     if (path.startsWith('/notifications')) return 'All Notifications';
     if (path.startsWith('/audit-logs')) return 'Audit Logs';
-    return 'PM Auto Mobiles Portal';
+    if (path.startsWith('/user-manual')) return 'User Manual & Operating Guide';
+    return 'PM Automobiles Works Portal';
   };
 
   const fetchNotifications = async () => {
@@ -124,15 +125,13 @@ export default function Topbar({ onToggleSidebar }) {
       {/* Right side: Notifications bell + User actions */}
       <div className="flex items-center gap-4">
         {/* User Manual Link */}
-        <a
-          href="/user-manual.html"
-          target="_blank"
-          rel="noreferrer"
+        <Link
+          to="/user-manual"
           className="flex items-center justify-center w-7 h-7 rounded-full text-slate-500 hover:text-blue-600 hover:bg-blue-50 border border-slate-200 hover:border-blue-100 transition-all duration-200"
-          title="User Manual"
+          title="User Manual & Operating Guide"
         >
           <HelpCircle className="w-4 h-4" />
-        </a>
+        </Link>
 
         {/* Role badge */}
         <div className="hidden sm:block text-[9px] font-bold uppercase tracking-wider text-slate-500 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
@@ -266,14 +265,14 @@ export default function Topbar({ onToggleSidebar }) {
         </div>
 
         {/* Public Website / Landing Page Link */}
-        <a
-          href="/landing.html"
+        <Link
+          to="/"
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-800 hover:bg-slate-50 border border-transparent hover:border-slate-100 transition-all duration-200"
           title="Go to Public Website"
         >
           <ExternalLink className="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-600" />
           <span>Public Website</span>
-        </a>
+        </Link>
 
         <div className="h-4 w-px bg-slate-200"></div>
 

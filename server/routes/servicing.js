@@ -119,7 +119,7 @@ router.get('/', authenticate, authorize('admin', 'receptionist', 'technician', '
   try {
     const { status, search } = req.query;
     const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 15;
+    const limit = parseInt(req.query.limit) || 25;
     const skip = (page - 1) * limit;
 
     let query = {};
@@ -800,8 +800,9 @@ router.get('/:id/pdf', authenticate, authorize('admin', 'receptionist', 'technic
     }
 
     const settings = await Settings.findOne().lean();
-    const garageName = settings ? settings.garageName.toUpperCase() : 'PM AUTOMOBILES';
+    const garageName = settings ? settings.garageName.toUpperCase() : 'PM AUTOMOBILES WORKS';
     const garageAddress = settings ? settings.garageAddress : 'Kathmandu, Nepal';
+    const garagePhone = settings ? settings.garagePhone : '+977 985-123-4567';
 
     const htmlContent = `
       <!DOCTYPE html>
@@ -911,7 +912,7 @@ router.get('/:id/pdf', authenticate, authorize('admin', 'receptionist', 'technic
 
         <div class="footer">
           <p>PM Automobiles Auto-Services System. Customer copy on vehicle release.</p>
-          <p>&copy; ${new Date().getFullYear()} PM Auto Mobiles. All rights reserved.</p>
+          <p>&copy; ${new Date().getFullYear()} PM Automobiles. All rights reserved.</p>
         </div>
       </body>
       </html>

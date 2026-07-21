@@ -186,7 +186,7 @@ export default function Notifications() {
           <p className="text-slate-500 text-sm mt-0.5">There are no alerts matching your filter criteria.</p>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-3 max-h-[calc(100vh-340px)] min-h-[350px] overflow-y-auto pr-1">
           {filteredNotifications.map((noti) => {
             const isRead = noti.readBy.some((id) => id === user.id);
             const typeStyle = TYPE_STYLES[noti.type] || DEFAULT_TYPE_STYLE;

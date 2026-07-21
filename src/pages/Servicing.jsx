@@ -38,6 +38,7 @@ export default function Servicing() {
   const [searchTerm, setSearchTerm] = useState('');
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [totalRecords, setTotalRecords] = useState(0);
 
   // Service record search (by vehicle number / customer name / customer number)
   const [recordSearchQuery, setRecordSearchQuery] = useState(searchParams.get('q') || '');
@@ -105,10 +106,11 @@ export default function Servicing() {
     setLoading(true);
     try {
       const response = await axios.get('/api/servicing', {
-        params: { status: statusFilter, search: searchTerm, page, limit: 15 }
+        params: { status: statusFilter, search: searchTerm, page, limit: 25 }
       });
       setRecords(response.data.records);
       setTotalPages(response.data.pages || 1);
+      setTotalRecords(response.data.total || 0);
       if (selectedRecord) {
         const updated = response.data.records.find(r => r._id === selectedRecord._id);
         if (updated) setSelectedRecord(updated);
@@ -554,12 +556,12 @@ export default function Servicing() {
         </div>
 
         {loading ? (
-          <div className="flex flex-col items-center justify-center min-h-[45vh] bg-white rounded-2xl border border-slate-200 py-12 shadow-sm">
+          <div className="flex flex-col items-center justify-center min-h-[350px] bg-white rounded-2xl border border-slate-200 py-12 shadow-sm">
             <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
             <p className="text-slate-500 text-sm mt-3 font-semibold">Loading workshop logs...</p>
           </div>
         ) : records.length === 0 ? (
-          <div className="flex flex-col items-center justify-center min-h-[45vh] bg-white border border-slate-200 rounded-2xl p-8 text-center shadow-sm">
+          <div className="flex flex-col items-center justify-center min-h-[350px] bg-white border border-slate-200 rounded-2xl p-8 text-center shadow-sm">
             <div className="w-12 h-12 rounded-xl bg-slate-50 flex items-center justify-center border border-slate-200 mb-4">
               <Wrench className="w-6 h-6 text-slate-400" />
             </div>
@@ -569,63 +571,112 @@ export default function Servicing() {
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-3">
-            {records.map((record) => (
-              <div
-                key={record._id}
-                onClick={() => setSelectedRecord(record)}
-                className={`p-5 rounded-2xl border transition-all cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm hover:shadow-md ${selectedRecord?._id === record._id ? 'bg-blue-50/50 border-blue-200' : 'bg-white border-slate-200'}`}
-              >
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-xs font-mono font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded">REC: {record._id.slice(-6).toUpperCase()}</span>
-                    <span className={record.status === 'open' ? 'badge-indigo' : 'badge-slate'}>
-                      {record.status}
-                    </span>
-                    {record.invoiceId && (
-                      <span className="badge-emerald">Invoiced</span>
-                    )}
-                  </div>
-                  <h3 className="text-base font-bold text-slate-900">{record.customerId?.name}</h3>
-                  <div className="flex items-center gap-3 text-xs text-slate-500 font-medium">
-                    <span className="px-2 py-0.5 bg-blue-50 text-blue-700 border border-blue-100 font-mono font-bold rounded uppercase text-xs">
-                      {record.vehicleId?.plateNo}
-                    </span>
-                    <span>{record.vehicleId?.make} {record.vehicleId?.model}</span>
-                  </div>
-                </div>
+          <div className="space-y-2.5">
+            {/* Header summary bar */}
+            <div className="flex items-center justify-between px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl">
+              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                {totalRecords} Total Service Records — Page {page} of {totalPages}
+              </span>
+              <span className="text-[11px] text-slate-400 font-semibold">Click row to inspect workspace</span>
+            </div>
 
-                <div className="text-left sm:text-right shrink-0">
-                  <span className="text-xs text-slate-400 uppercase tracking-wide font-bold block">Total billing</span>
-                  <p className="text-base font-bold text-blue-700 font-mono mt-0.5">Rs. {record.total.toFixed(2)}</p>
-                  <p className="text-xs text-slate-500 mt-0.5 font-medium">Opened: {formatNepaliDate(record.createdAt)}</p>
-                </div>
-              </div>
-            ))}
+            {/* Scrollable Container Box */}
+            <div className="max-h-[calc(100vh-340px)] min-h-[350px] overflow-y-auto pr-1 space-y-2">
+              {records.map((record) => {
+                const isSelected = selectedRecord?._id === record._id;
+                return (
+                  <div
+                    key={record._id}
+                    onClick={() => setSelectedRecord(record)}
+                    className={`p-3 rounded-xl border transition-all cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm ${
+                      isSelected
+                        ? 'bg-blue-50/70 border-blue-300 ring-1 ring-blue-300'
+                        : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50/70'
+                    }`}
+                  >
+                    <div className="space-y-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-[10px] font-mono font-bold text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">
+                          REC: {record._id.slice(-6).toUpperCase()}
+                        </span>
+                        <span
+                          className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
+                            record.status === 'open'
+                              ? 'bg-indigo-50 text-indigo-700 border border-indigo-200'
+                              : 'bg-slate-100 text-slate-600 border border-slate-200'
+                          }`}
+                        >
+                          {record.status}
+                        </span>
+                        {record.invoiceId && (
+                          <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200">
+                            Invoiced
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h3 className="text-sm font-bold text-slate-900 truncate">
+                          {record.customerId?.name || 'Unknown Client'}
+                        </h3>
+                        {record.vehicleId?.plateNo && (
+                          <span className="px-1.5 py-0.5 bg-blue-50 text-blue-700 border border-blue-100 font-mono font-bold rounded text-xs uppercase">
+                            {record.vehicleId.plateNo}
+                          </span>
+                        )}
+                        {record.vehicleId?.make && (
+                          <span className="text-xs text-slate-500 font-medium truncate">
+                            {record.vehicleId.make} {record.vehicleId.model}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between sm:justify-end gap-4 shrink-0 border-t sm:border-t-0 pt-2 sm:pt-0 border-slate-100">
+                      <div className="text-left sm:text-right">
+                        <span className="text-[10px] text-slate-400 uppercase tracking-wide font-bold block">
+                          Total Billing
+                        </span>
+                        <p className="text-sm font-extrabold text-blue-700 font-mono">
+                          Rs. {record.total.toFixed(2)}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-[10px] text-slate-400 block font-medium">Opened</span>
+                        <span className="text-xs font-semibold text-slate-600">
+                          {formatNepaliDate(record.createdAt)}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         )}
 
         {!loading && totalPages > 1 && (
-          <div className="flex items-center justify-between bg-transparent pt-2 px-2">
-            <span className="text-sm font-semibold text-slate-500">
-              Page {page} of {totalPages}
+          <div className="flex items-center justify-between px-4 py-2.5 bg-white border border-slate-200 rounded-xl shadow-sm">
+            <span className="text-xs text-slate-500 font-semibold">
+              Page <strong className="text-slate-800">{page}</strong> of{' '}
+              <strong className="text-slate-800">{totalPages}</strong>
+              <span className="text-slate-400 ml-1">({totalRecords} records)</span>
             </span>
-            <div className="flex gap-2">
+            <div className="flex gap-1.5">
               <button
                 type="button"
                 onClick={() => setPage((p) => Math.max(p - 1, 1))}
                 disabled={page === 1}
-                className="p-2.5 rounded-xl bg-white border border-slate-200 text-slate-500 hover:text-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                className="p-1.5 rounded-lg border border-slate-200 text-slate-500 hover:text-slate-800 hover:bg-slate-50 transition-colors disabled:opacity-40 cursor-pointer"
               >
-                <ChevronLeft className="w-4.5 h-4.5" />
+                <ChevronLeft className="w-4 h-4" />
               </button>
               <button
                 type="button"
                 onClick={() => setPage((p) => Math.min(p + 1, totalPages))}
                 disabled={page === totalPages}
-                className="p-2.5 rounded-xl bg-white border border-slate-200 text-slate-500 hover:text-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                className="p-1.5 rounded-lg border border-slate-200 text-slate-500 hover:text-slate-800 hover:bg-slate-50 transition-colors disabled:opacity-40 cursor-pointer"
               >
-                <ChevronRight className="w-4.5 h-4.5" />
+                <ChevronRight className="w-4 h-4" />
               </button>
             </div>
           </div>

@@ -54,7 +54,7 @@ export default function Sidebar({ isOpen, onClose }) {
   // Complete list of module-based routes
   const menuItems = [
     {
-      path: '/',
+      path: '/dashboard',
       label: 'Dashboard',
       icon: LayoutDashboard,
       roles: ['admin', 'receptionist', 'technician', 'accountant']
@@ -144,7 +144,7 @@ export default function Sidebar({ isOpen, onClose }) {
           <div className="flex items-center gap-2.5">
             <img src="/assets/logo.png" alt="Logo" className="w-8 h-8 object-contain" />
             <h1 className="font-extrabold text-base text-slate-900 tracking-tight transition-all duration-300">
-              PM Auto Mobiles
+              PM Automobiles Works
             </h1>
           </div>
         )}

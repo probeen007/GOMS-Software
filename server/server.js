@@ -24,6 +24,7 @@ import auditLogRoutes from './routes/auditLogs.js';
 import tasksRoutes from './routes/tasks.js';
 import daybookRoutes from './routes/daybook.js';
 import settingsRoutes from './routes/settings.js';
+import webBookingRoutes from './routes/webBookings.js';
 import { initCronJobs, checkLowStock } from './jobs/stockCheck.js';
 
 dotenv.config();
@@ -50,11 +51,13 @@ app.use(helmet({
 }));
 app.use(compression());
 
-// CORS allow-list. Note: browsers send an Origin header on same-origin
-// state-changing requests too (not just cross-origin ones), so your deployed
-// frontend's own domain must be included via the CORS_ORIGINS env var
-// (comma-separated), e.g. CORS_ORIGINS=https://goms-software.vercel.app
-const defaultAllowedOrigins = ['http://localhost:3000', 'http://127.0.0.1:3000'];
+// CORS Configuration
+const defaultAllowedOrigins = [
+  'http://localhost:3000',
+  'http://127.0.0.1:3000',
+  'http://localhost:5173',
+  'http://127.0.0.1:5173'
+];
 const configuredOrigins = (process.env.CORS_ORIGINS || '')
   .split(',')
   .map((origin) => origin.trim())
@@ -63,15 +66,33 @@ const allowedOrigins = [...defaultAllowedOrigins, ...configuredOrigins];
 
 app.use(cors({
   origin: (origin, callback) => {
-    if (!origin) return callback(null, true); // same-origin / non-browser requests (curl, mobile clients)
-    if (allowedOrigins.includes(origin)) return callback(null, true);
+    // Same-origin or non-browser client requests
+    if (!origin) return callback(null, true);
+
+    // Always allow in development mode or for any local loopback/private IP
+    if (process.env.NODE_ENV !== 'production') return callback(null, true);
+
     try {
-      if (/\.ngrok-free\.app$/.test(new URL(origin).hostname)) return callback(null, true);
+      const urlObj = new URL(origin);
+      const hostname = urlObj.hostname;
+      if (
+        hostname === 'localhost' ||
+        hostname === '127.0.0.1' ||
+        hostname.startsWith('192.168.') ||
+        hostname.startsWith('10.') ||
+        /\.ngrok-free\.app$/.test(hostname)
+      ) {
+        return callback(null, true);
+      }
     } catch {
-      // malformed Origin header — fall through to rejection
+      // Ignore URL parse errors
     }
+
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+
     callback(new Error('Not allowed by CORS'));
-  }
+  },
+  credentials: true
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -86,6 +107,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/customers', customerRoutes);
 app.use('/api/inventory', inventoryRoutes);
 app.use('/api/appointments', appointmentRoutes);
+app.use('/api/web-bookings', webBookingRoutes);
 app.use('/api/servicing', servicingRoutes);
 app.use('/api/invoices', invoiceRoutes);
 app.use('/api/loyalty', loyaltyRoutes);

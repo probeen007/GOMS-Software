@@ -4,7 +4,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { Lock, Mail, AlertTriangle } from 'lucide-react';
 
 export default function Login() {
-  const { login } = useAuth();
+  const { login, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [email, setEmail] = useState('');
@@ -13,7 +13,13 @@ export default function Login() {
   const [error, setError] = useState('');
 
   // Destination to redirect after login (default is Dashboard)
-  const from = location.state?.from?.pathname || '/';
+  const from = location.state?.from?.pathname || '/dashboard';
+
+  React.useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -44,8 +50,8 @@ export default function Login() {
       <div className="w-full max-w-[460px] z-10 space-y-7 animate-fade-in-up">
         {/* Brand Header */}
         <div className="text-center space-y-3 flex flex-col items-center">
-          <img src="/assets/logo.png" alt="PM Auto Mobiles Logo" className="w-16 h-16 object-contain mb-1" />
-          <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">PM Auto Mobiles</h2>
+          <img src="/assets/logo.png" alt="PM Automobiles Works Logo" className="w-16 h-16 object-contain mb-1" />
+          <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">PM Automobiles Works</h2>
           <p className="text-xs text-slate-500 font-semibold uppercase tracking-wider">
             Auto-Service Operations Management Portal
           </p>
