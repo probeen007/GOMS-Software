@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { motion } from 'framer-motion'
+import { motion, Variants } from 'framer-motion'
 import {
   Wrench,
   ShieldCheck,
@@ -77,7 +77,6 @@ const services = [
   },
 ]
 
-
 const whyUs = [
   {
     icon: Shield,
@@ -124,14 +123,15 @@ const galleryImages = [
 ]
 
 /* ─── ANIMATION VARIANTS ─── */
-const fadeUp = {
+const fadeUp: Variants = {
   hidden: { opacity: 0, y: 32 },
-  visible: (i = 0) => ({
+  visible: (i: number = 0) => ({
     opacity: 1,
     y: 0,
-    transition: { delay: i * 0.1, duration: 0.6, ease: 'easeOut' },
+    transition: { delay: i * 0.1, duration: 0.6, ease: 'easeOut' as const },
   }),
 }
+
 
 /* ─── COMPONENT ─── */
 export default function Home() {
@@ -147,10 +147,12 @@ export default function Home() {
             src="/assets/hero.png"
             alt="P.M. Automobile Works"
             className="w-full h-full object-cover"
+            decoding="async"
             onError={(e) => {
               e.currentTarget.src = "https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?w=1600&h=900&fit=crop&q=80";
             }}
           />
+
           <div className="absolute inset-0 bg-gradient-to-r from-slate-950/90 via-slate-950/75 to-slate-900/65" />
         </div>
 
@@ -335,7 +337,10 @@ export default function Home() {
                   src="/assets/about.jpg"
                   alt="P.M. Automobile Works — Workshop"
                   className="w-full h-full object-cover"
+                  loading="lazy"
+                  decoding="async"
                   onError={(e) => {
+
                     e.currentTarget.src = "https://images.unsplash.com/photo-1517524206127-48bbd363f3d7?w=800&h=600&fit=crop&q=80";
                   }}
                 />
