@@ -1,13 +1,13 @@
 {
   "version": 2,
   "rewrites": [
-    {
-      "source": "/api/:path*",
-      "destination": "/api/index.js"
-    },
-    {
-      "source": "/((?!api|landing.html|gallery.html|user-manual.html|about.html|contact.html|services.html).*)",
-      "destination": "/index.html"
-    }
+    { "source": "/api/:path*", "destination": "/api/index.js" },
+    { "source": "/", "destination": "/site/index.html" },
+    { "source": "/about.html", "destination": "/site/about.html" },
+    { "source": "/services.html", "destination": "/site/services.html" },
+    { "source": "/gallery.html", "destination": "/site/gallery.html" },
+    { "source": "/contact.html", "destination": "/site/contact.html" },
+    { "source": "/book.html", "destination": "/site/book.html" },
+    { "source": "/((?!api/|site/|user-manual\\.html).*)", "destination": "/index.html" }
   ]
 }

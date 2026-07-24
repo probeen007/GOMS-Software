@@ -102,6 +102,11 @@ app.use('/api', apiLimiter);
 // Serve file uploads locally
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
+// Serve the public marketing site (plain HTML/CSS/JS) — takes priority over
+// the React admin SPA for "/", "/about.html", etc. /login and /dashboard*
+// have no matching file here, so they fall through to the SPA below.
+app.use(express.static(path.join(__dirname, '../auto/static')));
+
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/customers', customerRoutes);
@@ -141,12 +146,9 @@ if (process.env.NODE_ENV === 'production') {
   app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, '../dist/index.html'));
   });
-} else {
-  // In development, return a helpful notice for root access
-  app.get('/', (req, res) => {
-    res.send('Garage Management System API is running. Start the Vite dev server for the frontend.');
-  });
 }
+// In development, "/" is already served by the static site middleware above.
+// /login and /dashboard* are served by the Vite dev server on port 3000.
 
 // Start Server if not imported (e.g. on Vercel)
 const isVercel = process.env.VERCEL === '1' || process.env.VERCEL === 'true' || !!process.env.NOW_REGION;

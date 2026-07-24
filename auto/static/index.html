@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>P.M. Automobile Works - Premium Auto Care Since 1978</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Poppins:wght@600;700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+  <nav class="navbar">
+    <div class="navbar-top">
+      <div class="container">
+        <div class="navbar-top-left">
+          <a href="/login" class="staff-login-link">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+            <span>Staff Login</span>
+          </a>
+          <a href="tel:014525461">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path
+                d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z">
+              </path>
+            </svg>
+            <span>01-4525461/980-3296067</span>
+          </a>
+          <a href="mailto:pmautomobileworks@gmail.com" class="hidden md:flex">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+              <polyline points="22,6 12,13 2,6"></polyline>
+            </svg>
+            <span>pmautomobileworks@gmail.com</span>
+          </a>
+        </div>
+        <div class="hidden md:flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+            <circle cx="12" cy="10" r="3"></circle>
+          </svg>
+          <span>Dhobidhara marg, Kathmandu, Nepal</span>
+        </div>
+      </div>
+    </div>
+    <div class="navbar-main">
+      <div class="container">
+        <a href="index.html" class="logo">
+          <img src="logo.png" alt="P.M. Automobile Works" style="height:52px;width:auto;">
+        </a>
+        <ul class="nav-links">
+          <li><a href="index.html" class="active">Home</a></li>
+          <li><a href="about.html">About Us</a></li>
+          <li><a href="services.html">Services</a></li>
+          <li><a href="gallery.html">Gallery</a></li>
+          <li><a href="contact.html">Contact</a></li>
+        </ul>
+        <a href="book.html" class="btn btn-primary">Book Appointment</a>
+        <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+    </div>
+    <div class="mobile-menu" id="mobile-menu">
+      <div class="container">
+        <ul>
+          <li><a href="index.html" class="active">Home</a></li>
+          <li><a href="about.html">About Us</a></li>
+          <li><a href="services.html">Services</a></li>
+          <li><a href="gallery.html">Gallery</a></li>
+          <li><a href="book.html">Book Appointment</a></li>
+          <li><a href="contact.html">Contact</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <section class="hero">
+    <div class="hero-bg">
+      <img src="assets/hero.png"
+        alt="Professional Automotive Workshop">
+    </div>
+    <div class="hero-overlay"></div>
+
+    <div class="container hero-container">
+      <div class="hero-content">
+        <div class="hero-tagline">
+          <span class="hero-red-line"></span>
+          TRUSTED AUTOMOBILE WORKSHOP
+          <span class="hero-red-line"></span>
+        </div>
+        <div class="hero-subtitle">SINCE 1978</div>
+        <h1 class="hero-title">COMPLETE AUTO CARE<br>FOR EVERY JOURNEY</h1>
+        <p class="hero-desc">From routine maintenance to complex repairs, we provide expert service with genuine parts
+          and modern technology.</p>
+        <div class="hero-btns">
+          <a href="book.html" class="btn btn-primary btn-lg"
+            style="background:#DC2626; display:inline-flex; align-items:center; gap:8px;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+            BOOK APPOINTMENT
+          </a>
+          <a href="services.html" class="btn-outline">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path
+                d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
+              </path>
+            </svg>
+            EXPLORE SERVICES
+          </a>
+        </div>
+      </div>
+
+      <div class="hero-card">
+        <div class="hero-card-header">
+          <h3>P.M. AUTOMOBILE WORKS</h3>
+          <p>SINCE 1978</p>
+        </div>
+        <div class="hero-card-list">
+          <div class="hero-card-item">
+            <svg class="hero-card-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+              fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+              <circle cx="9" cy="7" r="4"></circle>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+            </svg>
+            <div class="hero-card-text">
+              <strong>5000+</strong>
+              <span>Happy Customers</span>
+            </div>
+          </div>
+          <div class="hero-card-item">
+            <svg class="hero-card-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+              fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="8" r="7"></circle>
+              <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline>
+            </svg>
+            <div class="hero-card-text">
+              <strong>45+</strong>
+              <span>Years Experience</span>
+            </div>
+          </div>
+          <div class="hero-card-item">
+            <svg class="hero-card-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+              fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path
+                d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z">
+              </path>
+            </svg>
+            <div class="hero-card-text">
+              <strong>25+</strong>
+              <span>Services Offered</span>
+            </div>
+          </div>
+          <div class="hero-card-item">
+            <svg class="hero-card-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+              fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+            </svg>
+            <div class="hero-card-text">
+              <strong>100%</strong>
+              <span>Genuine Parts</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Overlapping Stats Bar -->
+    <div class="hero-stats-wrapper">
+      <div class="container">
+        <div class="hero-stats-bar">
+          <div class="hero-stat-box">
+            <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+            <div class="content">
+              <strong>45+</strong>
+              <span>Years of Experience</span>
+            </div>
+          </div>
+          <div class="hero-stat-divider"></div>
+          <div class="hero-stat-box">
+            <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+              <circle cx="9" cy="7" r="4"></circle>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+            </svg>
+            <div class="content">
+              <strong>5000+</strong>
+              <span>Satisfied Customers</span>
+            </div>
+          </div>
+          <div class="hero-stat-divider"></div>
+          <div class="hero-stat-box">
+            <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path
+                d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z">
+              </path>
+            </svg>
+            <div class="content">
+              <strong>25+</strong>
+              <span>Auto Services</span>
+            </div>
+          </div>
+          <div class="hero-stat-divider"></div>
+          <div class="hero-stat-box">
+            <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+            </svg>
+            <div class="content">
+              <strong>100%</strong>
+              <span>Quality & Genuine Parts</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="bg-background">
+    <div class="container">
+      <div class="about-grid">
+        <div class="about-img">
+              <img src="assets/about.jpg"
+            alt="Professional Auto Repair Shop">
+          <div class="about-img-badge">
+            <div class="about-img-badge-number">45+</div>
+            <div>Years</div>
+          </div>
+        </div>
+        <div>
+          <div class="section-subtitle">About Us</div>
+          <h2 class="section-title">Serving Kathmandu Since 1978</h2>
+          <p class="section-desc">
+            P.M. Automobile Works has been the trusted choice for automotive care in Kathmandu for over four decades.
+            Our commitment to quality, honesty, and customer satisfaction has made us a household name.
+          </p>
+          <p style="font-size: 18px; margin-bottom: 32px;">
+            From routine maintenance to complex repairs, our expert technicians use the latest equipment and genuine
+            parts to keep your vehicle running at its best.
+          </p>
+          <a href="about.html" class="btn btn-primary">
+            Learn More
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+              style="display:inline-block; margin-left:8px;">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+              <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="bg-white">
+    <div class="container">
+      <div class="text-center">
+        <div class="section-subtitle">Our Services</div>
+        <h2 class="section-title">Premium Automotive Solutions</h2>
+        <p class="section-desc">We offer a complete range of automotive services to keep your vehicle in the best
+          condition.</p>
+      </div>
+      <div class="services-grid">
+        <div class="card service-card">
+          <img src="assets/engine.jpg"
+            alt="Engine Repair"
+            style="width:100%; height:200px; object-fit:cover; border-radius:16px; margin-bottom:20px;">
+          <div class="service-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path
+                d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z">
+              </path>
+            </svg>
+          </div>
+          <h3>Engine Repair</h3>
+          <p>Expert engine diagnostics and repairs for optimal performance</p>
+        </div>
+        <div class="card service-card">
+          <img src="assets/general.jpg"
+            alt="General Service"
+            style="width:100%; height:200px; object-fit:cover; border-radius:16px; margin-bottom:20px;">
+          <div class="service-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+            </svg>
+          </div>
+          <h3>General Servicing</h3>
+          <p>Comprehensive maintenance to keep your vehicle running smoothly</p>
+        </div>
+        <div class="card service-card">
+          <img src="assets/wirring.jpg"
+            alt="Electrical Repair"
+            style="width:100%; height:200px; object-fit:cover; border-radius:16px; margin-bottom:20px;">
+          <div class="service-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+            </svg>
+          </div>
+          <h3>Electrical Repair</h3>
+          <p>Advanced electrical system diagnostics and repairs</p>
+        </div>
+        <div class="card service-card">
+          <img src="assets/break.png"
+            alt="Brake Service"
+            style="width:100%; height:200px; object-fit:cover; border-radius:16px; margin-bottom:20px;">
+          <div class="service-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+              <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>
+          </div>
+          <h3>Brake & Suspension</h3>
+          <p>Complete brake inspection, repair, and replacement services</p>
+        </div>
+        <div class="card service-card">
+          <img src="assets/paint.png"
+            alt="Denting & Painting"
+            style="width:100%; height:200px; object-fit:cover; border-radius:16px; margin-bottom:20px;">
+          <div class="service-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>
+            </svg>
+          </div>
+          <h3>Denting & Painting</h3>
+          <p>Precision alignment for better handling and tire life</p>
+        </div>
+        <div class="card service-card">
+          <img src="assets/oil.png"
+            alt="Oil & Lubrication"
+            style="width:100%; height:200px; object-fit:cover; border-radius:16px; margin-bottom:20px;">
+          <div class="service-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+          </div>
+          <h3>Oil & Lubrication</h3>
+          <p>Keep your car cool with professional AC maintenance</p>
+        </div>
+      </div>
+      <div class="text-center" style="margin-top: 48px;">
+        <a href="services.html" class="btn btn-secondary">
+          View All Services
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+            style="display:inline-block; margin-left:8px;">
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+            <polyline points="12 5 19 12 12 19"></polyline>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section class="why-choose-us">
+    <div class="why-choose-us-bg">
+      <img src="https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=1920&h=800&fit=crop"
+        alt="Luxury Car Background">
+    </div>
+    <div class="container">
+      <div class="text-center" style="margin-bottom: 50px;">
+        <div style="width: 40px; height: 2px; background: #DC2626; margin: 0 auto 12px;"></div>
+        <h2 class="section-title">WHY CHOOSE US</h2>
+        <p class="section-desc">We are dedicated to delivering the best service experience<br>with quality you can
+          trust.</p>
+      </div>
+      <div class="why-grid">
+        <div class="why-card">
+          <div class="service-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+          </div>
+          <h3>EXPERIENCED<br>TECHNICIANS</h3>
+          <p>Our team consists of highly skilled and experienced professionals.</p>
+        </div>
+        <div class="why-card">
+          <div class="service-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="8" width="18" height="4" rx="1"></rect>
+              <path d="M12 8v13"></path>
+              <path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"></path>
+              <path d="M7.5 8a2.5 2.5 0 0 1 0-5A4.8 8 0 0 1 12 3a4.8 8 0 0 1 4.5 0 2.5 2.5 0 0 1 0 5"></path>
+            </svg>
+          </div>
+          <h3>MODERN<br>EQUIPMENT</h3>
+          <p>We use advanced diagnostic tools and technology for accurate results.</p>
+        </div>
+        <div class="why-card">
+          <div class="service-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+              <path d="m9 12 2 2 4-4"></path>
+            </svg>
+          </div>
+          <h3>GENUINE<br>PARTS</h3>
+          <p>Only genuine and high-quality parts are used for long-lasting performance.</p>
+        </div>
+        <div class="why-card">
+          <div class="service-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+          </div>
+          <h3>FAST & RELIABLE<br>SERVICE</h3>
+          <p>We value your time and ensure quick, efficient and reliable service.</p>
+        </div>
+        <div class="why-card">
+          <div class="service-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="1" x2="12" y2="23"></line>
+              <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+            </svg>
+          </div>
+          <h3>AFFORDABLE<br>PRICING</h3>
+          <p>Best services at fair and transparent prices with no hidden charges.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="bg-white">
+    <div class="container">
+      <div class="text-center">
+        <div class="section-subtitle">Gallery</div>
+        <h2 class="section-title">Our Workshop</h2>
+        <p class="section-desc">Take a look at our state-of-the-art facility.</p>
+      </div>
+      <div class="gallery-preview-grid">
+        <div class="gallery-item">
+          <img src="assets/img1.jpg" alt="Workshop">
+        </div>
+        <div class="gallery-item">
+          <img src="assets/break.png" alt="Workshop">
+        </div>
+        <div class="gallery-item">
+          <img src="assets/img3.jpg" alt="Workshop">
+        </div>
+        <div class="gallery-item">
+          <img src="assets/img4.jpg" alt="Workshop">
+        </div>
+      </div>
+      <div class="text-center">
+        <a href="gallery.html" class="btn btn-primary">
+          View Gallery
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+            style="display:inline-block; margin-left:8px;">
+            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+            <circle cx="12" cy="13" r="4"></circle>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section class="faq-section bg-white" style="padding-top: 40px;">
+    <div class="container">
+      <div class="text-center" style="margin-bottom: 40px;">
+        <h2 class="section-title" style="text-transform: uppercase;">Frequently Asked Questions</h2>
+      </div>
+      <div class="faq-grid">
+        <div class="faq-list">
+          <details class="faq-item" open>
+            <summary>How often should I service my car? <span class="faq-icon">+</span></summary>
+            <div class="faq-content">We recommend a general service every 6 months or 10,000 km, whichever comes first.
+            </div>
+          </details>
+          <details class="faq-item">
+            <summary>Do you use genuine parts? <span class="faq-icon">+</span></summary>
+            <div class="faq-content">Yes, we always prioritize using OEM (Original Equipment Manufacturer) or
+              high-quality aftermarket parts.</div>
+          </details>
+          <details class="faq-item">
+            <summary>How long does a general service take? <span class="faq-icon">+</span></summary>
+            <div class="faq-content">A standard general service typically takes 2-4 hours, depending on the vehicle's
+              condition.</div>
+          </details>
+          <details class="faq-item">
+            <summary>Do you provide warranty on repairs? <span class="faq-icon">+</span></summary>
+            <div class="faq-content">Yes, we provide a warranty on both our labor and the parts we supply for your peace
+              of mind.</div>
+          </details>
+          <details class="faq-item">
+            <summary>Can I wait while my car is being serviced? <span class="faq-icon">+</span></summary>
+            <div class="faq-content">Absolutely! We have a comfortable waiting lounge with complimentary Wi-Fi and
+              refreshments.</div>
+          </details>
+        </div>
+        <div class="faq-image">
+          <img src="assets/faq.jpg"
+            alt="Auto Workshop" style="width:100%; height:100%; object-fit:cover; border-radius:12px;">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta-section">
+    <div class="cta-bg">
+      <img src="https://images.unsplash.com/photo-1489824904134-891ab64532f1?w=1920&h=1080&fit=crop" alt="">
+    </div>
+    <div class="container">
+      <div class="cta-content">
+        <h2 class="section-title">Ready for Premium Auto Care?</h2>
+        <p class="section-desc">Book your appointment today and experience the P.M. Automobile Works difference.</p>
+        <a href="book.html" class="btn btn-primary btn-lg">Book Your Appointment Now</a>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a href="index.html" class="logo">
+            <img src="logo.png" alt="P.M. Automobile Works" style="height:48px;width:auto;">
+          </a>
+          <p class="footer-about">Providing premium automotive service excellence for over 45 years. We specialize in complete vehicle care using state-of-the-art diagnostic equipment.</p>
+          <div class="footer-socials" style="display:flex; gap:16px; margin-top:20px;">
+            <a href="https://www.tiktok.com/@pmautomobileworks" target="_blank" rel="noopener noreferrer" style="color:rgba(255,255,255,0.7); transition:color 0.3s;" onmouseover="this.style.color='#DC2626'" onmouseout="this.style.color='rgba(255,255,255,0.7)'">
+              <!-- TikTok -->
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"></path></svg>
+            </a>
+            <a href="https://www.facebook.com/search/top?q=p.m%20automobile%20works" target="_blank" rel="noopener noreferrer" style="color:rgba(255,255,255,0.7); transition:color 0.3s;" onmouseover="this.style.color='#DC2626'" onmouseout="this.style.color='rgba(255,255,255,0.7)'">
+              <!-- Facebook -->
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>
+            </a>
+            <a href="https://www.instagram.com/p.m_automobiles.works/" target="_blank" rel="noopener noreferrer" style="color:rgba(255,255,255,0.7); transition:color 0.3s;" onmouseover="this.style.color='#DC2626'" onmouseout="this.style.color='rgba(255,255,255,0.7)'">
+              <!-- Instagram -->
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+            </a>
+            <a href="https://wa.me/9779803296067" target="_blank" rel="noopener noreferrer" style="color:rgba(255,255,255,0.7); transition:color 0.3s;" onmouseover="this.style.color='#DC2626'" onmouseout="this.style.color='rgba(255,255,255,0.7)'">
+              <!-- WhatsApp / Phone -->
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+            </a>
+          </div>
+        </div>
+        <div>
+          <h3>Quick Links</h3>
+          <ul class="footer-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="about.html">About Us</a></li>
+            <li><a href="services.html">Services</a></li>
+            <li><a href="gallery.html">Gallery</a></li>
+            <li><a href="book.html">Book Appointment</a></li>
+            <li><a href="contact.html">Contact</a></li>
+          </ul>
+        </div>
+        <div>
+          <h3>Our Services</h3>
+          <ul class="footer-links">
+            <li><a href="services.html" class="footer-service"><span class="footer-service-dot"></span>Engine Repair</a>
+            </li>
+            <li><a href="services.html" class="footer-service"><span class="footer-service-dot"></span>General
+                Service</a></li>
+            <li><a href="services.html" class="footer-service"><span class="footer-service-dot"></span>Electrical
+                Repair</a></li>
+            <li><a href="services.html" class="footer-service"><span class="footer-service-dot"></span>Brake Service</a>
+            </li>
+            <li><a href="services.html" class="footer-service"><span class="footer-service-dot"></span>Wheel
+                Alignment</a></li>
+            <li><a href="services.html" class="footer-service"><span class="footer-service-dot"></span>AC Service</a>
+            </li>
+          </ul>
+        </div>
+        <div>
+          <h3>Contact Us</h3>
+          <ul>
+            <li class="footer-contact-item">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                <circle cx="12" cy="10" r="3"></circle>
+              </svg>
+              <span>Dhobidhara marg, Kathmandu, Nepal</span>
+            </li>
+            <li class="footer-contact-item">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path
+                  d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z">
+                </path>
+              </svg>
+              <a href="tel:014525461">01-4525461/980-3296067</a>
+            </li>
+            <li class="footer-contact-item">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                <polyline points="22,6 12,13 2,6"></polyline>
+              </svg>
+              <a href="mailto:pmautomobileworks@gmail.com">pmautomobileworks@gmail.com</a>
+            </li>
+            <li class="footer-contact-item">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+              </svg>
+              <div>
+                <div>Sun - Fri: 9:00 AM - 7:00 PM</div>
+                <div>Saturday: Closed</div>
+              </div>
+            </li>
+          </ul>
+          <div style="margin-top: 24px;">
+            <a href="book.html" class="btn btn-primary">Book Now</a>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 P.M. Automobile Works. All rights reserved.</p>
+        <div class="footer-bottom-links">
+          <span>Design & Develop by <a href="https://www.instagram.com/spec.digital7/" target="_blank" rel="noopener noreferrer" style="color: #DC2626; text-decoration: none; font-weight: 600;">Spec Digital</a></span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/script.js?v=2"></script>
+</body>
+
+</html>
+

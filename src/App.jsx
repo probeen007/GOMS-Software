@@ -9,16 +9,10 @@ import PageLoader from './components/PageLoader';
 // Eager loaded public Auth page
 import Login from './pages/Login';
 
-// Website Pages (Public React Frontend)
-const WebsiteLayout = lazy(() => import('./website/WebsiteLayout'));
-const Home = lazy(() => import('./website/pages/Home'));
-const AboutUs = lazy(() => import('./website/pages/AboutUs'));
-const Services = lazy(() => import('./website/pages/Services'));
-const ServiceDetail = lazy(() => import('./website/pages/ServiceDetail'));
-const Gallery = lazy(() => import('./website/pages/Gallery'));
-const BookAppointment = lazy(() => import('./website/pages/BookAppointment'));
-const FAQPage = lazy(() => import('./website/pages/FAQPage'));
-const Contact = lazy(() => import('./website/pages/Contact'));
+// Note: the public marketing site is now served as static HTML/CSS/JS
+// (see auto/static) directly by the server at "/" — see server/server.js
+// and vite.config.js. This SPA only handles /login and the protected
+// /dashboard* management portal.
 
 // Management Portal Pages
 const Dashboard = lazy(() => import('./pages/Dashboard'));
@@ -45,19 +39,8 @@ export default function App() {
         <ErrorBoundary>
           <Suspense fallback={<PageLoader />}>
             <Routes>
-              {/* Public Website Routes */}
-              <Route element={<WebsiteLayout />}>
-                <Route path="/" element={<Home />} />
-                <Route path="/about" element={<AboutUs />} />
-                <Route path="/services" element={<Services />} />
-                <Route path="/services/:slug" element={<ServiceDetail />} />
-                <Route path="/gallery" element={<Gallery />} />
-                <Route path="/book" element={<BookAppointment />} />
-                <Route path="/faq" element={<FAQPage />} />
-                <Route path="/contact" element={<Contact />} />
-              </Route>
-
-              {/* Public Auth Route */}
+              {/* Public Auth Route — "/" and other marketing routes are served
+                  as static HTML by the server; this SPA starts at /login */}
               <Route path="/login" element={<Login />} />
 
               {/* Protected Management System Portal Layout */}
@@ -192,7 +175,7 @@ export default function App() {
               </Route>
 
               {/* Fallback route */}
-              <Route path="*" element={<Navigate to="/" replace />} />
+              <Route path="*" element={<Navigate to="/login" replace />} />
             </Routes>
           </Suspense>
         </ErrorBoundary>

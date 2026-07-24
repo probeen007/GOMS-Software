@@ -264,15 +264,17 @@ export default function Topbar({ onToggleSidebar }) {
           )}
         </div>
 
-        {/* Public Website / Landing Page Link */}
-        <Link
-          to="/"
+        {/* Public Website / Landing Page Link — static site served outside the SPA, so use a real anchor */}
+        <a
+          href="/"
+          target="_blank"
+          rel="noopener noreferrer"
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-800 hover:bg-slate-50 border border-transparent hover:border-slate-100 transition-all duration-200"
           title="Go to Public Website"
         >
           <ExternalLink className="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-600" />
           <span>Public Website</span>
-        </Link>
+        </a>
 
         <div className="h-4 w-px bg-slate-200"></div>
 

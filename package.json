@@ -8,7 +8,7 @@
     "dev:server": "nodemon server/server.js",
     "dev:client": "vite",
     "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
-    "build": "vite build",
+    "build": "vite build && node scripts/copy-static-site.mjs",
     "preview": "vite preview",
     "start": "node server/server.js",
     "seed": "node server/seed.js"

@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gallery - P.M. Automobile Works</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Poppins:wght@600;700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+  <nav class="navbar">
+    <div class="navbar-top">
+      <div class="container">
+        <div class="navbar-top-left">
+          <a href="/login" class="staff-login-link">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+            <span>Staff Login</span>
+          </a>
+          <a href="tel:014525461">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path
+                d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z">
+              </path>
+            </svg>
+            <span>01-4525461/980-3296067</span>
+          </a>
+          <a href="mailto:pmautomobileworks@gmail.com" class="hidden md:flex">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c0 1.1 0-2-.9-2-2V6c0 1.1.9-2 2-2z"></path>
+              <polyline points="22,6 12,13 2,6"></polyline>
+            </svg>
+            <span>pmautomobileworks@gmail.com</span>
+          </a>
+        </div>
+        <div class="hidden md:flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+            <circle cx="12" cy="10" r="3"></circle>
+          </svg>
+          <span>Dhobidhara marg, Kathmandu, Nepal</span>
+        </div>
+      </div>
+    </div>
+    <div class="navbar-main">
+      <div class="container">
+        <a href="index.html" class="logo">
+          <img src="logo.png" alt="P.M. Automobile Works" style="height:52px;width:auto;">
+        </a>
+        <ul class="nav-links">
+          <li><a href="index.html">Home</a></li>
+          <li><a href="about.html">About Us</a></li>
+          <li><a href="services.html">Services</a></li>
+          <li><a href="gallery.html" class="active">Gallery</a></li>
+          <li><a href="contact.html">Contact</a></li>
+        </ul>
+        <a href="book.html" class="btn btn-primary">Book Appointment</a>
+        <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+    </div>
+    <div class="mobile-menu" id="mobile-menu">
+      <div class="container">
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="about.html">About Us</a></li>
+          <li><a href="services.html">Services</a></li>
+          <li><a href="gallery.html">Gallery</a></li>
+          <li><a href="book.html">Book Appointment</a></li>
+          <li><a href="contact.html">Contact</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Gallery Hero Banner -->
+  <section style="position:relative; height:140px; overflow:hidden; background:#0a0a0a;">
+    <!-- Background Image -->
+    <img src="https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?w=1920&h=800&fit=crop"
+      alt="Workshop Background"
+      style="position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover; opacity:0.35;">
+    <!-- Top Red Accent Line -->
+    <div style="position:absolute; top:0; left:0; width:100%; height:3px; background:linear-gradient(90deg, #DC2626 0%, transparent 60%); z-index:2;"></div>
+    <!-- Dark Overlay -->
+    <div style="position:absolute; top:0; left:0; width:100%; height:100%; background:linear-gradient(90deg, rgba(10,10,10,0.85) 0%, rgba(10,10,10,0.5) 100%);"></div>
+    <!-- Content -->
+    <div style="position:relative; z-index:2; max-width:1200px; margin:0 auto; padding:0 24px; height:100%; display:flex; flex-direction:column; justify-content:center;">
+      <h1 style="font-family:'Poppins',sans-serif; font-size:2rem; font-weight:700; color:#fff; margin:0 0 6px 0; text-transform:uppercase; letter-spacing:2px;">GALLERY</h1>
+      <p style="font-family:'Inter',sans-serif; font-size:0.85rem; color:rgba(255,255,255,0.6); margin:0;"><a href="index.html" style="color:rgba(255,255,255,0.6); text-decoration:none;">Home</a> <span style="margin:0 6px;">›</span> <span style="color:#DC2626;">Gallery</span></p>
+    </div>
+  </section>
+
+  <section class="bg-white">
+    <div class="container">
+      <div class="gallery-grid">
+        <div class="gallery-page-item" onclick="openLightbox('assets/img1.jpg')">
+          <img src="assets/img1.jpg" alt="Gallery Image img1.jpg">
+          <div class="gallery-page-item-overlay"><div class="gallery-page-item-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+          </div></div>
+        </div>
+        <div class="gallery-page-item" onclick="openLightbox('assets/img3.jpg')">
+          <img src="assets/img3.jpg" alt="Gallery Image img3.jpg">
+          <div class="gallery-page-item-overlay"><div class="gallery-page-item-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+          </div></div>
+        </div>
+        <div class="gallery-page-item" onclick="openLightbox('assets/img4.jpg')">
+          <img src="assets/img4.jpg" alt="Gallery Image img4.jpg">
+          <div class="gallery-page-item-overlay"><div class="gallery-page-item-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+          </div></div>
+        </div>
+        <div class="gallery-page-item" onclick="openLightbox('assets/im5.jpg')">
+          <img src="assets/im5.jpg" alt="Gallery Image im5.jpg">
+          <div class="gallery-page-item-overlay"><div class="gallery-page-item-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+          </div></div>
+        </div>
+        <div class="gallery-page-item" onclick="openLightbox('assets/img7.jpg')">
+          <img src="assets/img7.jpg" alt="Gallery Image img7.jpg">
+          <div class="gallery-page-item-overlay"><div class="gallery-page-item-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+          </div></div>
+        </div>
+        <div class="gallery-page-item" onclick="openLightbox('assets/img8.jpg')">
+          <img src="assets/img8.jpg" alt="Gallery Image img8.jpg">
+          <div class="gallery-page-item-overlay"><div class="gallery-page-item-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+          </div></div>
+        </div>
+        <div class="gallery-page-item" onclick="openLightbox('assets/engine.jpg')">
+          <img src="assets/engine.jpg" alt="Gallery Image engine.jpg">
+          <div class="gallery-page-item-overlay"><div class="gallery-page-item-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+          </div></div>
+        </div>
+        <div class="gallery-page-item" onclick="openLightbox('assets/general.jpg')">
+          <img src="assets/general.jpg" alt="Gallery Image general.jpg">
+          <div class="gallery-page-item-overlay"><div class="gallery-page-item-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+          </div></div>
+        </div>
+        <div class="gallery-page-item" onclick="openLightbox('assets/wirring.jpg')">
+          <img src="assets/wirring.jpg" alt="Gallery Image wirring.jpg">
+          <div class="gallery-page-item-overlay"><div class="gallery-page-item-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+          </div></div>
+        </div>
+        <div class="gallery-page-item" onclick="openLightbox('assets/break.png')">
+          <img src="assets/break.png" alt="Gallery Image break.png">
+          <div class="gallery-page-item-overlay"><div class="gallery-page-item-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+          </div></div>
+        </div>
+        <div class="gallery-page-item" onclick="openLightbox('assets/paint.png')">
+          <img src="assets/paint.png" alt="Gallery Image paint.png">
+          <div class="gallery-page-item-overlay"><div class="gallery-page-item-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+          </div></div>
+        </div>
+        <div class="gallery-page-item" onclick="openLightbox('assets/oil.png')">
+          <img src="assets/oil.png" alt="Gallery Image oil.png">
+          <div class="gallery-page-item-overlay"><div class="gallery-page-item-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+          </div></div>
+        </div>
+        <div class="gallery-page-item" onclick="openLightbox('assets/about.jpg')">
+          <img src="assets/about.jpg" alt="Gallery Image about.jpg">
+          <div class="gallery-page-item-overlay"><div class="gallery-page-item-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+          </div></div>
+        </div>
+        <div class="gallery-page-item" onclick="openLightbox('assets/faq.jpg')">
+          <img src="assets/faq.jpg" alt="Gallery Image faq.jpg">
+          <div class="gallery-page-item-overlay"><div class="gallery-page-item-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+          </div></div>
+        </div>
+        <div class="gallery-page-item" onclick="openLightbox('assets/hero.png')">
+          <img src="assets/hero.png" alt="Gallery Image hero.png">
+          <div class="gallery-page-item-overlay"><div class="gallery-page-item-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+          </div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div id="lightbox" class="lightbox" onclick="closeLightbox()">
+    <button class="lightbox-close" onclick="closeLightbox()">
+      <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="18" y1="6" x2="6" y2="18"></line>
+        <line x1="6" y1="6" x2="18" y2="18"></line>
+      </svg>
+    </button>
+    <img id="lightbox-img" class="lightbox-img" src="" alt="Lightbox">
+  </div>
+
+  <section style="position:relative; padding:100px 0; overflow:hidden; background:#040404; text-align:center;">
+    <!-- Car Background Image -->
+    <img src="https://images.unsplash.com/photo-1489824904134-891ab64532f1?w=1920&h=1080&fit=crop"
+      alt="Car Background"
+      style="position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover; opacity:0.25;">
+    <!-- Dark Overlay -->
+    <div style="position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6);"></div>
+    <!-- Content -->
+    <div style="position:relative; z-index:2; max-width:700px; margin:0 auto; padding:0 24px;">
+      <h2 style="font-family:'Poppins',sans-serif; font-size:2rem; font-weight:700; color:#fff; text-transform:uppercase; margin:0 0 16px 0;">Want to See Your Car Here?</h2>
+      <p style="font-family:'Inter',sans-serif; font-size:1rem; color:rgba(255,255,255,0.65); margin:0 0 32px 0;">Bring your vehicle to us and let us transform it. Book your appointment today!</p>
+      <a href="book.html" class="btn btn-primary btn-lg">Book Your Appointment</a>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a href="index.html" class="logo">
+            <img src="logo.png" alt="P.M. Automobile Works" style="height:48px;width:auto;">
+          </a>
+          <p class="footer-about">Providing premium automotive service excellence for over 45 years. We specialize in complete vehicle care using state-of-the-art diagnostic equipment.</p>
+          <div class="footer-socials" style="display:flex; gap:16px; margin-top:20px;">
+            <a href="https://www.tiktok.com/@pmautomobileworks" target="_blank" rel="noopener noreferrer" style="color:rgba(255,255,255,0.7); transition:color 0.3s;" onmouseover="this.style.color='#DC2626'" onmouseout="this.style.color='rgba(255,255,255,0.7)'">
+              <!-- TikTok -->
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"></path></svg>
+            </a>
+            <a href="https://www.facebook.com/search/top?q=p.m%20automobile%20works" target="_blank" rel="noopener noreferrer" style="color:rgba(255,255,255,0.7); transition:color 0.3s;" onmouseover="this.style.color='#DC2626'" onmouseout="this.style.color='rgba(255,255,255,0.7)'">
+              <!-- Facebook -->
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>
+            </a>
+            <a href="https://www.instagram.com/p.m_automobiles.works/" target="_blank" rel="noopener noreferrer" style="color:rgba(255,255,255,0.7); transition:color 0.3s;" onmouseover="this.style.color='#DC2626'" onmouseout="this.style.color='rgba(255,255,255,0.7)'">
+              <!-- Instagram -->
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+            </a>
+            <a href="https://wa.me/9779803296067" target="_blank" rel="noopener noreferrer" style="color:rgba(255,255,255,0.7); transition:color 0.3s;" onmouseover="this.style.color='#DC2626'" onmouseout="this.style.color='rgba(255,255,255,0.7)'">
+              <!-- WhatsApp / Phone -->
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+            </a>
+          </div>
+        </div>
+        <div>
+          <h3>Quick Links</h3>
+          <ul class="footer-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="about.html">About Us</a></li>
+            <li><a href="services.html">Services</a></li>
+            <li><a href="gallery.html">Gallery</a></li>
+            <li><a href="book.html">Book Appointment</a></li>
+            <li><a href="contact.html">Contact</a></li>
+          </ul>
+        </div>
+        <div>
+          <h3>Our Services</h3>
+          <ul class="footer-links">
+            <li><a href="services.html" class="footer-service"><span class="footer-service-dot"></span>Engine Repair</a>
+            </li>
+            <li><a href="services.html" class="footer-service"><span class="footer-service-dot"></span>General
+                Service</a></li>
+            <li><a href="services.html" class="footer-service"><span class="footer-service-dot"></span>Electrical
+                Repair</a></li>
+            <li><a href="services.html" class="footer-service"><span class="footer-service-dot"></span>Brake Service</a>
+            </li>
+            <li><a href="services.html" class="footer-service"><span class="footer-service-dot"></span>Wheel
+                Alignment</a></li>
+            <li><a href="services.html" class="footer-service"><span class="footer-service-dot"></span>AC Service</a>
+            </li>
+          </ul>
+        </div>
+        <div>
+          <h3>Contact Us</h3>
+          <ul>
+            <li class="footer-contact-item">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                <circle cx="12" cy="10" r="3"></circle>
+              </svg>
+              <span>Dhobidhara marg, Kathmandu, Nepal</span>
+            </li>
+            <li class="footer-contact-item">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path
+                  d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z">
+                </path>
+              </svg>
+              <a href="tel:014525461">01-4525461/980-3296067</a>
+            </li>
+            <li class="footer-contact-item">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                <polyline points="22,6 12,13 2,6"></polyline>
+              </svg>
+              <a href="mailto:pmautomobileworks@gmail.com">pmautomobileworks@gmail.com</a>
+            </li>
+            <li class="footer-contact-item">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+              </svg>
+              <div>
+                <div>Sun - Fri: 9:00 AM - 7:00 PM</div>
+                <div>Saturday: Closed</div>
+              </div>
+            </li>
+          </ul>
+          <div style="margin-top: 24px;">
+            <a href="book.html" class="btn btn-primary">Book Now</a>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 P.M. Automobile Works. All rights reserved.</p>
+        <div class="footer-bottom-links">
+          <span>Design & Develop by <a href="https://www.instagram.com/spec.digital7/" target="_blank" rel="noopener noreferrer" style="color: #DC2626; text-decoration: none; font-weight: 600;">Spec Digital</a></span>
+        </div>
+      </div>
+    </div>
+  </footer>
+  <script src="js/script.js?v=2"></script>
+</body>
+
+</html>
+

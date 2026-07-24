@@ -424,14 +424,53 @@ router.patch('/:id/reject', authenticate, authorize('admin', 'receptionist'), as
 });
 
 // @route   DELETE /api/web-bookings/:id
-// @desc    Delete a web booking request record
+// @desc    Delete a web booking request record. If it already produced a
+//          scheduled Appointment, that appointment is cancelled first so it
+//          doesn't keep running with no visible source request left behind.
+//          The linked Customer/Vehicle (real business records, not owned by
+//          this request) are left untouched.
 // @access  Private (admin)
 router.delete('/:id', authenticate, authorize('admin'), async (req, res) => {
   try {
-    const booking = await WebBooking.findByIdAndDelete(req.params.id);
+    const booking = await WebBooking.findById(req.params.id);
     if (!booking) {
       return res.status(404).json({ message: 'Web booking request not found' });
     }
+
+    if (booking.createdAppointmentId) {
+      const appointment = await Appointment.findById(booking.createdAppointmentId);
+      if (appointment && !['completed', 'cancelled'].includes(appointment.status)) {
+        appointment.status = 'cancelled';
+        appointment.note = `${appointment.note ? appointment.note + ' ' : ''}[Auto-cancelled: source web booking request was deleted]`;
+        await appointment.save();
+
+        if (appointment.technicianId) {
+          await createNotification({
+            recipientId: appointment.technicianId,
+            title: 'Appointment Cancelled',
+            message: `An appointment assigned to you was cancelled because its source web booking request was deleted.`,
+            type: 'appointment',
+            link: '/appointments'
+          });
+        }
+
+        await logAction({
+          req,
+          action: 'appointment_cancelled',
+          module: 'appointments',
+          details: `Auto-cancelled appointment (ID: ${appointment._id}) because its source web booking request (#${booking._id}) was deleted`
+        });
+      }
+    }
+
+    await WebBooking.findByIdAndDelete(req.params.id);
+
+    await logAction({
+      req,
+      action: 'web_booking_deleted',
+      module: 'appointments',
+      details: `Deleted web booking request #${booking._id} from ${booking.fullName} (${booking.phone})`
+    });
 
     res.json({ message: 'Web booking record deleted successfully' });
   } catch (err) {

@@ -8,6 +8,8 @@ import Appointment from '../models/Appointment.js';
 import Customer from '../models/Customer.js';
 import Vehicle from '../models/Vehicle.js';
 import User from '../models/User.js';
+import Servicing from '../models/Servicing.js';
+import WebBooking from '../models/WebBooking.js';
 import { authenticate, authorize } from '../middleware/auth.js';
 import { createNotification } from '../utils/notifier.js';
 import { logAction } from '../utils/logger.js';
@@ -332,19 +334,30 @@ router.post(
         .populate('technicianId', 'name')
         .lean();
 
+      // Referenced customer/vehicle may be soft-deleted between selection and
+      // save — populate returns null in that case, so fall back instead of crashing.
+      const newCustomerName = populatedAppointment.customerId?.name || 'Deleted Customer';
+      const newVehiclePlate = populatedAppointment.vehicleId?.plateNo || 'Unknown Vehicle';
+      const newVehicleLabel = populatedAppointment.vehicleId
+        ? `${populatedAppointment.vehicleId.make} ${populatedAppointment.vehicleId.model}`
+        : 'Unknown Vehicle';
+      const newTechName = populatedAppointment.technicianId?.name || 'Unassigned';
+
       // Send in-app notifications
-      await createNotification({
-        recipientId: populatedAppointment.technicianId._id,
-        title: 'New Appointment Assigned',
-        message: `You have been assigned to service ${populatedAppointment.vehicleId.make} ${populatedAppointment.vehicleId.model} for ${populatedAppointment.customerId.name} at ${formatNepaliDateTime(populatedAppointment.dateTime)}`,
-        type: 'appointment',
-        link: '/appointments'
-      });
+      if (populatedAppointment.technicianId?._id) {
+        await createNotification({
+          recipientId: populatedAppointment.technicianId._id,
+          title: 'New Appointment Assigned',
+          message: `You have been assigned to service ${newVehicleLabel} for ${newCustomerName} at ${formatNepaliDateTime(populatedAppointment.dateTime)}`,
+          type: 'appointment',
+          link: '/appointments'
+        });
+      }
 
       await createNotification({
         recipientRoles: ['admin', 'receptionist'],
         title: 'New Appointment Scheduled',
-        message: `Appointment scheduled for ${populatedAppointment.customerId.name} (${populatedAppointment.vehicleId.plateNo})`,
+        message: `Appointment scheduled for ${newCustomerName} (${newVehiclePlate})`,
         type: 'appointment',
         link: '/appointments'
       });
@@ -354,7 +367,7 @@ router.post(
         req,
         action: 'appointment_created',
         module: 'appointments',
-        details: `Scheduled appointment for ${populatedAppointment.customerId.name} (${populatedAppointment.vehicleId.plateNo}) with tech ${populatedAppointment.technicianId.name} on ${formatNepaliDateTime(populatedAppointment.dateTime)}`
+        details: `Scheduled appointment for ${newCustomerName} (${newVehiclePlate}) with tech ${newTechName} on ${formatNepaliDateTime(populatedAppointment.dateTime)}`
       });
 
       res.status(201).json(populatedAppointment);
@@ -433,21 +446,29 @@ router.patch(
         .populate('technicianId', 'name email')
         .lean();
 
+      // Referenced customer/vehicle/technician may be soft-deleted (or, for
+      // technician, removed) by the time this runs — populate returns null
+      // in that case, so fall back to placeholder text instead of crashing.
+      const customerName = populatedAppointment.customerId?.name || 'Deleted Customer';
+      const vehiclePlate = populatedAppointment.vehicleId?.plateNo || 'Unknown Vehicle';
+
       // Send status change notifications
       if (req.body.status && req.body.status !== previousStatus) {
         if (req.body.status === 'cancelled') {
-          await createNotification({
-            recipientId: populatedAppointment.technicianId._id,
-            title: 'Appointment Cancelled',
-            message: `Your assigned service for ${populatedAppointment.customerId.name} has been cancelled.`,
-            type: 'appointment',
-            link: '/appointments'
-          });
+          if (populatedAppointment.technicianId?._id) {
+            await createNotification({
+              recipientId: populatedAppointment.technicianId._id,
+              title: 'Appointment Cancelled',
+              message: `Your assigned service for ${customerName} has been cancelled.`,
+              type: 'appointment',
+              link: '/appointments'
+            });
+          }
 
           await createNotification({
             recipientRoles: ['admin', 'receptionist'],
             title: 'Appointment Cancelled',
-            message: `Appointment for ${populatedAppointment.customerId.name} (${populatedAppointment.vehicleId.plateNo}) was cancelled.`,
+            message: `Appointment for ${customerName} (${vehiclePlate}) was cancelled.`,
             type: 'appointment',
             link: '/appointments'
           });
@@ -455,7 +476,7 @@ router.patch(
           await createNotification({
             recipientRoles: ['admin', 'receptionist'],
             title: 'Appointment Completed',
-            message: `Appointment for ${populatedAppointment.customerId.name} (${populatedAppointment.vehicleId.plateNo}) is completed.`,
+            message: `Appointment for ${customerName} (${vehiclePlate}) is completed.`,
             type: 'appointment',
             link: '/appointments'
           });
@@ -467,7 +488,7 @@ router.patch(
         req,
         action: req.body.status ? `appointment_${req.body.status}` : 'appointment_updated',
         module: 'appointments',
-        details: `Updated appointment (ID: ${populatedAppointment._id}) for ${populatedAppointment.customerId.name}. Previous Status: ${previousStatus.toUpperCase()}, New Status: ${populatedAppointment.status.toUpperCase()}`
+        details: `Updated appointment (ID: ${populatedAppointment._id}) for ${customerName}. Previous Status: ${previousStatus.toUpperCase()}, New Status: ${populatedAppointment.status.toUpperCase()}`
       });
 
       res.json(populatedAppointment);
@@ -477,6 +498,49 @@ router.patch(
     }
   }
 );
+
+// @route   DELETE /api/appointments/:id
+// @desc    Permanently delete an appointment. Refused once real service work
+//          (a Servicing record — and by extension any invoice/payment chain
+//          hanging off it) exists for it, since that would orphan financial
+//          data; cancel it via PATCH status instead in that case. If the
+//          appointment originated from a web booking request, that request's
+//          link is cleared so it doesn't keep pointing at a deleted record.
+// @access  Private (admin)
+router.delete('/:id', authenticate, authorize('admin'), async (req, res) => {
+  try {
+    const appointment = await Appointment.findById(req.params.id);
+    if (!appointment) {
+      return res.status(404).json({ message: 'Appointment not found' });
+    }
+
+    const hasServicing = await Servicing.exists({ appointmentId: appointment._id });
+    if (hasServicing) {
+      return res.status(400).json({
+        message: 'This appointment already has service records (and possibly invoices/payments) attached — it cannot be deleted. Cancel it instead.'
+      });
+    }
+
+    await WebBooking.updateMany(
+      { createdAppointmentId: appointment._id },
+      { $set: { createdAppointmentId: null, status: 'customer-created' } }
+    );
+
+    await Appointment.findByIdAndDelete(appointment._id);
+
+    await logAction({
+      req,
+      action: 'appointment_deleted',
+      module: 'appointments',
+      details: `Deleted appointment (ID: ${appointment._id}, service: ${appointment.serviceType}, was scheduled ${formatNepaliDateTime(appointment.dateTime)})`
+    });
+
+    res.json({ message: 'Appointment deleted successfully' });
+  } catch (err) {
+    console.error('Delete appointment error:', err.message);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
 
 // @route   POST /api/appointments/:id/checkin
 // @desc    Check in a vehicle, record mileage, intake condition notes, and upload inspection photos
@@ -516,19 +580,29 @@ router.post(
         .populate('technicianId', 'name email')
         .lean();
 
+      // Referenced customer/vehicle may be soft-deleted — populate returns
+      // null in that case, so fall back instead of crashing.
+      const checkinCustomerName = populatedAppointment.customerId?.name || 'Deleted Customer';
+      const checkinVehiclePlate = populatedAppointment.vehicleId?.plateNo || 'Unknown Vehicle';
+      const checkinVehicleLabel = populatedAppointment.vehicleId
+        ? `${populatedAppointment.vehicleId.make} ${populatedAppointment.vehicleId.model}`
+        : 'Unknown Vehicle';
+
       // Send notifications
-      await createNotification({
-        recipientId: populatedAppointment.technicianId._id,
-        title: 'Vehicle Checked-In',
-        message: `Vehicle ${populatedAppointment.vehicleId.make} ${populatedAppointment.vehicleId.model} (${populatedAppointment.vehicleId.plateNo}) is checked in and ready for service.`,
-        type: 'appointment',
-        link: '/servicing'
-      });
+      if (populatedAppointment.technicianId?._id) {
+        await createNotification({
+          recipientId: populatedAppointment.technicianId._id,
+          title: 'Vehicle Checked-In',
+          message: `Vehicle ${checkinVehicleLabel} (${checkinVehiclePlate}) is checked in and ready for service.`,
+          type: 'appointment',
+          link: '/servicing'
+        });
+      }
 
       await createNotification({
         recipientRoles: ['admin', 'receptionist'],
         title: 'Vehicle Checked-In',
-        message: `Client ${populatedAppointment.customerId.name} vehicle ${populatedAppointment.vehicleId.plateNo} checked in.`,
+        message: `Client ${checkinCustomerName} vehicle ${checkinVehiclePlate} checked in.`,
         type: 'appointment',
         link: '/appointments'
       });
@@ -538,7 +612,7 @@ router.post(
         req,
         action: 'appointment_checked_in',
         module: 'appointments',
-        details: `Checked in vehicle ${populatedAppointment.vehicleId.plateNo} for customer ${populatedAppointment.customerId.name}. Intake Mileage: ${populatedAppointment.checkIn?.mileageIn || 0} km.`
+        details: `Checked in vehicle ${checkinVehiclePlate} for customer ${checkinCustomerName}. Intake Mileage: ${populatedAppointment.checkIn?.mileageIn || 0} km.`
       });
 
       res.json(populatedAppointment);

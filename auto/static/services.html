@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Our Services - P.M. Automobile Works</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Poppins:wght@600;700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+  <nav class="navbar">
+    <div class="navbar-top">
+      <div class="container">
+        <div class="navbar-top-left">
+          <a href="/login" class="staff-login-link">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+            <span>Staff Login</span>
+          </a>
+          <a href="tel:014525461">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path
+                d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z">
+              </path>
+            </svg>
+            <span>01-4525461/980-3296067</span>
+          </a>
+          <a href="mailto:pmautomobileworks@gmail.com" class="hidden md:flex">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c0 1.1 0-2-.9 2-2V6c0 1.1.9-2 2-2z"></path>
+              <polyline points="22,6 12,13 2,6"></polyline>
+            </svg>
+            <span>pmautomobileworks@gmail.com</span>
+          </a>
+        </div>
+        <div class="hidden md:flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+            <circle cx="12" cy="10" r="3"></circle>
+          </svg>
+          <span>Dhobidhara marg, Kathmandu, Nepal</span>
+        </div>
+      </div>
+    </div>
+    <div class="navbar-main">
+      <div class="container">
+        <a href="index.html" class="logo">
+          <img src="logo.png" alt="P.M. Automobile Works" style="height:52px;width:auto;">
+        </a>
+        <ul class="nav-links">
+          <li><a href="index.html">Home</a></li>
+          <li><a href="about.html">About Us</a></li>
+          <li><a href="services.html" class="active">Services</a></li>
+          <li><a href="gallery.html">Gallery</a></li>
+          <li><a href="contact.html">Contact</a></li>
+        </ul>
+        <a href="book.html" class="btn btn-primary">Book Appointment</a>
+        <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+    </div>
+    <div class="mobile-menu" id="mobile-menu">
+      <div class="container">
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="about.html">About Us</a></li>
+          <li><a href="services.html" class="active">Services</a></li>
+          <li><a href="gallery.html">Gallery</a></li>
+          <li><a href="book.html">Book Appointment</a></li>
+          <li><a href="contact.html">Contact</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Services Hero -->
+  <section style="position:relative; height:420px; overflow:hidden; background:#040404;">
+    <!-- Background Image -->
+    <img src="https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?w=1920&h=800&fit=crop"
+      alt="Our Automotive Services"
+      style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:right center; z-index:1;">
+    <!-- Gradient overlay: solid dark on left, fades to transparent -->
+    <div style="position:absolute; inset:0; background:linear-gradient(90deg,#040404 0%,#040404 40%,rgba(4,4,4,0.6) 65%,rgba(4,4,4,0.1) 100%); z-index:2;"></div>
+    <!-- Text absolutely positioned in the left dark corner -->
+    <div class="container" style="position:relative; height:100%; z-index:10;">
+      <div style="position:absolute; top:50%; left:15px; transform:translateY(-50%); max-width:550px; text-align:left; color:#fff;">
+        <p style="color:#EAB308; font-family:'Poppins',sans-serif; font-weight:700; font-size:16px; letter-spacing:2px; text-transform:uppercase; margin:0 0 8px 0;">OUR SERVICES</p>
+        <h1 style="font-family:'Poppins',sans-serif; font-size:48px; font-weight:700; line-height:1.1; color:#fff; text-transform:uppercase; margin:0 0 16px 0;">COMPLETE AUTO CARE</h1>
+        <p style="font-size:16px; color:rgba(255,255,255,0.85); line-height:1.65; margin:0;">From regular maintenance to complex repairs, we provide complete solutions for all your automotive needs.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="bg-background">
+    <div class="container">
+      <div class="text-center">
+        <div class="section-subtitle">What We Offer</div>
+        <h2 class="section-title">Premium Automotive Services</h2>
+        <p class="section-desc">We offer a comprehensive range of automotive services to keep your vehicle running
+          smoothly and safely.</p>
+      </div>
+      <div class="services-grid">
+        <div class="card service-card">
+          <div class="service-icon"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"
+              fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path
+                d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z">
+              </path>
+            </svg></div>
+          <h3>Engine Repair</h3>
+          <p>Comprehensive engine diagnostics, repairs, and rebuilds. Expert service for all engine types.</p>
+          <a href="book.html"
+            class="inline-flex items-center gap-2 text-red-600 font-semibold hover:text-red-700 transition-colors">Book
+            Now<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path
+                d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z">
+              </path>
+            </svg></a>
+        </div>
+        <div class="card service-card">
+          <div class="service-icon"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"
+              fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+            </svg></div>
+          <h3>General Service</h3>
+          <p>Comprehensive maintenance including oil change, filters, fluids, and safety inspection.</p>
+          <a href="book.html"
+            class="inline-flex items-center gap-2 text-red-600 font-semibold hover:text-red-700 transition-colors">Book
+            Now<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path
+                d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z">
+              </path>
+            </svg></a>
+        </div>
+        <div class="card service-card">
+          <div class="service-icon"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"
+              fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+            </svg></div>
+          <h3>Electrical Repair</h3>
+          <p>Advanced electrical system diagnostics, battery, alternator, starter, and wiring repairs.</p>
+          <a href="book.html"
+            class="inline-flex items-center gap-2 text-red-600 font-semibold hover:text-red-700 transition-colors">Book
+            Now<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path
+                d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z">
+              </path>
+            </svg></a>
+        </div>
+        <div class="card service-card">
+          <div class="service-icon"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"
+              fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+              <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </svg></div>
+          <h3>Brake Service</h3>
+          <p>Complete brake inspection, pad/shoe replacement, rotor resurfacing, and brake fluid flush.</p>
+          <a href="book.html"
+            class="inline-flex items-center gap-2 text-red-600 font-semibold hover:text-red-700 transition-colors">Book
+            Now<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path
+                d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z">
+              </path>
+            </svg></a>
+        </div>
+        <div class="card service-card">
+          <div class="service-icon"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"
+              fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>
+            </svg></div>
+          <h3>Wheel Alignment</h3>
+          <p>Precision 4-wheel alignment using computerized equipment for optimal handling and tire life.</p>
+          <a href="book.html"
+            class="inline-flex items-center gap-2 text-red-600 font-semibold hover:text-red-700 transition-colors">Book
+            Now<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path
+                d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z">
+              </path>
+            </svg></a>
+        </div>
+        <div class="card service-card">
+          <div class="service-icon"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"
+              fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg></div>
+          <h3>AC Service</h3>
+          <p>Air conditioning diagnostics, repair, recharge, and maintenance to keep you cool.</p>
+          <a href="book.html"
+            class="inline-flex items-center gap-2 text-red-600 font-semibold hover:text-red-700 transition-colors">Book
+            Now<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path
+                d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z">
+              </path>
+            </svg></a>
+        </div>
+        <div class="card service-card">
+          <div class="service-icon"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"
+              fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <path d="M8 12h8"></path>
+              <path d="M12 8v8"></path>
+            </svg></div>
+          <h3>Body & Paint</h3>
+          <p>Professional dent repair, paint correction, and complete body work services.</p>
+          <a href="book.html"
+            class="inline-flex items-center gap-2 text-red-600 font-semibold hover:text-red-700 transition-colors">Book
+            Now<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path
+                d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z">
+              </path>
+            </svg></a>
+        </div>
+        <div class="card service-card">
+          <div class="service-icon"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"
+              fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2v10a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h3"></path>
+              <path d="M17 8h4v4"></path>
+              <path d="M12 12h10"></path>
+            </svg></div>
+          <h3>Oil Change</h3>
+          <p>Quick and efficient oil and filter change using high-quality oils for your vehicle.</p>
+          <a href="book.html"
+            class="inline-flex items-center gap-2 text-red-600 font-semibold hover:text-red-700 transition-colors">Book
+            Now<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path
+                d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z">
+              </path>
+            </svg></a>
+        </div>
+        <div class="card service-card">
+          <div class="service-icon"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"
+              fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2v6a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2v10h4V8a6 6 0 0 0-6-6H8v4h4V2z"></path>
+            </svg></div>
+          <h3>Transmission</h3>
+          <p>Transmission service, repair, and rebuild for both automatic and manual transmissions.</p>
+          <a href="book.html"
+            class="inline-flex items-center gap-2 text-red-600 font-semibold hover:text-red-700 transition-colors">Book
+            Now<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path
+                d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z">
+              </path>
+            </svg></a>
+        </div>
+        <div class="card service-card">
+          <div class="service-icon"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"
+              fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+              <path d="M2 14h20"></path>
+              <path d="M12 7v10"></path>
+            </svg></div>
+          <h3>Battery</h3>
+          <p>Battery testing, replacement, and electrical system charging and starting diagnostics.</p>
+          <a href="book.html"
+            class="inline-flex items-center gap-2 text-red-600 font-semibold hover:text-red-700 transition-colors">Book
+            Now<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path
+                d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z">
+              </path>
+            </svg></a>
+        </div>
+        <div class="card service-card">
+          <div class="service-icon"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"
+              fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path
+                d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.7-1.4C17.4 12.8 15 14 12 14s-5.4-1.2-7.3-1.8c-1-.3-1.7.5-1.7 1.4v3c0 .6.4 1 1 1h2">
+              </path>
+              <circle cx="12" cy="11" r="3"></circle>
+              <path d="M7 17h10"></path>
+            </svg></div>
+          <h3>Suspension</h3>
+          <p>Shocks, struts, springs, and suspension component inspection and replacement.</p>
+          <a href="book.html"
+            class="inline-flex items-center gap-2 text-red-600 font-semibold hover:text-red-700 transition-colors">Book
+            Now<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path
+                d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z">
+              </path>
+            </svg></a>
+        </div>
+        <div class="card service-card">
+          <div class="service-icon"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"
+              fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
+            </svg></div>
+          <h3>Diagnostics</h3>
+          <p>Advanced computer diagnostics using the latest tools to identify and fix issues quickly.</p>
+          <a href="book.html"
+            class="inline-flex items-center gap-2 text-red-600 font-semibold hover:text-red-700 transition-colors">Book
+            Now<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path
+                d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z">
+              </path>
+            </svg></a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section style="position:relative; padding:120px 0; overflow:hidden; background:#040404; text-align:center;">
+    <!-- Racing Car Background Image -->
+    <img src="https://images.unsplash.com/photo-1489824904134-891ab64532f1?w=1920&h=1080&fit=crop" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; opacity:0.35;" alt="Racing Car Background">
+    <!-- Gradient Overlay for readability -->
+    <div style="position:absolute; inset:0; background:linear-gradient(to bottom, rgba(4,4,4,0.85) 0%, rgba(4,4,4,0.6) 100%); z-index:1;"></div>
+    
+    <div class="container" style="position:relative; z-index:2; max-width:800px; margin:0 auto;">
+      <h2 style="font-family:'Poppins',sans-serif; font-size:36px; font-weight:700; color:#fff; text-transform:uppercase; margin:0 0 20px 0;">Ready to Service Your Vehicle?</h2>
+      <p style="font-size:16px; color:rgba(255,255,255,0.7); line-height:1.7; margin:0 0 40px 0;">Book an appointment today and let our expert technicians take care of your vehicle.</p>
+      <a href="book.html" style="display:inline-block; background:#DC2626; color:#fff; padding:16px 36px; font-family:'Poppins',sans-serif; font-weight:600; font-size:14px; text-transform:uppercase; letter-spacing:1px; text-decoration:none; border-radius:4px; transition: background 0.3s;" onmouseover="this.style.background='#b91c1c'" onmouseout="this.style.background='#DC2626'">Book Your Appointment</a>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a href="index.html" class="logo">
+            <img src="logo.png" alt="P.M. Automobile Works" style="height:48px;width:auto;">
+          </a>
+          <p class="footer-about">Providing premium automotive service excellence for over 45 years. We specialize in complete vehicle care using state-of-the-art diagnostic equipment.</p>
+          <div class="footer-socials" style="display:flex; gap:16px; margin-top:20px;">
+            <a href="https://www.tiktok.com/@pmautomobileworks" target="_blank" rel="noopener noreferrer" style="color:rgba(255,255,255,0.7); transition:color 0.3s;" onmouseover="this.style.color='#DC2626'" onmouseout="this.style.color='rgba(255,255,255,0.7)'">
+              <!-- TikTok -->
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"></path></svg>
+            </a>
+            <a href="https://www.facebook.com/search/top?q=p.m%20automobile%20works" target="_blank" rel="noopener noreferrer" style="color:rgba(255,255,255,0.7); transition:color 0.3s;" onmouseover="this.style.color='#DC2626'" onmouseout="this.style.color='rgba(255,255,255,0.7)'">
+              <!-- Facebook -->
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>
+            </a>
+            <a href="https://www.instagram.com/p.m_automobiles.works/" target="_blank" rel="noopener noreferrer" style="color:rgba(255,255,255,0.7); transition:color 0.3s;" onmouseover="this.style.color='#DC2626'" onmouseout="this.style.color='rgba(255,255,255,0.7)'">
+              <!-- Instagram -->
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+            </a>
+            <a href="https://wa.me/9779803296067" target="_blank" rel="noopener noreferrer" style="color:rgba(255,255,255,0.7); transition:color 0.3s;" onmouseover="this.style.color='#DC2626'" onmouseout="this.style.color='rgba(255,255,255,0.7)'">
+              <!-- WhatsApp / Phone -->
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+            </a>
+          </div>
+        </div>
+        <div>
+          <h3>Quick Links</h3>
+          <ul class="footer-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="about.html">About Us</a></li>
+            <li><a href="services.html">Services</a></li>
+            <li><a href="gallery.html">Gallery</a></li>
+            <li><a href="book.html">Book Appointment</a></li>
+            <li><a href="contact.html">Contact</a></li>
+          </ul>
+        </div>
+        <div>
+          <h3>Our Services</h3>
+          <ul class="footer-links">
+            <li><a href="services.html" class="footer-service"><span class="footer-service-dot"></span>Engine Repair</a>
+            </li>
+            <li><a href="services.html" class="footer-service"><span class="footer-service-dot"></span>General
+                Service</a></li>
+            <li><a href="services.html" class="footer-service"><span class="footer-service-dot"></span>Electrical
+                Repair</a></li>
+            <li><a href="services.html" class="footer-service"><span class="footer-service-dot"></span>Brake Service</a>
+            </li>
+            <li><a href="services.html" class="footer-service"><span class="footer-service-dot"></span>Wheel
+                Alignment</a></li>
+            <li><a href="services.html" class="footer-service"><span class="footer-service-dot"></span>AC Service</a>
+            </li>
+          </ul>
+        </div>
+        <div>
+          <h3>Contact Us</h3>
+          <ul>
+            <li class="footer-contact-item">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                <circle cx="12" cy="10" r="3"></circle>
+              </svg>
+              <span>Dhobidhara marg, Kathmandu, Nepal</span>
+            </li>
+            <li class="footer-contact-item">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path
+                  d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z">
+                </path>
+              </svg>
+              <a href="tel:014525461">01-4525461/980-3296067</a>
+            </li>
+            <li class="footer-contact-item">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                <polyline points="22,6 12,13 2,6"></polyline>
+              </svg>
+              <a href="mailto:pmautomobileworks@gmail.com">pmautomobileworks@gmail.com</a>
+            </li>
+            <li class="footer-contact-item">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+              </svg>
+              <div>
+                <div>Sun - Fri: 9:00 AM - 7:00 PM</div>
+                <div>Saturday: Closed</div>
+              </div>
+            </li>
+          </ul>
+          <div style="margin-top: 24px;">
+            <a href="book.html" class="btn btn-primary">Book Now</a>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 P.M. Automobile Works. All rights reserved.</p>
+        <div class="footer-bottom-links">
+          <span>Design & Develop by <a href="https://www.instagram.com/spec.digital7/" target="_blank" rel="noopener noreferrer" style="color: #DC2626; text-decoration: none; font-weight: 600;">Spec Digital</a></span>
+        </div>
+      </div>
+    </div>
+  </footer>
+  <script src="js/script.js?v=2"></script>
+</body>
+
+</html>
+

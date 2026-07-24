@@ -306,6 +306,18 @@ export default function Appointments() {
     }
   };
 
+  // Permanently Delete Web Booking Request record
+  const handleDeleteWebBooking = async (bookingId) => {
+    if (!window.confirm('Permanently delete this web booking request? This cannot be undone. (Any customer, vehicle, or appointment already created from it will not be affected.)')) return;
+    try {
+      await axios.delete(`/api/web-bookings/${bookingId}`);
+      fetchWebBookings();
+    } catch (err) {
+      console.error(err);
+      alert(err.response?.data?.message || 'Failed to delete request');
+    }
+  };
+
   // Load Technicians on Modal Open
   const loadTechnicians = async () => {
     try {
@@ -419,6 +431,18 @@ export default function Appointments() {
     } catch (err) {
       console.error(err);
       alert(err.response?.data?.message || 'Failed to update status');
+    }
+  };
+
+  // Permanently Delete Appointment
+  const handleDeleteAppointment = async (appointmentId) => {
+    if (!window.confirm('Permanently delete this appointment? This cannot be undone.')) return;
+    try {
+      await axios.delete(`/api/appointments/${appointmentId}`);
+      fetchAppointments();
+    } catch (err) {
+      console.error(err);
+      alert(err.response?.data?.message || 'Failed to delete appointment');
     }
   };
 
@@ -775,6 +799,17 @@ export default function Appointments() {
                             >
                               <XCircle className="w-3.5 h-3.5 shrink-0" />
                               <span>Cancel</span>
+                            </button>
+                          )}
+
+                          {user?.role === 'admin' && (
+                            <button
+                              onClick={() => handleDeleteAppointment(appt._id)}
+                              className="flex items-center gap-1.5 px-3.5 h-9 rounded-lg text-xs font-bold text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
+                              title="Permanently delete this appointment"
+                            >
+                              <Trash2 className="w-3.5 h-3.5 shrink-0" />
+                              <span>Delete</span>
                             </button>
                           )}
                         </div>
@@ -1503,6 +1538,25 @@ export default function Appointments() {
                               <CheckCircle className="w-4 h-4 text-emerald-600" />
                               Official Appointment Created
                             </span>
+                          )}
+
+                          {isRejected && (
+                            <span className="text-xs font-bold text-rose-700 bg-rose-50 border border-rose-200 px-3 py-1 rounded-lg flex items-center gap-1">
+                              <XCircle className="w-4 h-4 text-rose-600" />
+                              Rejected
+                            </span>
+                          )}
+
+                          {user?.role === 'admin' && (
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteWebBooking(booking._id)}
+                              className="flex items-center gap-1 h-8 px-2.5 rounded-lg text-xs font-bold text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
+                              title="Permanently delete this web booking request"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                              <span>Delete</span>
+                            </button>
                           )}
                         </div>
                       </div>
