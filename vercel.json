@@ -1,13 +1,14 @@
 {
   "version": 2,
-  "rewrites": [
-    { "source": "/api/:path*", "destination": "/api/index.js" },
-    { "source": "/", "destination": "/site/index.html" },
-    { "source": "/about.html", "destination": "/site/about.html" },
-    { "source": "/services.html", "destination": "/site/services.html" },
-    { "source": "/gallery.html", "destination": "/site/gallery.html" },
-    { "source": "/contact.html", "destination": "/site/contact.html" },
-    { "source": "/book.html", "destination": "/site/book.html" },
-    { "source": "/((?!api/|site/|user-manual\\.html).*)", "destination": "/index.html" }
+  "routes": [
+    { "src": "^/api/(.*)$", "dest": "/api/index.js" },
+    { "src": "^/$", "dest": "/site/index.html" },
+    { "src": "^/about\\.html$", "dest": "/site/about.html" },
+    { "src": "^/services\\.html$", "dest": "/site/services.html" },
+    { "src": "^/gallery\\.html$", "dest": "/site/gallery.html" },
+    { "src": "^/contact\\.html$", "dest": "/site/contact.html" },
+    { "src": "^/book\\.html$", "dest": "/site/book.html" },
+    { "handle": "filesystem" },
+    { "src": "^/(?!api/|site/|user-manual\\.html).*$", "dest": "/index.html" }
   ]
 }
