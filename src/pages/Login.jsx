@@ -133,15 +133,6 @@ export default function Login() {
               )}
             </button>
           </form>
-
-          {/* Quick seeded credential helper info */}
-          <div className="mt-6.5 pt-6 border-t border-slate-100 text-center">
-            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Demo Credentials</span>
-            <div className="mt-3 text-xs text-slate-600 bg-slate-50 p-3 rounded-2xl border border-slate-200 inline-block font-mono leading-relaxed">
-              <span className="text-blue-600 font-bold">ID:</span> admin@pmautomobiles.com <br />
-              <span className="text-blue-600 font-bold">PW:</span> admin123
-            </div>
-          </div>
         </div>
       </div>
     </div>
