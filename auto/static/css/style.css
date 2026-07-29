@@ -10,6 +10,7 @@ body {
   color: #475569;
   background-color: #F8FAFC;
   line-height: 1.6;
+  overflow-x: hidden;
 }
 
 h1,
@@ -209,10 +210,17 @@ img {
 }
 
 .mobile-menu {
-  display: none;
+  position: absolute;
+  top: 100%;
+  right: -320px;
+  width: 300px;
+  height: calc(100vh - 100%);
   background: white;
-  border-top: 1px solid #E2E8F0;
-  padding: 1rem 0;
+  border-left: 1px solid #E2E8F0;
+  padding: 2rem 1.5rem;
+  transition: right 0.3s ease;
+  overflow-y: auto;
+  box-shadow: -4px 10px 15px rgba(0,0,0,0.05);
 }
 
 .mobile-menu ul {
@@ -1347,7 +1355,7 @@ textarea.form-control {
   }
 
   .mobile-menu.active {
-    display: block;
+    right: 0;
   }
 
   .hero-title {
@@ -1606,6 +1614,107 @@ textarea.form-control {
   font-weight: 700;
   text-transform: uppercase;
   margin-top: -4px;
+}
+
+/* Additional Mobile Responsive Fixes */
+@media (max-width: 1024px) {
+  .hero-container,
+  .faq-grid {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+  
+  .hero-card {
+    margin: 0 auto;
+  }
+
+  .about-hero-content {
+    max-width: 100%;
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  .why-card {
+    border-right: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+    padding: 30px 20px;
+  }
+
+  .why-card:last-child {
+    border-bottom: none;
+  }
+}
+
+@media (max-width: 640px) {
+  section {
+    padding: 50px 0;
+  }
+
+  .why-choose-us {
+    padding: 60px 0;
+  }
+
+  .hero {
+    height: auto;
+    min-height: auto;
+    padding-top: 120px;
+    padding-bottom: 40px;
+  }
+
+  .hero-stats-wrapper {
+    position: relative;
+    bottom: 0;
+    margin-top: 40px;
+  }
+
+  .hero-stats-bar {
+    flex-direction: column;
+    gap: 20px;
+    padding: 24px;
+  }
+
+  .hero-stat-box {
+    width: 100%;
+    justify-content: flex-start;
+  }
+  
+  .hero-stat-divider {
+    display: none;
+  }
+  
+  .brand-watermark {
+    display: none;
+  }
+
+  .about-hero-title,
+  .page-hero-title,
+  .hero-title {
+    font-size: 36px;
+  }
+
+  .cta-section {
+    padding: 60px 0;
+    text-align: center;
+  }
+
+  .cta-content {
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  .cta-overlay {
+    background: linear-gradient(90deg, rgba(8, 12, 22, 0.9) 0%, rgba(8, 12, 22, 0.8) 100%);
+  }
+
+  .about-img-badge {
+    right: 10px;
+    bottom: -10px;
+    padding: 16px;
+  }
+
+  .about-img-badge-number {
+    font-size: 24px;
+  }
 }
 
 .brand-watermark-subtitle .line {
