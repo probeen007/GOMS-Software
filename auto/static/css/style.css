@@ -5,12 +5,65 @@
   box-sizing: border-box;
 }
 
+html {
+  overflow-x: hidden;
+  width: 100%;
+}
+
+/* Minimal utility classes referenced in markup (e.g. schedule rows,
+   icon+text lists) that had no matching rules defined */
+.flex {
+  display: flex;
+}
+
+.inline-flex {
+  display: inline-flex;
+}
+
+.items-center {
+  align-items: center;
+}
+
+.justify-between {
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.gap-2 {
+  gap: 8px;
+}
+
+.gap-3 {
+  gap: 12px;
+}
+
+.flex-shrink-0 {
+  flex-shrink: 0;
+}
+
+.font-semibold {
+  font-weight: 600;
+}
+
+.text-red-600 {
+  color: #DC2626;
+}
+
+.hover\:text-red-700:hover {
+  color: #B91C1C;
+}
+
+.transition-colors {
+  transition: color 0.2s ease;
+}
+
 body {
   font-family: 'Inter', sans-serif;
   color: #475569;
   background-color: #F8FAFC;
   line-height: 1.6;
   overflow-x: hidden;
+  width: 100%;
 }
 
 h1,
@@ -1657,13 +1710,18 @@ textarea.form-control {
   .hero {
     height: auto;
     min-height: auto;
+    flex-direction: column;
+    align-items: stretch;
     padding-top: 120px;
     padding-bottom: 40px;
   }
 
   .hero-stats-wrapper {
     position: relative;
-    bottom: 0;
+    top: auto;
+    left: auto;
+    right: auto;
+    bottom: auto;
     margin-top: 40px;
   }
 
