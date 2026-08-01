@@ -101,9 +101,9 @@
     <!-- Gradient overlay: solid dark on left, fades to transparent -->
     <div style="position:absolute; inset:0; background:linear-gradient(90deg,#040404 0%,#040404 55%,rgba(4,4,4,0.6) 75%,rgba(4,4,4,0.05) 100%); z-index:2;"></div>
     <!-- Text absolutely positioned in the left dark corner -->
-    <div style="position:absolute; top:50%; left:60px; transform:translateY(-50%); z-index:10; max-width:550px; text-align:left; color:#fff;">
+    <div style="position:absolute; top:50%; left:clamp(20px, 6vw, 60px); right:20px; transform:translateY(-50%); z-index:10; max-width:550px; text-align:left; color:#fff;">
       <p style="color:#EAB308; font-family:'Poppins',sans-serif; font-weight:600; font-size:14px; letter-spacing:2px; text-transform:uppercase; margin:0 0 6px 0;">OUR STORY</p>
-      <h1 style="font-family:'Poppins',sans-serif; font-size:56px; font-weight:700; line-height:1.1; color:#fff; margin:0 0 16px 0;">SINCE <span style="color:#DC2626;">1978</span></h1>
+      <h1 style="font-family:'Poppins',sans-serif; font-size:clamp(32px, 8vw, 56px); font-weight:700; line-height:1.1; color:#fff; margin:0 0 16px 0;">SINCE <span style="color:#DC2626;">1978</span></h1>
       <p style="font-size:16px; color:rgba(255,255,255,0.85); line-height:1.65; margin:0 0 28px 0;">P.M. Automobile Works has been serving Kathmandu with honesty, expertise and dedication for over four decades.</p>
       <a href="book.html" style="display:inline-block; background:#DC2626; color:#fff; padding:14px 28px; font-family:'Poppins',sans-serif; font-weight:600; font-size:13px; text-transform:uppercase; letter-spacing:1.5px; text-decoration:none;">BOOK APPOINTMENT</a>
     </div>
@@ -112,14 +112,14 @@
   <!-- Our Story Section -->
   <section style="padding:100px 0; background:#fff;">
     <div class="container">
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:60px; align-items:center;">
+      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:60px; align-items:center;">
         <!-- Left: Workshop Image with Branding -->
         <div style="position:relative; border-radius:16px; overflow:hidden; box-shadow:0 20px 40px rgba(0,0,0,0.15);">
           <!-- This image is a placeholder for the garage front -->
           <img src="https://images.unsplash.com/photo-1489824904134-891ab64532f1?w=1920&h=1080&fit=crop" style="width:100%; display:block; object-fit:cover;" alt="P.M. Automobile Works Front">
           <div style="position:absolute; inset:0; background:linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.2) 40%, rgba(0,0,0,0) 100%);"></div>
           <div style="position:absolute; top:15%; left:0; right:0; text-align:center; transform:rotate(-2deg); text-shadow:0 4px 10px rgba(0,0,0,0.8);">
-            <h2 style="font-family:'Poppins',sans-serif; font-size:36px; font-weight:700; color:#fff; text-transform:uppercase; margin:0; letter-spacing:1px;">P.M. AUTOMOBILE WORKS</h2>
+            <h2 style="font-family:'Poppins',sans-serif; font-size:clamp(22px, 6vw, 36px); font-weight:700; color:#fff; text-transform:uppercase; margin:0; letter-spacing:1px;">P.M. AUTOMOBILE WORKS</h2>
             <div style="display:flex; align-items:center; justify-content:center; gap:12px; color:#DC2626; font-family:'Poppins',sans-serif; font-size:20px; font-weight:700; text-transform:uppercase; margin-top:2px;">
               <span style="height:3px; background:#DC2626; width:50px;"></span> SINCE 1978 <span style="height:3px; background:#DC2626; width:50px;"></span>
             </div>
@@ -128,11 +128,11 @@
         <!-- Right: Text Content -->
         <div>
           <p style="color:#DC2626; font-family:'Poppins',sans-serif; font-weight:700; font-size:14px; text-transform:uppercase; margin:0 0 12px 0;">OUR STORY</p>
-          <h2 style="font-family:'Poppins',sans-serif; font-size:38px; font-weight:700; color:#111827; line-height:1.2; margin:0 0 24px 0;">Built on Trust. Driven by Quality.</h2>
+          <h2 style="font-family:'Poppins',sans-serif; font-size:clamp(24px, 6vw, 38px); font-weight:700; color:#111827; line-height:1.2; margin:0 0 24px 0;">Built on Trust. Driven by Quality.</h2>
           <p style="font-size:16px; color:#4B5563; line-height:1.7; margin:0 0 20px 0;">Established in 1978, P.M. Automobile Works has been serving Kathmandu with dedication and honesty. What started as a small workshop has grown into a trusted automotive service center known for quality workmanship, genuine parts and excellent customer care.</p>
           <p style="font-size:16px; color:#4B5563; line-height:1.7; margin:0 0 40px 0;">Our goal is to keep your vehicle in the best condition and make every journey safe and worry-free.</p>
           
-          <div style="display:flex; gap:32px; border-top:1px solid #E5E7EB; padding-top:32px;">
+          <div style="display:flex; flex-wrap:wrap; gap:20px 32px; border-top:1px solid #E5E7EB; padding-top:32px;">
             <div style="display:flex; align-items:center; gap:12px;">
               <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
@@ -174,8 +174,8 @@
   <!-- Our Values Section -->
   <section style="padding:100px 0; background:#FAFAFA;">
     <div class="container">
-      <h2 style="font-family:'Poppins',sans-serif; font-size:32px; font-weight:700; color:#111827; text-align:center; margin:0 0 60px 0; text-transform:uppercase;">OUR VALUES</h2>
-      <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:30px;">
+      <h2 style="font-family:'Poppins',sans-serif; font-size:clamp(22px, 5.5vw, 32px); font-weight:700; color:#111827; text-align:center; margin:0 0 60px 0; text-transform:uppercase;">OUR VALUES</h2>
+      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:30px;">
         <!-- Value 1 -->
         <div style="display:flex; gap:16px;">
           <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;">
@@ -228,7 +228,7 @@
     <div style="position:absolute; inset:0; background:linear-gradient(90deg, #111827 0%, rgba(17,24,39,0.9) 30%, transparent 100%); z-index:1;"></div>
     <div class="container" style="position:relative; z-index:2;">
       <div style="max-width:550px;">
-        <h2 style="font-family:'Poppins',sans-serif; font-size:32px; font-weight:700; color:#fff; margin:0 0 24px 0; text-transform:uppercase;">WELL EQUIPPED WORKSHOP</h2>
+        <h2 style="font-family:'Poppins',sans-serif; font-size:clamp(22px, 5.5vw, 32px); font-weight:700; color:#fff; margin:0 0 24px 0; text-transform:uppercase;">WELL EQUIPPED WORKSHOP</h2>
         <p style="font-size:16px; color:rgba(255,255,255,0.85); line-height:1.8; margin:0;">Our workshop is equipped with the latest diagnostic tools and equipment to handle all types of vehicles. From routine servicing to complex repairs, we ensure precision and quality every time.</p>
       </div>
     </div>
@@ -237,7 +237,7 @@
   <!-- Brands We Service -->
   <section style="padding:100px 0; background:#fff;">
     <div class="container">
-      <h2 style="font-family:'Poppins',sans-serif; font-size:28px; font-weight:700; color:#111827; text-align:center; margin:0 0 60px 0; text-transform:uppercase;">BRANDS WE SERVICE</h2>
+      <h2 style="font-family:'Poppins',sans-serif; font-size:clamp(20px, 5vw, 28px); font-weight:700; color:#111827; text-align:center; margin:0 0 60px 0; text-transform:uppercase;">BRANDS WE SERVICE</h2>
       <div class="brands-marquee">
         <div class="brands-track">
           <!-- First set of logos -->
@@ -352,7 +352,7 @@
     <div style="position:absolute; inset:0; background:linear-gradient(to bottom, rgba(4,4,4,0.7) 0%, rgba(4,4,4,0.3) 100%); z-index:1;"></div>
     
     <div class="container" style="position:relative; z-index:2; max-width:800px; margin:0 auto;">
-      <h2 style="font-family:'Poppins',sans-serif; font-size:36px; font-weight:700; color:#fff; text-transform:uppercase; margin:0 0 20px 0;">Join Our Family of Happy Customers</h2>
+      <h2 style="font-family:'Poppins',sans-serif; font-size:clamp(22px, 6vw, 36px); font-weight:700; color:#fff; text-transform:uppercase; margin:0 0 20px 0;">Join Our Family of Happy Customers</h2>
       <p style="font-size:16px; color:rgba(255,255,255,0.85); line-height:1.7; margin:0 0 40px 0;">Experience the P.M. Automobile Works difference for yourself. Book your appointment today!</p>
       <a href="book.html" style="display:inline-block; background:#DC2626; color:#fff; padding:16px 36px; font-family:'Poppins',sans-serif; font-weight:600; font-size:14px; text-transform:uppercase; letter-spacing:1px; text-decoration:none; border-radius:4px;">Book Your Appointment</a>
     </div>

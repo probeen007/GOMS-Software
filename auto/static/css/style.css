@@ -5,6 +5,12 @@
   box-sizing: border-box;
 }
 
+/* Safety net so long unbreakable strings (emails, URLs) inside flex/grid
+   rows wrap instead of overflowing the viewport on narrow screens */
+body {
+  overflow-wrap: break-word;
+}
+
 html {
   overflow-x: hidden;
   width: 100%;
@@ -110,8 +116,8 @@ img {
 .btn-primary {
   background-color: #DC2626;
   color: white;
-  padding: 18px 32px;
-  font-size: 17px;
+  padding: clamp(14px, 3vw, 18px) clamp(22px, 5vw, 32px);
+  font-size: clamp(14px, 2.5vw, 17px);
 }
 
 .btn-primary:hover {
@@ -123,8 +129,8 @@ img {
   background-color: white;
   color: #DC2626;
   border: 2px solid #DC2626;
-  padding: 18px 32px;
-  font-size: 17px;
+  padding: clamp(14px, 3vw, 18px) clamp(22px, 5vw, 32px);
+  font-size: clamp(14px, 2.5vw, 17px);
 }
 
 .btn-secondary:hover {
@@ -134,8 +140,8 @@ img {
 }
 
 .btn-lg {
-  padding: 24px 40px;
-  font-size: 20px;
+  padding: clamp(16px, 4vw, 24px) clamp(26px, 6vw, 40px);
+  font-size: clamp(15px, 3vw, 20px);
 }
 
 /* Cards */
@@ -356,7 +362,7 @@ img {
 
 .hero-subtitle {
   font-family: 'Poppins', sans-serif;
-  font-size: 48px;
+  font-size: clamp(28px, 7vw, 48px);
   font-weight: 700;
   line-height: 1.1;
   color: white;
@@ -364,7 +370,7 @@ img {
 }
 
 .hero-title {
-  font-size: 56px;
+  font-size: clamp(32px, 8vw, 56px);
   line-height: 1.1;
   margin-bottom: 24px;
   color: white;
@@ -574,13 +580,13 @@ img {
 }
 
 .page-hero-title {
-  font-size: 48px;
+  font-size: clamp(28px, 7vw, 48px);
   color: white;
   margin-bottom: 12px;
 }
 
 .page-hero-desc {
-  font-size: 20px;
+  font-size: clamp(15px, 3.5vw, 20px);
   color: rgba(255, 255, 255, 0.9);
 }
 
@@ -598,12 +604,12 @@ section {
 }
 
 .section-title {
-  font-size: 38px;
+  font-size: clamp(24px, 5.5vw, 38px);
   margin-bottom: 24px;
 }
 
 .section-desc {
-  font-size: 18px;
+  font-size: clamp(15px, 3vw, 18px);
   margin-bottom: 48px;
   max-width: 600px;
 }
@@ -834,7 +840,7 @@ section {
 .cta-section .section-title {
   color: white;
   text-transform: uppercase;
-  font-size: 32px;
+  font-size: clamp(22px, 5.5vw, 32px);
   margin-bottom: 16px;
   line-height: 1.2;
 }
@@ -1374,6 +1380,11 @@ textarea.form-control {
   color: #DC2626;
 }
 
+.contact-info-content {
+  min-width: 0;
+  overflow-wrap: break-word;
+}
+
 .contact-info-content h3 {
   font-size: 18px;
   margin-bottom: 4px;
@@ -1409,10 +1420,6 @@ textarea.form-control {
 
   .mobile-menu.active {
     right: 0;
-  }
-
-  .hero-title {
-    font-size: 48px;
   }
 
   .stats-grid {
@@ -1456,20 +1463,8 @@ textarea.form-control {
 }
 
 @media (max-width: 640px) {
-  .hero {
-    height: 600px;
-  }
-
-  .hero-title {
-    font-size: 36px;
-  }
-
   .hero-desc {
     font-size: 18px;
-  }
-
-  .section-title {
-    font-size: 28px;
   }
 
   .stats-grid {
@@ -1610,7 +1605,7 @@ textarea.form-control {
 }
 
 .about-hero-title {
-  font-size: 56px;
+  font-size: clamp(32px, 8vw, 56px);
   font-weight: 700;
   font-family: 'Poppins', sans-serif;
   line-height: 1.1;
@@ -1742,12 +1737,6 @@ textarea.form-control {
   
   .brand-watermark {
     display: none;
-  }
-
-  .about-hero-title,
-  .page-hero-title,
-  .hero-title {
-    font-size: 36px;
   }
 
   .cta-section {
