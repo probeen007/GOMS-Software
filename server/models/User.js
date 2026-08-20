@@ -27,6 +27,14 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: true
     },
+    // Identifies the single currently-valid login session for this account.
+    // Regenerated on every successful login; any previously-issued token
+    // carrying an older sessionId is rejected by the authenticate middleware,
+    // effectively signing that device out.
+    activeSessionId: {
+      type: String,
+      default: null
+    },
     baseSalary: {
       type: Number,
       default: 30000
@@ -41,10 +49,11 @@ const userSchema = new mongoose.Schema(
   }
 );
 
-// Helper method to strip password hash when converting to JSON
+// Helper method to strip internal auth fields when converting to JSON
 userSchema.methods.toJSON = function () {
   const obj = this.toObject();
   delete obj.passwordHash;
+  delete obj.activeSessionId;
   return obj;
 };
 

@@ -34,6 +34,13 @@ export async function authenticate(req, res, next) {
       return res.status(403).json({ message: 'This user account is inactive' });
     }
 
+    // Only one active session per account: a token whose sid doesn't match
+    // the account's current session was superseded by a later login
+    // elsewhere, so it's rejected here.
+    if (decoded.sid && user.activeSessionId && decoded.sid !== user.activeSessionId) {
+      return res.status(401).json({ message: 'This account was signed in from another device. Please log in again.' });
+    }
+
     req.user = user;
     next();
   } catch (error) {

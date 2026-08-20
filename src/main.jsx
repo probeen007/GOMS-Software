@@ -67,6 +67,19 @@ axios.interceptors.response.use(
       msg = error.response.data.errors.map(e => e.msg).join(', ');
     }
     window.showToast(msg, 'error');
+
+    // A 401 outside of the login form itself means the current session is no
+    // longer valid (expired, or superseded by a login on another device).
+    // Clear it and send the user back to /login instead of leaving them
+    // stuck re-triggering the same error on every subsequent action.
+    if (error.response?.status === 401 && !error.config?.url?.includes('/api/auth/login')) {
+      localStorage.removeItem('token');
+      delete axios.defaults.headers.common['Authorization'];
+      if (window.location.pathname !== '/login') {
+        window.location.href = '/login';
+      }
+    }
+
     return Promise.reject(error);
   }
 );

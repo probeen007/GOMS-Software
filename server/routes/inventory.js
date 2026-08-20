@@ -3,6 +3,7 @@ import { body, validationResult } from 'express-validator';
 import InventoryStock from '../models/InventoryStock.js';
 import Purchase from '../models/Purchase.js';
 import Expenditure from '../models/Expenditure.js';
+import Servicing from '../models/Servicing.js';
 import { authenticate, authorize } from '../middleware/auth.js';
 import { logAction } from '../utils/logger.js';
 
@@ -159,6 +160,42 @@ router.patch(
     }
   }
 );
+
+// @route   DELETE /api/inventory/:id
+// @desc    Delete an inventory item. Refused if it's ever been used in a
+//          service job or a purchase record, since those are historical
+//          records that would end up with a dangling part reference.
+// @access  Private (admin, accountant)
+router.delete('/:id', authenticate, authorize('admin', 'accountant'), async (req, res) => {
+  try {
+    const item = await InventoryStock.findById(req.params.id);
+    if (!item) {
+      return res.status(404).json({ message: 'Inventory item not found' });
+    }
+
+    const usedInServicing = await Servicing.exists({ 'parts.partId': item._id });
+    const usedInPurchase = await Purchase.exists({ 'items.partId': item._id });
+    if (usedInServicing || usedInPurchase) {
+      return res.status(400).json({
+        message: 'This part has already been used in a service job or purchase record and cannot be deleted. Set its quantity to 0 instead.'
+      });
+    }
+
+    await InventoryStock.findByIdAndDelete(item._id);
+
+    await logAction({
+      req,
+      action: 'inventory_deleted',
+      module: 'inventory',
+      details: `Deleted inventory item: ${item.name} (SKU: ${item.sku})`
+    });
+
+    res.json({ message: 'Inventory item deleted successfully' });
+  } catch (err) {
+    console.error('Delete inventory item error:', err.message);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
 
 // @route   POST /api/inventory/purchases
 // @desc    Record a purchase, update stock levels, and auto-create an expenditure entry

@@ -901,7 +901,14 @@ export default function Finance() {
                             onClick={() => setExpandedCustomerId(isExpanded ? null : c.customerId)}
                             className="hover:bg-slate-50 transition-colors cursor-pointer"
                           >
-                            <td className="py-2.5 px-3 font-bold text-slate-900">{c.name}</td>
+                            <td className="py-2.5 px-3 font-bold text-slate-900">
+                              {c.name}
+                              {c.deleted && (
+                                <span className="ml-2 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide bg-rose-50 text-rose-600 border border-rose-200" title="This customer record was deleted, but they still owe this amount">
+                                  Deleted Customer
+                                </span>
+                              )}
+                            </td>
                             <td className="py-2.5 px-3 text-slate-500">{c.phone || '—'}</td>
                             <td className="py-2.5 px-3 text-right">{c.invoiceCount}</td>
                             <td className="py-2.5 px-3 text-right font-mono font-bold text-sky-700">Rs. {c.totalDue.toFixed(2)}</td>
@@ -1008,6 +1015,7 @@ export default function Finance() {
                   <option value="Marketing">Marketing &amp; Ads</option>
                   <option value="Tools & Supplies">Equipment &amp; Tool Repairs</option>
                   <option value="Office Expense">Office Stationery &amp; Supplies</option>
+                  <option value="Snacks">Snacks &amp; Refreshments</option>
                   <option value="Tax">Government Taxes / Business Fees</option>
                   <option value="Other">Other Overhead</option>
                 </select>

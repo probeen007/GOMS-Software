@@ -170,6 +170,18 @@ export default function Inventory() {
     }
   };
 
+  // Handle Delete Inventory Item
+  const handleDeleteItem = async (item) => {
+    if (!window.confirm(`Permanently delete "${item.name}" (SKU: ${item.sku})? This cannot be undone.`)) return;
+    try {
+      await axios.delete(`/api/inventory/${item._id}`);
+      fetchInventory();
+    } catch (error) {
+      console.error(error);
+      alert(error.response?.data?.message || 'Failed to delete item');
+    }
+  };
+
   // Handle Purchase Restocking Submit
   const handleRecordPurchase = async (e) => {
     e.preventDefault();
@@ -404,6 +416,13 @@ export default function Inventory() {
                             >
                               <Edit2 className="w-4 h-4" />
                             </button>
+                            <button
+                              onClick={() => handleDeleteItem(item)}
+                              className="p-2 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
+                              title="Delete part"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
                           </td>
                         )}
                       </tr>
@@ -456,16 +475,25 @@ export default function Inventory() {
                     )}
 
                     {isAuthorized && (
-                      <button
-                        onClick={() => {
-                          setEditingItem(item);
-                          setIsEditModalOpen(true);
-                        }}
-                        className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-900 cursor-pointer"
-                      >
-                        <Edit2 className="w-3.5 h-3.5" />
-                        <span>Edit Details</span>
-                      </button>
+                      <div className="flex items-center gap-3">
+                        <button
+                          onClick={() => {
+                            setEditingItem(item);
+                            setIsEditModalOpen(true);
+                          }}
+                          className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-900 cursor-pointer"
+                        >
+                          <Edit2 className="w-3.5 h-3.5" />
+                          <span>Edit Details</span>
+                        </button>
+                        <button
+                          onClick={() => handleDeleteItem(item)}
+                          className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-red-600 cursor-pointer"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                          <span>Delete</span>
+                        </button>
+                      </div>
                     )}
                   </div>
                 </div>

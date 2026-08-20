@@ -1,4 +1,5 @@
 import express from 'express';
+import crypto from 'crypto';
 import rateLimit from 'express-rate-limit';
 import { body, validationResult } from 'express-validator';
 import jwt from 'jsonwebtoken';
@@ -60,10 +61,18 @@ router.post(
         return res.status(401).json({ message: 'Invalid credentials' });
       }
 
+      // Start a fresh session for this login, invalidating any session
+      // already active on another device for this account (see the
+      // sessionId check in the authenticate middleware).
+      const sessionId = crypto.randomUUID();
+      user.activeSessionId = sessionId;
+      await user.save();
+
       // Create JWT
       const payload = {
         id: user._id,
-        role: user.role
+        role: user.role,
+        sid: sessionId
       };
 
       const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '24h' });
