@@ -42,9 +42,15 @@ const customerSchema = new mongoose.Schema(
   }
 );
 
-// Query middleware to filter out soft-deleted customers by default
+// Query middleware to filter out soft-deleted customers by default. Pass
+// { withDeleted: true } as a query option (e.g. Customer.find(filter, null,
+// { withDeleted: true }), or populate({ path, options: { withDeleted: true } }))
+// to see soft-deleted records too — needed anywhere a deleted customer's
+// historical data (like outstanding invoice dues) still has to be shown.
 customerSchema.pre(/^find/, function (next) {
-  this.find({ deletedAt: null });
+  if (!this.getOptions().withDeleted) {
+    this.find({ deletedAt: null });
+  }
   next();
 });
 

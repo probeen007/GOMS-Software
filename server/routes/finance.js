@@ -498,13 +498,17 @@ router.get('/dues-report', authenticate, authorize('admin', 'accountant'), async
     }
 
     const invoices = await Invoice.find(query)
-      .populate('customerId', 'name phone email')
+      // withDeleted: outstanding dues are real money owed regardless of
+      // whether the customer record was later soft-deleted, so they must
+      // still show up here even though they're hidden from normal
+      // customer-facing lists (see Customer model's pre(/^find/) hook).
+      .populate({ path: 'customerId', select: 'name phone email deletedAt', options: { withDeleted: true } })
       .sort({ createdAt: -1 })
       .lean();
 
     const byCustomer = new Map();
     for (const inv of invoices) {
-      if (!inv.customerId) continue; // customer record was deleted
+      if (!inv.customerId) continue; // customer record no longer exists at all
       const key = inv.customerId._id.toString();
       if (!byCustomer.has(key)) {
         byCustomer.set(key, {
@@ -512,6 +516,7 @@ router.get('/dues-report', authenticate, authorize('admin', 'accountant'), async
           name: inv.customerId.name,
           phone: inv.customerId.phone,
           email: inv.customerId.email,
+          deleted: !!inv.customerId.deletedAt,
           totalDue: 0,
           invoiceCount: 0,
           invoices: []
