@@ -794,7 +794,7 @@ export default function Inventory() {
                     className="block w-full h-11 rounded-xl border-slate-200 text-sm"
                   >
                     <option value="non-vat">Non-VAT</option>
-                    <option value="vat">VAT (13%)</option>
+                    <option value="vat">VAT</option>
                   </select>
                 </div>
               </div>

@@ -72,6 +72,18 @@ export default function Sidebar({ isOpen, onClose }) {
       roles: ['admin', 'receptionist', 'technician']
     },
     {
+      path: '/invoices',
+      label: 'Invoices & Payments',
+      icon: Receipt,
+      roles: ['admin', 'receptionist', 'accountant']
+    },
+    {
+      path: '/finance',
+      label: 'Finance Reports',
+      icon: TrendingUp,
+      roles: ['admin', 'accountant']
+    },
+    {
       path: '/inventory',
       label: 'Inventory & Parts',
       icon: Wrench,
@@ -90,22 +102,10 @@ export default function Sidebar({ isOpen, onClose }) {
       roles: ['admin', 'receptionist', 'technician', 'accountant']
     },
     {
-      path: '/invoices',
-      label: 'Invoices & Payments',
-      icon: Receipt,
-      roles: ['admin', 'receptionist', 'accountant']
-    },
-    {
       path: '/loyalty',
       label: 'Loyalty Ledger',
       icon: Award,
       roles: ['admin', 'receptionist', 'accountant']
-    },
-    {
-      path: '/finance',
-      label: 'Finance Reports',
-      icon: TrendingUp,
-      roles: ['admin', 'accountant']
     },
     {
       path: '/daybook',

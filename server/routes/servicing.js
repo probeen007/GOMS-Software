@@ -10,11 +10,15 @@ import { createNotification } from '../utils/notifier.js';
 import { logAction } from '../utils/logger.js';
 import { formatNepaliDate } from '../utils/nepaliDate.js';
 import { escapeHtml } from '../utils/htmlEscape.js';
+import { buildDateRangeFilter } from '../utils/dateRange.js';
 import Settings from '../models/Settings.js';
 
 const router = express.Router();
 
-// Helper to recalculate Servicing pricing totals
+// Helper to recalculate Servicing pricing totals. VAT is a manually-entered
+// amount (set via PATCH /:id/vat) rather than an auto-applied percentage, so
+// this only recomputes subtotal/total from the current parts+labour+VAT —
+// it never touches record.vat itself.
 const recalculateServicingTotals = (record) => {
   let subtotal = 0;
 
@@ -27,14 +31,10 @@ const recalculateServicingTotals = (record) => {
   });
 
   const discVal = record.discount || 0;
-  const taxedBase = subtotal - discVal;
-
-  // Apply 13% VAT standard if subtotal is positive and no VAT is specified
-  const vatPct = 13;
-  const vatVal = Math.max(0, taxedBase * (vatPct / 100));
+  const taxedBase = Math.max(0, subtotal - discVal);
+  const vatVal = record.vat || 0;
 
   record.subtotal = subtotal;
-  record.vat = vatVal;
   record.total = Math.max(0, taxedBase + vatVal);
 };
 
@@ -117,7 +117,7 @@ router.get('/search', authenticate, authorize('admin', 'receptionist', 'technici
 // @access  Private (admin, receptionist, technician, accountant)
 router.get('/', authenticate, authorize('admin', 'receptionist', 'technician', 'accountant'), async (req, res) => {
   try {
-    const { status, search } = req.query;
+    const { status, search, vatFilter, startDate, endDate } = req.query;
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 25;
     const skip = (page - 1) * limit;
@@ -125,6 +125,18 @@ router.get('/', authenticate, authorize('admin', 'receptionist', 'technician', '
     let query = {};
     if (status) {
       query.status = status;
+    }
+
+    if (vatFilter === 'vat') {
+      query.vat = { $gt: 0 };
+    } else if (vatFilter === 'non-vat') {
+      query.vat = { $lte: 0 };
+    }
+
+    if (startDate || endDate) {
+      const range = buildDateRangeFilter(startDate, endDate);
+      if (range.error) return res.status(400).json({ message: range.error });
+      query.createdAt = range.filter;
     }
 
     if (search && search.trim()) {
@@ -579,6 +591,60 @@ router.patch(
       res.json(populated);
     } catch (err) {
       console.error('Edit servicing labour error:', err.message);
+      res.status(500).json({ message: 'Server error' });
+    }
+  }
+);
+
+// @route   PATCH /api/servicing/:id/vat
+// @desc    Manually set the VAT amount on a servicing record (VAT is no
+//          longer auto-applied at a fixed 13% — staff enter the actual
+//          amount for this job, e.g. after checking the invoice type)
+// @access  Private (admin, receptionist, technician)
+router.patch(
+  '/:id/vat',
+  authenticate,
+  authorize('admin', 'receptionist', 'technician'),
+  [
+    body('vat').isFloat({ min: 0 }).withMessage('VAT amount must be 0 or more')
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const vat = Number(req.body.vat);
+
+    try {
+      const record = await Servicing.findById(req.params.id);
+      if (!record) {
+        return res.status(404).json({ message: 'Servicing record not found' });
+      }
+
+      if (record.status === 'closed') {
+        return res.status(400).json({ message: 'Cannot edit VAT on a closed servicing record' });
+      }
+
+      record.vat = vat;
+      recalculateServicingTotals(record);
+      await record.save();
+
+      const populated = await Servicing.findById(record._id)
+        .populate('customerId', 'name phone')
+        .populate('vehicleId', 'plateNo make model')
+        .lean();
+
+      await logAction({
+        req,
+        action: 'servicing_vat_updated',
+        module: 'servicing',
+        details: `Set VAT to Rs. ${vat.toFixed(2)} on Servicing record #${record._id.toString().substring(18)}`
+      });
+
+      res.json(populated);
+    } catch (err) {
+      console.error('Edit servicing VAT error:', err.message);
       res.status(500).json({ message: 'Server error' });
     }
   }

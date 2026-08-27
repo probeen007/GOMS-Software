@@ -16,8 +16,11 @@ import {
   Receipt,
   Filter,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Calendar,
+  Download
 } from 'lucide-react';
+import { getPeriodRange } from '../utils/periodRange';
 
 export default function Invoices() {
   const { user } = useAuth();
@@ -33,6 +36,16 @@ export default function Invoices() {
   const [searchTerm, setSearchTerm] = useState('');
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+
+  // Period filter: '' (all time) | 'week' | 'month' | 'year' | 'custom'
+  const [periodFilter, setPeriodFilter] = useState('');
+  const [customStartDate, setCustomStartDate] = useState('');
+  const [customEndDate, setCustomEndDate] = useState('');
+  const [exporting, setExporting] = useState(false);
+
+  const activeDateRange = periodFilter === 'custom'
+    ? { start: customStartDate, end: customEndDate }
+    : getPeriodRange(periodFilter);
 
   // Payment Form Modal State
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
@@ -77,6 +90,7 @@ export default function Invoices() {
   const [pcInvoiceType, setPcInvoiceType] = useState('vat');
   const [pcItems, setPcItems] = useState([]);
   const [pcDiscount, setPcDiscount] = useState('0');
+  const [pcVatAmount, setPcVatAmount] = useState('0');
   const [pcOdometer, setPcOdometer] = useState('0');
   const [pcNextServiceDate, setPcNextServiceDate] = useState('');
   const [pcError, setPcError] = useState('');
@@ -107,7 +121,14 @@ export default function Invoices() {
     setLoading(true);
     try {
       const response = await axios.get('/api/invoices', {
-        params: { status: statusFilter, search: searchTerm, page, limit: 25 }
+        params: {
+          status: statusFilter,
+          search: searchTerm,
+          startDate: activeDateRange.start || undefined,
+          endDate: activeDateRange.end || undefined,
+          page,
+          limit: 25
+        }
       });
       setInvoices(response.data.invoices);
       setTotalPages(response.data.pages || 1);
@@ -158,7 +179,7 @@ export default function Invoices() {
   // Reset to page 1 whenever the filter/search criteria change
   useEffect(() => {
     setPage(1);
-  }, [statusFilter, searchTerm]);
+  }, [statusFilter, searchTerm, periodFilter, customStartDate, customEndDate]);
 
   // Debounce the search box so we don't fire a request on every keystroke
   useEffect(() => {
@@ -167,7 +188,34 @@ export default function Invoices() {
     }, 350);
     return () => clearTimeout(delay);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [statusFilter, searchTerm, page]);
+  }, [statusFilter, searchTerm, page, periodFilter, customStartDate, customEndDate]);
+
+  const handleExportCSV = async () => {
+    setExporting(true);
+    try {
+      const response = await axios.get('/api/invoices/export', {
+        params: {
+          status: statusFilter,
+          search: searchTerm,
+          startDate: activeDateRange.start || undefined,
+          endDate: activeDateRange.end || undefined
+        },
+        responseType: 'blob'
+      });
+      const url = window.URL.createObjectURL(new Blob([response.data], { type: 'text/csv' }));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `invoices-export-${new Date().toISOString().split('T')[0]}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Export invoices error:', err);
+    } finally {
+      setExporting(false);
+    }
+  };
 
   const fetchUnbilledRecords = async () => {
     setUnbilledLoading(true);
@@ -244,6 +292,7 @@ export default function Invoices() {
     setPcInvoiceType('vat');
     setPcItems([{ name: '', qty: 1, unitPrice: 0, itemType: 'part' }]);
     setPcDiscount('0');
+    setPcVatAmount('0');
     setPcOdometer('0');
     setPcNextServiceDate('');
     setPcError('');
@@ -296,6 +345,7 @@ export default function Invoices() {
         invoiceType: pcInvoiceType,
         items: pcItems,
         discount: Number(pcDiscount) || 0,
+        vat: pcInvoiceType === 'vat' ? (Number(pcVatAmount) || 0) : 0,
         odometer: Number(pcOdometer) || 0,
         nextServiceDate: pcNextServiceDate || null
       });
@@ -451,29 +501,39 @@ export default function Invoices() {
             </p>
           </div>
           {isStaff && (
-            <div className="flex gap-2.5">
+            <div className="flex flex-wrap gap-2">
               <button
                 type="button"
                 onClick={openGenerateModal}
-                className="flex items-center justify-center gap-2 px-4 h-11 bg-blue-600 hover:bg-blue-500 rounded-xl text-sm font-bold text-white transition-all duration-200 shadow-md shadow-blue-500/10 hover:-translate-y-0.5 cursor-pointer"
+                className="flex items-center justify-center gap-1.5 px-3 h-9 bg-blue-600 hover:bg-blue-500 rounded-lg text-xs font-bold text-white whitespace-nowrap transition-all duration-200 shadow-md shadow-blue-500/10 hover:-translate-y-0.5 cursor-pointer"
               >
-                <FilePlus className="w-5 h-5" />
+                <FilePlus className="w-4 h-4 shrink-0" />
                 <span>Job Card Bill</span>
               </button>
               <button
                 type="button"
                 onClick={openPCModal}
-                className="flex items-center justify-center gap-2 px-4 h-11 bg-emerald-600 hover:bg-emerald-500 rounded-xl text-sm font-bold text-white transition-all duration-200 shadow-md shadow-emerald-500/10 hover:-translate-y-0.5 cursor-pointer"
+                className="flex items-center justify-center gap-1.5 px-3 h-9 bg-emerald-600 hover:bg-emerald-500 rounded-lg text-xs font-bold text-white whitespace-nowrap transition-all duration-200 shadow-md shadow-emerald-500/10 hover:-translate-y-0.5 cursor-pointer"
               >
-                <FileText className="w-5 h-5" />
+                <FileText className="w-4 h-4 shrink-0" />
                 <span>Direct PC Bill</span>
+              </button>
+              <button
+                type="button"
+                onClick={handleExportCSV}
+                disabled={exporting}
+                className="flex items-center justify-center gap-1.5 px-3 h-9 bg-white border border-slate-200 hover:border-slate-300 rounded-lg text-xs font-bold text-slate-700 whitespace-nowrap transition-all duration-200 hover:-translate-y-0.5 cursor-pointer disabled:opacity-60 disabled:pointer-events-none disabled:translate-y-0"
+                title="Export the currently filtered invoices as CSV"
+              >
+                {exporting ? <Loader2 className="w-4 h-4 shrink-0 animate-spin" /> : <Download className="w-4 h-4 shrink-0" />}
+                <span>Export CSV</span>
               </button>
             </div>
           )}
         </div>
 
         {/* Search & Filter widgets */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-5 bg-white border border-slate-200 rounded-2xl shadow-sm">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 p-5 bg-white border border-slate-200 rounded-2xl shadow-sm">
           <div className="space-y-1.5">
             <label className="text-xs font-bold text-slate-500 uppercase tracking-wide flex items-center gap-1.5">
               <Search className="w-4 h-4 text-blue-600" />
@@ -516,6 +576,45 @@ export default function Invoices() {
               <option value="credited">Credited / Adjustments</option>
             </select>
           </div>
+
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold text-slate-500 uppercase tracking-wide flex items-center gap-1.5">
+              <Calendar className="w-4 h-4 text-blue-600" />
+              Period
+            </label>
+            <select
+              value={periodFilter}
+              onChange={(e) => setPeriodFilter(e.target.value)}
+              className="block w-full h-11 rounded-xl border-slate-200 text-sm cursor-pointer"
+            >
+              <option value="">All Time</option>
+              <option value="week">This Week</option>
+              <option value="month">This Month</option>
+              <option value="year">This Year</option>
+              <option value="custom">Custom Range</option>
+            </select>
+          </div>
+
+          {periodFilter === 'custom' && (
+            <div className="space-y-1.5 sm:col-span-2 xl:col-span-4">
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">Custom Date Range</label>
+              <div className="flex items-center gap-3">
+                <input
+                  type="date"
+                  value={customStartDate}
+                  onChange={(e) => setCustomStartDate(e.target.value)}
+                  className="block w-full h-11 rounded-xl border-slate-200 text-sm"
+                />
+                <span className="text-slate-400 text-xs font-bold uppercase tracking-wide shrink-0">to</span>
+                <input
+                  type="date"
+                  value={customEndDate}
+                  onChange={(e) => setCustomEndDate(e.target.value)}
+                  className="block w-full h-11 rounded-xl border-slate-200 text-sm"
+                />
+              </div>
+            </div>
+          )}
         </div>
 
         {loading ? (
@@ -717,7 +816,7 @@ export default function Invoices() {
               </div>
               {selectedInvoiceData.invoice.invoiceType === 'vat' && (
                 <div className="flex justify-between">
-                  <span>VAT (13%):</span>
+                  <span>VAT:</span>
                   <span className="font-mono text-slate-700 font-bold">Rs. {selectedInvoiceData.invoice.vat.toFixed(2)}</span>
                 </div>
               )}
@@ -1220,7 +1319,7 @@ export default function Invoices() {
                     onClick={() => setGenerateInvoiceType('vat')}
                     className={`h-11 rounded-xl text-sm font-bold border transition-colors cursor-pointer ${generateInvoiceType === 'vat' ? 'bg-blue-600 border-blue-600 text-white' : 'bg-white border-slate-200 text-slate-500 hover:border-slate-300'}`}
                   >
-                    VAT (13%)
+                    VAT
                   </button>
                   <button
                     type="button"
@@ -1231,6 +1330,28 @@ export default function Invoices() {
                   </button>
                 </div>
               </div>
+
+              {selectedServicingId && (() => {
+                const rec = unbilledRecords.find((r) => r._id === selectedServicingId);
+                if (!rec) return null;
+                const taxable = Math.max(0, rec.subtotal - (rec.discount || 0));
+                return (
+                  <div className="space-y-1.5 p-3 bg-slate-50 border border-slate-100 rounded-xl text-xs font-semibold text-slate-500">
+                    <div className="flex justify-between"><span>Subtotal:</span><span className="font-mono text-slate-700">Rs. {rec.subtotal.toFixed(2)}</span></div>
+                    <div className="flex justify-between"><span>Taxable Amount:</span><span className="font-mono text-slate-700">Rs. {taxable.toFixed(2)}</span></div>
+                    {generateInvoiceType === 'vat' && (
+                      <div className="flex justify-between"><span>VAT (set on job card):</span><span className="font-mono text-slate-700">Rs. {(rec.vat || 0).toFixed(2)}</span></div>
+                    )}
+                    <div className="flex justify-between pt-1.5 border-t border-slate-200 font-bold text-slate-800">
+                      <span>Invoice Total:</span>
+                      <span className="font-mono">Rs. {(taxable + (generateInvoiceType === 'vat' ? (rec.vat || 0) : 0)).toFixed(2)}</span>
+                    </div>
+                    {generateInvoiceType === 'vat' && (
+                      <p className="text-[11px] text-slate-400 pt-1">To change the VAT amount, edit it on the servicing record before invoicing.</p>
+                    )}
+                  </div>
+                );
+              })()}
 
               <div className="space-y-1.5">
                 <label className="text-xs font-extrabold text-slate-500 uppercase tracking-wide">Next Service Date (Optional)</label>
@@ -1375,7 +1496,7 @@ export default function Invoices() {
                         onClick={() => setPcInvoiceType('vat')}
                         className={`h-9 rounded-lg text-xs font-bold border transition-colors cursor-pointer ${pcInvoiceType === 'vat' ? 'bg-blue-600 border-blue-600 text-white shadow-sm' : 'bg-white border-slate-200 text-slate-700 hover:border-slate-350'}`}
                       >
-                        VAT (13%)
+                        VAT
                       </button>
                       <button
                         type="button"
@@ -1399,6 +1520,39 @@ export default function Invoices() {
                       className="block w-full h-9 rounded-lg border-slate-200 text-xs font-semibold focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
+
+                  {pcInvoiceType === 'vat' && (
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between">
+                        <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Taxable Amount (Rs.)</label>
+                        <span className="text-[10px] font-mono font-bold text-slate-600">
+                          Rs. {Math.max(0, pcItems.reduce((sum, item) => sum + (Number(item.qty) || 0) * (Number(item.unitPrice) || 0), 0) - (Number(pcDiscount) || 0)).toFixed(2)}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">VAT Amount (Rs.) *</label>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const taxable = Math.max(0, pcItems.reduce((sum, item) => sum + (Number(item.qty) || 0) * (Number(item.unitPrice) || 0), 0) - (Number(pcDiscount) || 0));
+                            setPcVatAmount((Math.round(taxable * (vatRate / 100) * 100) / 100).toFixed(2));
+                          }}
+                          className="text-[10px] font-bold text-blue-600 hover:text-blue-700 cursor-pointer"
+                        >
+                          Suggest ({vatRate}%)
+                        </button>
+                      </div>
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        placeholder="0.00"
+                        value={pcVatAmount}
+                        onChange={(e) => setPcVatAmount(e.target.value)}
+                        className="block w-full h-9 rounded-lg border-slate-200 text-xs font-semibold focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </div>
+                  )}
                 </div>
 
                 {/* Right Items Grid */}
@@ -1577,9 +1731,9 @@ export default function Invoices() {
                     </div>
                     {pcInvoiceType === 'vat' && (
                       <div className="flex justify-between">
-                        <span>VAT ({vatRate}%):</span>
+                        <span>VAT (manual):</span>
                         <span className="font-mono text-slate-800 font-bold">
-                          Rs. {(Math.round((Math.max(0, pcItems.reduce((sum, item) => sum + (Number(item.qty) || 0) * (Number(item.unitPrice) || 0), 0) - (Number(pcDiscount) || 0)) * (vatRate / 100)) * 100) / 100).toFixed(2)}
+                          Rs. {(Number(pcVatAmount) || 0).toFixed(2)}
                         </span>
                       </div>
                     )}
@@ -1587,8 +1741,8 @@ export default function Invoices() {
                       <span>Grand Total:</span>
                       <span className="font-mono text-blue-750 font-extrabold text-sm">
                         Rs. {(
-                          Math.max(0, pcItems.reduce((sum, item) => sum + (Number(item.qty) || 0) * (Number(item.unitPrice) || 0), 0) - (Number(pcDiscount) || 0)) + 
-                          (pcInvoiceType === 'vat' ? Math.round((Math.max(0, pcItems.reduce((sum, item) => sum + (Number(item.qty) || 0) * (Number(item.unitPrice) || 0), 0) - (Number(pcDiscount) || 0)) * (vatRate / 100)) * 100) / 100 : 0)
+                          Math.max(0, pcItems.reduce((sum, item) => sum + (Number(item.qty) || 0) * (Number(item.unitPrice) || 0), 0) - (Number(pcDiscount) || 0)) +
+                          (pcInvoiceType === 'vat' ? (Number(pcVatAmount) || 0) : 0)
                         ).toFixed(2)}
                       </span>
                     </div>

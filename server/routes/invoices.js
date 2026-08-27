@@ -12,10 +12,21 @@ import { createNotification } from '../utils/notifier.js';
 import { logAction } from '../utils/logger.js';
 import { formatNepaliDate, formatNepaliDateTime } from '../utils/nepaliDate.js';
 import { escapeHtml } from '../utils/htmlEscape.js';
-import { isWithinSupportedDateRange } from '../utils/dateRange.js';
+import { buildDateRangeFilter, isWithinSupportedDateRange } from '../utils/dateRange.js';
 import Settings from '../models/Settings.js';
 
 const router = express.Router();
+
+// Escapes a value for safe inclusion in a CSV cell (wraps in quotes and
+// doubles any embedded quotes whenever the value contains a comma, quote,
+// or newline that would otherwise break column alignment).
+function csvCell(value) {
+  const str = value === null || value === undefined ? '' : String(value);
+  if (/[",\n]/.test(str)) {
+    return `"${str.replace(/"/g, '""')}"`;
+  }
+  return str;
+}
 
 // @route   POST /api/invoices/generate
 // @desc    Generate an invoice (VAT or Non-VAT) from a closed, unbilled servicing record
@@ -56,13 +67,14 @@ router.post(
         return res.status(400).json({ message: 'This servicing record has already been invoiced' });
       }
 
-      const settings = await Settings.findOne().lean();
-      const vatRate = settings ? (settings.vatRate / 100) : 0.13;
-
+      // VAT is a manually-entered amount set on the servicing record itself
+      // (PATCH /api/servicing/:id/vat) before it's closed, not an
+      // auto-applied percentage — carry it over as-is so the invoice always
+      // matches what staff actually agreed with the customer on the job card.
       const subtotal = servicing.subtotal;
       const discount = servicing.discount || 0;
       const taxedBase = Math.max(0, subtotal - discount);
-      const vat = invoiceType === 'vat' ? Math.round((taxedBase * vatRate) * 100) / 100 : 0;
+      const vat = invoiceType === 'vat' ? (servicing.vat || 0) : 0;
       const total = taxedBase + vat;
 
       const invoice = new Invoice({
@@ -130,6 +142,7 @@ router.post(
     body('items.*.qty').isInt({ min: 1 }).withMessage('Quantity must be 1 or more'),
     body('items.*.unitPrice').isFloat({ min: 0 }).withMessage('Unit price must be 0 or more'),
     body('discount').optional().isFloat({ min: 0 }).withMessage('Discount cannot be negative'),
+    body('vat').optional().isFloat({ min: 0 }).withMessage('VAT amount must be 0 or more'),
     body('odometer').optional().isNumeric().withMessage('Odometer must be a number'),
     body('nextServiceDate')
       .optional({ checkFalsy: true })
@@ -144,7 +157,7 @@ router.post(
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { customerId, vehicleId, invoiceType, items, discount, odometer, nextServiceDate } = req.body;
+    const { customerId, vehicleId, invoiceType, items, discount, vat: manualVat, odometer, nextServiceDate } = req.body;
 
     try {
       const customer = await Customer.findById(customerId).lean();
@@ -198,12 +211,12 @@ router.post(
         };
       });
 
-      const settings = await Settings.findOne().lean();
-      const vatRate = settings ? (settings.vatRate / 100) : 0.13;
-
+      // VAT is entered manually rather than auto-applied at a fixed rate —
+      // the frontend suggests a value based on Settings.vatRate but staff
+      // can override it before submitting.
       const disc = Number(discount) || 0;
       const taxedBase = Math.max(0, calculatedSubtotal - disc);
-      const vat = invoiceType === 'vat' ? Math.round((taxedBase * vatRate) * 100) / 100 : 0;
+      const vat = invoiceType === 'vat' ? (Number(manualVat) || 0) : 0;
       const total = taxedBase + vat;
 
       const invoice = new Invoice({
@@ -259,7 +272,7 @@ router.post(
 // @access  Private (admin, receptionist, accountant)
 router.get('/', authenticate, authorize('admin', 'receptionist', 'accountant'), async (req, res) => {
   try {
-    const { status, search } = req.query;
+    const { status, search, startDate, endDate } = req.query;
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 15;
     const skip = (page - 1) * limit;
@@ -267,6 +280,12 @@ router.get('/', authenticate, authorize('admin', 'receptionist', 'accountant'), 
     let query = {};
     if (status) {
       query.status = status;
+    }
+
+    if (startDate || endDate) {
+      const range = buildDateRangeFilter(startDate, endDate);
+      if (range.error) return res.status(400).json({ message: range.error });
+      query.createdAt = range.filter;
     }
 
     if (search && search.trim()) {
@@ -301,6 +320,82 @@ router.get('/', authenticate, authorize('admin', 'receptionist', 'accountant'), 
     });
   } catch (err) {
     console.error('Fetch invoices error:', err.message);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// @route   GET /api/invoices/export
+// @desc    Export invoices matching the same filters as the list view
+//          (status, search, date range) as a CSV file, unpaginated
+// @access  Private (admin, receptionist, accountant)
+router.get('/export', authenticate, authorize('admin', 'receptionist', 'accountant'), async (req, res) => {
+  try {
+    const { status, search, startDate, endDate } = req.query;
+
+    let query = {};
+    if (status) {
+      query.status = status;
+    }
+
+    if (startDate || endDate) {
+      const range = buildDateRangeFilter(startDate, endDate);
+      if (range.error) return res.status(400).json({ message: range.error });
+      query.createdAt = range.filter;
+    }
+
+    if (search && search.trim()) {
+      const regex = { $regex: search.trim(), $options: 'i' };
+      const [matchingCustomers, matchingVehicles] = await Promise.all([
+        Customer.find({ name: regex, deletedAt: null }).select('_id').lean(),
+        Vehicle.find({ $or: [{ plateNo: regex }, { make: regex }, { model: regex }] }).select('_id').lean()
+      ]);
+      query.$or = [
+        { invoiceNo: regex },
+        { customerId: { $in: matchingCustomers.map((c) => c._id) } },
+        { vehicleId: { $in: matchingVehicles.map((v) => v._id) } }
+      ];
+    }
+
+    const invoices = await Invoice.find(query)
+      .populate('customerId', 'name phone email')
+      .populate('vehicleId', 'plateNo make model')
+      .sort({ createdAt: -1 })
+      .lean();
+
+    const header = [
+      'Invoice No', 'Date', 'Type', 'Customer', 'Phone', 'Vehicle', 'Plate No',
+      'Subtotal', 'VAT', 'Total', 'Amount Paid', 'Amount Due', 'Status'
+    ];
+    const rows = invoices.map((inv) => [
+      inv.invoiceNo,
+      formatNepaliDate(inv.createdAt),
+      inv.invoiceType === 'vat' ? 'VAT' : 'Non-VAT',
+      inv.customerId?.name || 'Deleted Customer',
+      inv.customerId?.phone || '',
+      inv.vehicleId ? `${inv.vehicleId.make} ${inv.vehicleId.model}` : '',
+      inv.vehicleId?.plateNo || '',
+      inv.subtotal.toFixed(2),
+      inv.vat.toFixed(2),
+      inv.total.toFixed(2),
+      (inv.total - inv.amountDue).toFixed(2),
+      inv.amountDue.toFixed(2),
+      inv.status
+    ]);
+
+    const csv = [header, ...rows].map((row) => row.map(csvCell).join(',')).join('\r\n');
+
+    await logAction({
+      req,
+      action: 'invoices_exported',
+      module: 'invoices',
+      details: `Exported ${invoices.length} invoice(s) to CSV${status ? ` (status: ${status})` : ''}${startDate || endDate ? ` (${startDate || '...'} to ${endDate || '...'})` : ''}`
+    });
+
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="invoices-export-${Date.now()}.csv"`);
+    res.send('﻿' + csv); // BOM so Excel opens UTF-8 correctly
+  } catch (err) {
+    console.error('Export invoices error:', err.message);
     res.status(500).json({ message: 'Server error' });
   }
 });

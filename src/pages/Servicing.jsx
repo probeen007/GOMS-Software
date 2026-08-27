@@ -20,8 +20,10 @@ import {
   ChevronRight,
   Edit2,
   Trash2,
-  Check
+  Check,
+  Calendar
 } from 'lucide-react';
+import { getPeriodRange } from '../utils/periodRange';
 
 export default function Servicing() {
   const { user } = useAuth();
@@ -39,6 +41,17 @@ export default function Servicing() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalRecords, setTotalRecords] = useState(0);
+
+  // VAT / Non-VAT filter: '' (both) | 'vat' | 'non-vat'
+  const [vatFilter, setVatFilter] = useState('');
+  // Period filter: '' (all time) | 'week' | 'month' | 'year' | 'custom'
+  const [periodFilter, setPeriodFilter] = useState('');
+  const [customStartDate, setCustomStartDate] = useState('');
+  const [customEndDate, setCustomEndDate] = useState('');
+
+  const activeDateRange = periodFilter === 'custom'
+    ? { start: customStartDate, end: customEndDate }
+    : getPeriodRange(periodFilter);
 
   // Service record search (by vehicle number / customer name / customer number)
   const [recordSearchQuery, setRecordSearchQuery] = useState(searchParams.get('q') || '');
@@ -67,6 +80,12 @@ export default function Servicing() {
   const [editFindingsText, setEditFindingsText] = useState('');
   const [findingsLoading, setFindingsLoading] = useState(false);
   const [findingsEditError, setFindingsEditError] = useState('');
+
+  // VAT edit (manual amount)
+  const [isEditingVat, setIsEditingVat] = useState(false);
+  const [editVatAmount, setEditVatAmount] = useState('');
+  const [vatEditLoading, setVatEditLoading] = useState(false);
+  const [vatEditError, setVatEditError] = useState('');
 
   // Part line edit
   const [editingPartIndex, setEditingPartIndex] = useState(null);
@@ -106,7 +125,15 @@ export default function Servicing() {
     setLoading(true);
     try {
       const response = await axios.get('/api/servicing', {
-        params: { status: statusFilter, search: searchTerm, page, limit: 25 }
+        params: {
+          status: statusFilter,
+          search: searchTerm,
+          vatFilter: vatFilter || undefined,
+          startDate: activeDateRange.start || undefined,
+          endDate: activeDateRange.end || undefined,
+          page,
+          limit: 25
+        }
       });
       setRecords(response.data.records);
       setTotalPages(response.data.pages || 1);
@@ -139,7 +166,7 @@ export default function Servicing() {
   // Reset to page 1 whenever the filter/search criteria change
   useEffect(() => {
     setPage(1);
-  }, [statusFilter, searchTerm]);
+  }, [statusFilter, searchTerm, vatFilter, periodFilter, customStartDate, customEndDate]);
 
   // Debounce the search box so we don't fire a request on every keystroke
   useEffect(() => {
@@ -148,7 +175,7 @@ export default function Servicing() {
     }, 350);
     return () => clearTimeout(delay);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [statusFilter, searchTerm, page]);
+  }, [statusFilter, searchTerm, page, vatFilter, periodFilter, customStartDate, customEndDate]);
 
   // Run the deep-linked service-record search on mount (from Customers page)
   useEffect(() => {
@@ -337,6 +364,31 @@ export default function Servicing() {
     }
   };
 
+  // VAT edit (manual amount — see server/routes/servicing.js recalculateServicingTotals)
+  const startEditVat = () => {
+    setEditVatAmount(selectedRecord.vat ? selectedRecord.vat.toFixed(2) : '0');
+    setVatEditError('');
+    setIsEditingVat(true);
+  };
+
+  const handleSaveVat = async () => {
+    setVatEditLoading(true);
+    setVatEditError('');
+    try {
+      const response = await axios.patch(`/api/servicing/${selectedRecord._id}/vat`, {
+        vat: Number(editVatAmount) || 0
+      });
+      setSelectedRecord(response.data);
+      setIsEditingVat(false);
+      fetchRecords();
+    } catch (err) {
+      console.error(err);
+      setVatEditError(err.response?.data?.message || 'Failed to update VAT');
+    } finally {
+      setVatEditLoading(false);
+    }
+  };
+
   // Part line edit/remove
   const startEditPart = (idx, currentQty) => {
     setEditingPartIndex(idx);
@@ -465,9 +517,9 @@ export default function Servicing() {
             <button
               type="button"
               onClick={() => setIsCreateModalOpen(true)}
-              className="flex items-center justify-center gap-2 px-5 h-11 bg-blue-600 hover:bg-blue-500 rounded-xl text-sm font-bold text-white transition-all duration-200 shadow-md shadow-blue-500/10 hover:-translate-y-0.5 cursor-pointer"
+              className="flex items-center justify-center gap-2 px-5 h-11 bg-blue-600 hover:bg-blue-500 rounded-xl text-sm font-bold text-white whitespace-nowrap transition-all duration-200 shadow-md shadow-blue-500/10 hover:-translate-y-0.5 cursor-pointer shrink-0"
             >
-              <Plus className="w-5 h-5" />
+              <Plus className="w-5 h-5 shrink-0" />
               <span>New Servicing Record</span>
             </button>
           )}
@@ -512,7 +564,7 @@ export default function Servicing() {
         )}
 
         {/* Search & Filter widgets */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-5 bg-white border border-slate-200 rounded-2xl shadow-sm">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 p-5 bg-white border border-slate-200 rounded-2xl shadow-sm">
           <div className="space-y-1.5">
             <label className="text-xs font-bold text-slate-500 uppercase tracking-wide flex items-center gap-1.5">
               <Search className="w-4 h-4 text-blue-600" />
@@ -553,6 +605,61 @@ export default function Servicing() {
               <option value="closed">Closed Tickets</option>
             </select>
           </div>
+
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold text-slate-500 uppercase tracking-wide flex items-center gap-1.5">
+              <Filter className="w-4 h-4 text-blue-600" />
+              VAT Filter
+            </label>
+            <select
+              value={vatFilter}
+              onChange={(e) => setVatFilter(e.target.value)}
+              className="block w-full h-11 rounded-xl border-slate-200 text-sm cursor-pointer"
+            >
+              <option value="">VAT &amp; Non-VAT</option>
+              <option value="vat">VAT Only</option>
+              <option value="non-vat">Non-VAT Only</option>
+            </select>
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold text-slate-500 uppercase tracking-wide flex items-center gap-1.5">
+              <Calendar className="w-4 h-4 text-blue-600" />
+              Period
+            </label>
+            <select
+              value={periodFilter}
+              onChange={(e) => setPeriodFilter(e.target.value)}
+              className="block w-full h-11 rounded-xl border-slate-200 text-sm cursor-pointer"
+            >
+              <option value="">All Time</option>
+              <option value="week">This Week</option>
+              <option value="month">This Month</option>
+              <option value="year">This Year</option>
+              <option value="custom">Custom Range</option>
+            </select>
+          </div>
+
+          {periodFilter === 'custom' && (
+            <div className="space-y-1.5 sm:col-span-2 xl:col-span-4">
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">Custom Date Range</label>
+              <div className="flex items-center gap-3">
+                <input
+                  type="date"
+                  value={customStartDate}
+                  onChange={(e) => setCustomStartDate(e.target.value)}
+                  className="block w-full h-11 rounded-xl border-slate-200 text-sm"
+                />
+                <span className="text-slate-400 text-xs font-bold uppercase tracking-wide shrink-0">to</span>
+                <input
+                  type="date"
+                  value={customEndDate}
+                  onChange={(e) => setCustomEndDate(e.target.value)}
+                  className="block w-full h-11 rounded-xl border-slate-200 text-sm"
+                />
+              </div>
+            </div>
+          )}
         </div>
 
         {loading ? (
@@ -921,9 +1028,67 @@ export default function Servicing() {
                 <span className="font-mono text-slate-700 font-bold">Rs. {selectedRecord.subtotal.toFixed(2)}</span>
               </div>
               <div className="flex justify-between">
-                <span>VAT (13%):</span>
-                <span className="font-mono">Rs. {selectedRecord.vat.toFixed(2)}</span>
+                <span>Taxable Amount:</span>
+                <span className="font-mono text-slate-700 font-bold">
+                  Rs. {Math.max(0, selectedRecord.subtotal - (selectedRecord.discount || 0)).toFixed(2)}
+                </span>
               </div>
+
+              {isEditingVat ? (
+                <div className="space-y-2 p-3 bg-blue-50/60 border border-blue-100 rounded-xl">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-xs font-extrabold text-slate-600 uppercase tracking-wide">VAT Amount (Rs.)</span>
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        type="button"
+                        onClick={handleSaveVat}
+                        disabled={vatEditLoading}
+                        className="p-1.5 rounded-md text-emerald-600 hover:bg-emerald-50 transition-colors cursor-pointer disabled:opacity-50"
+                        title="Save VAT amount"
+                      >
+                        {vatEditLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setIsEditingVat(false)}
+                        disabled={vatEditLoading}
+                        className="p-1.5 rounded-md text-slate-400 hover:bg-slate-100 transition-colors cursor-pointer"
+                        title="Cancel"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={editVatAmount}
+                    onChange={(e) => setEditVatAmount(e.target.value)}
+                    autoFocus
+                    className="block w-full h-9 rounded-lg border-slate-200 text-sm font-mono"
+                  />
+                  {vatEditError && <p className="text-[11px] text-rose-600 font-bold">{vatEditError}</p>}
+                </div>
+              ) : (
+                <div className="flex justify-between items-center">
+                  <span>VAT:</span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-mono">Rs. {selectedRecord.vat.toFixed(2)}</span>
+                    {canCreate && selectedRecord.status === 'open' && (
+                      <button
+                        type="button"
+                        onClick={startEditVat}
+                        className="p-1 rounded-md text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
+                        title="Set VAT amount manually"
+                      >
+                        <Edit2 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
+
               <div className="flex justify-between text-base font-bold text-slate-900 border-t border-slate-200 pt-3">
                 <span className="text-blue-700">Total Billable:</span>
                 <span className="font-mono text-blue-700">Rs. {selectedRecord.total.toFixed(2)}</span>
