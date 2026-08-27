@@ -615,7 +615,8 @@ export default function Finance() {
                       <tr className="text-slate-500 uppercase font-bold tracking-wide">
                         <th className="py-2.5 px-3">Invoice No</th>
                         <th className="py-2.5 px-3">Date</th>
-                        <th className="py-2.5 px-3 text-right">VAT (13%)</th>
+                        <th className="py-2.5 px-3 text-right">Taxable Amount</th>
+                        <th className="py-2.5 px-3 text-right">VAT</th>
                         <th className="py-2.5 px-3 text-right">Total</th>
                       </tr>
                     </thead>
@@ -624,6 +625,7 @@ export default function Finance() {
                         <tr key={inv._id} className="hover:bg-slate-50 transition-colors">
                           <td className="py-2.5 px-3 font-mono font-bold">{inv.invoiceNo}</td>
                           <td className="py-2.5 px-3">{formatNepaliDate(inv.createdAt)}</td>
+                          <td className="py-2.5 px-3 text-right font-mono">Rs. {Math.max(0, inv.subtotal - (inv.discount || 0)).toFixed(2)}</td>
                           <td className="py-2.5 px-3 text-right font-mono text-blue-700">Rs. {inv.vat.toFixed(2)}</td>
                           <td className="py-2.5 px-3 text-right font-mono font-bold">Rs. {inv.total.toFixed(2)}</td>
                         </tr>
@@ -653,7 +655,8 @@ export default function Finance() {
                       <tr className="text-slate-500 uppercase font-bold tracking-wide">
                         <th className="py-2.5 px-3">Supplier</th>
                         <th className="py-2.5 px-3">Date</th>
-                        <th className="py-2.5 px-3 text-right">VAT (13%)</th>
+                        <th className="py-2.5 px-3 text-right">Taxable Amount</th>
+                        <th className="py-2.5 px-3 text-right">VAT</th>
                         <th className="py-2.5 px-3 text-right">Total</th>
                       </tr>
                     </thead>
@@ -662,6 +665,7 @@ export default function Finance() {
                         <tr key={p._id} className="hover:bg-slate-50 transition-colors">
                           <td className="py-2.5 px-3 font-semibold">{p.supplierName}</td>
                           <td className="py-2.5 px-3">{formatNepaliDate(p.createdAt)}</td>
+                          <td className="py-2.5 px-3 text-right font-mono">Rs. {p.subtotal.toFixed(2)}</td>
                           <td className="py-2.5 px-3 text-right font-mono text-rose-600">Rs. {p.vat.toFixed(2)}</td>
                           <td className="py-2.5 px-3 text-right font-mono font-bold">Rs. {p.totalCost.toFixed(2)}</td>
                         </tr>
