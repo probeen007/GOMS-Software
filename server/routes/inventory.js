@@ -253,7 +253,8 @@ router.post(
         category: (purchaseType || 'non-vat') === 'vat' ? 'Inventory Purchase (VAT)' : 'Inventory Purchase (Non-VAT)',
         amount: totalCost,
         note: `Restocked ${items.length} parts from ${supplierName}. (Ref Purchase ID: ${purchase._id})`,
-        date: new Date()
+        date: new Date(),
+        purchaseId: purchase._id
       });
       await expenditure.save();
 
@@ -276,5 +277,72 @@ router.post(
     }
   }
 );
+
+// @route   GET /api/inventory/purchases
+// @desc    List recorded supplier restock purchases
+// @access  Private (admin, accountant)
+router.get('/purchases', authenticate, authorize('admin', 'accountant'), async (req, res) => {
+  try {
+    const purchases = await Purchase.find()
+      .populate('items.partId', 'name sku')
+      .sort({ createdAt: -1 })
+      .lean();
+    res.json(purchases);
+  } catch (err) {
+    console.error('Fetch purchases error:', err.message);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// @route   DELETE /api/inventory/purchases/:id
+// @desc    Delete a recorded purchase. Reverses the stock it added (refused
+//          if any of that stock has since been used/sold, since we can't
+//          un-consume parts that are already gone) and removes the
+//          auto-created expenditure entry it produced.
+// @access  Private (admin)
+router.delete('/purchases/:id', authenticate, authorize('admin'), async (req, res) => {
+  try {
+    const purchase = await Purchase.findById(req.params.id);
+    if (!purchase) {
+      return res.status(404).json({ message: 'Purchase record not found' });
+    }
+
+    // Verify every affected part still has enough stock to reverse before
+    // changing anything, so a partial failure can't leave stock half-reversed.
+    for (const item of purchase.items) {
+      const part = await InventoryStock.findById(item.partId);
+      if (!part) {
+        return res.status(400).json({
+          message: `Cannot delete: a part in this purchase no longer exists in inventory.`
+        });
+      }
+      if (part.qty < item.qty) {
+        return res.status(400).json({
+          message: `Cannot delete: "${part.name}" only has ${part.qty} unit(s) left, but this purchase added ${item.qty} — some of this stock has already been used or sold.`
+        });
+      }
+    }
+
+    for (const item of purchase.items) {
+      await InventoryStock.findByIdAndUpdate(item.partId, { $inc: { qty: -item.qty } });
+    }
+
+    const linkedExpenditure = await Expenditure.findOneAndDelete({ purchaseId: purchase._id });
+
+    await purchase.deleteOne();
+
+    await logAction({
+      req,
+      action: 'purchase_deleted',
+      module: 'inventory',
+      details: `Deleted purchase from supplier "${purchase.supplierName}" (Total: Rs. ${purchase.totalCost.toFixed(2)}), reversed stock on ${purchase.items.length} part(s)${linkedExpenditure ? ', and removed its linked expenditure entry' : ' (no linked expenditure entry found to remove — likely recorded before this feature existed)'}`
+    });
+
+    res.json({ message: 'Purchase deleted, stock reversed, and linked expenditure removed successfully' });
+  } catch (err) {
+    console.error('Delete purchase error:', err.message);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
 
 export default router;

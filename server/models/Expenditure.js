@@ -22,6 +22,13 @@ const expenditureSchema = new mongoose.Schema(
       type: Date,
       required: true,
       default: Date.now
+    },
+    // Set when this expenditure was auto-created from recording a supplier
+    // restock, so deleting that Purchase can clean this up too.
+    purchaseId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Purchase',
+      default: null
     }
   },
   {

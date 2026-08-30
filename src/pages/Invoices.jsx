@@ -18,7 +18,9 @@ import {
   ChevronLeft,
   ChevronRight,
   Calendar,
-  Download
+  Download,
+  UserPlus,
+  Trash2
 } from 'lucide-react';
 import { getPeriodRange } from '../utils/periodRange';
 
@@ -76,6 +78,7 @@ export default function Invoices() {
   const [unbilledLoading, setUnbilledLoading] = useState(false);
   const [selectedServicingId, setSelectedServicingId] = useState('');
   const [generateInvoiceType, setGenerateInvoiceType] = useState('vat');
+  const [generateInvoiceNo, setGenerateInvoiceNo] = useState('');
   const [generateNextServiceDate, setGenerateNextServiceDate] = useState('');
   const [generateLoading, setGenerateLoading] = useState(false);
   const [generateError, setGenerateError] = useState('');
@@ -88,6 +91,7 @@ export default function Invoices() {
   const [pcCustomerVehicles, setPcCustomerVehicles] = useState([]);
   const [pcSelectedVehicleId, setPcSelectedVehicleId] = useState('');
   const [pcInvoiceType, setPcInvoiceType] = useState('vat');
+  const [pcInvoiceNo, setPcInvoiceNo] = useState('');
   const [pcItems, setPcItems] = useState([]);
   const [pcDiscount, setPcDiscount] = useState('0');
   const [pcVatAmount, setPcVatAmount] = useState('0');
@@ -95,6 +99,14 @@ export default function Invoices() {
   const [pcNextServiceDate, setPcNextServiceDate] = useState('');
   const [pcError, setPcError] = useState('');
   const [pcLoading, setPcLoading] = useState(false);
+
+  // Inline "Add New Customer" form within the PC Bill modal
+  const [showAddCustomerForm, setShowAddCustomerForm] = useState(false);
+  const [newCustomerName, setNewCustomerName] = useState('');
+  const [newCustomerPhone, setNewCustomerPhone] = useState('');
+  const [newCustomerEmail, setNewCustomerEmail] = useState('');
+  const [addCustomerLoading, setAddCustomerLoading] = useState(false);
+  const [addCustomerError, setAddCustomerError] = useState('');
   const [vatRate, setVatRate] = useState(13);
   const [whatsAppEnabled, setWhatsAppEnabled] = useState(true);
   const [loyaltyEnabled, setLoyaltyEnabled] = useState(true);
@@ -229,19 +241,42 @@ export default function Invoices() {
     }
   };
 
-  const openGenerateModal = () => {
+  // Fetches the suggested next serial number for a VAT/Non-VAT series.
+  // Purely a suggestion — staff can overwrite the field before submitting.
+  const fetchNextInvoiceNo = async (invoiceType) => {
+    try {
+      const response = await axios.get('/api/invoices/next-number', { params: { invoiceType } });
+      return response.data.invoiceNo || '';
+    } catch (err) {
+      console.error('Fetch next invoice number error:', err);
+      return '';
+    }
+  };
+
+  const openGenerateModal = async () => {
     setIsGenerateModalOpen(true);
     setSelectedServicingId('');
     setGenerateInvoiceType('vat');
+    setGenerateInvoiceNo('');
     setGenerateNextServiceDate('');
     setGenerateError('');
     fetchUnbilledRecords();
+    setGenerateInvoiceNo(await fetchNextInvoiceNo('vat'));
+  };
+
+  const handleGenerateInvoiceTypeChange = async (type) => {
+    setGenerateInvoiceType(type);
+    setGenerateInvoiceNo(await fetchNextInvoiceNo(type));
   };
 
   const handleGenerateInvoice = async (e) => {
     e.preventDefault();
     if (!selectedServicingId) {
       setGenerateError('Select a completed servicing record to invoice');
+      return;
+    }
+    if (!generateInvoiceNo.trim()) {
+      setGenerateError('Invoice number is required');
       return;
     }
 
@@ -252,6 +287,7 @@ export default function Invoices() {
       const response = await axios.post('/api/invoices/generate', {
         servicingId: selectedServicingId,
         invoiceType: generateInvoiceType,
+        invoiceNo: generateInvoiceNo.trim(),
         nextServiceDate: generateNextServiceDate || null
       });
       setIsGenerateModalOpen(false);
@@ -290,6 +326,7 @@ export default function Invoices() {
     setPcSelectedVehicleId('');
     setPcCustomerVehicles([]);
     setPcInvoiceType('vat');
+    setPcInvoiceNo('');
     setPcItems([{ name: '', qty: 1, unitPrice: 0, itemType: 'part' }]);
     setPcDiscount('0');
     setPcVatAmount('0');
@@ -297,6 +334,11 @@ export default function Invoices() {
     setPcNextServiceDate('');
     setPcError('');
     setPcLoading(false);
+    setShowAddCustomerForm(false);
+    setNewCustomerName('');
+    setNewCustomerPhone('');
+    setNewCustomerEmail('');
+    setAddCustomerError('');
 
     try {
       const custRes = await axios.get('/api/customers', { params: { limit: 100 } });
@@ -308,12 +350,52 @@ export default function Invoices() {
       console.error('Fetch PC billing master data error:', err);
       setPcError('Failed to load customers or parts master data');
     }
+
+    setPcInvoiceNo(await fetchNextInvoiceNo('vat'));
+  };
+
+  const handlePcInvoiceTypeChange = async (type) => {
+    setPcInvoiceType(type);
+    setPcInvoiceNo(await fetchNextInvoiceNo(type));
+  };
+
+  const handleAddCustomerInline = async (e) => {
+    e.preventDefault();
+    if (!newCustomerName.trim() || !newCustomerPhone.trim()) {
+      setAddCustomerError('Name and phone number are required');
+      return;
+    }
+    setAddCustomerLoading(true);
+    setAddCustomerError('');
+    try {
+      const response = await axios.post('/api/customers', {
+        name: newCustomerName.trim(),
+        phone: newCustomerPhone.trim(),
+        email: newCustomerEmail.trim() || undefined
+      });
+      const newCustomer = response.data;
+      setPcCustomers((prev) => [newCustomer, ...prev]);
+      setPcSelectedCustomerId(newCustomer._id);
+      setShowAddCustomerForm(false);
+      setNewCustomerName('');
+      setNewCustomerPhone('');
+      setNewCustomerEmail('');
+    } catch (err) {
+      console.error(err);
+      setAddCustomerError(err.response?.data?.message || 'Failed to create customer');
+    } finally {
+      setAddCustomerLoading(false);
+    }
   };
 
   const handlePCSubmit = async (e) => {
     e.preventDefault();
     if (!pcSelectedCustomerId) {
       setPcError('Customer is required');
+      return;
+    }
+    if (!pcInvoiceNo.trim()) {
+      setPcError('Invoice number is required');
       return;
     }
     if (pcItems.length === 0) {
@@ -343,6 +425,7 @@ export default function Invoices() {
         customerId: pcSelectedCustomerId,
         vehicleId: pcSelectedVehicleId || undefined,
         invoiceType: pcInvoiceType,
+        invoiceNo: pcInvoiceNo.trim(),
         items: pcItems,
         discount: Number(pcDiscount) || 0,
         vat: pcInvoiceType === 'vat' ? (Number(pcVatAmount) || 0) : 0,
@@ -418,6 +501,20 @@ export default function Invoices() {
       setPayError(err.response?.data?.message || 'Payment submission failed');
     } finally {
       setPayLoading(false);
+    }
+  };
+
+  // Void a recorded payment (reverses amountPaid/amountDue/status and any
+  // loyalty points that payment had triggered — see server-side route)
+  const handleVoidPayment = async (paymentId) => {
+    if (!window.confirm('Void this payment? This reverses the amount paid on this invoice and cannot be undone.')) return;
+    try {
+      await axios.delete(`/api/invoices/${selectedInvoiceData.invoice._id}/payments/${paymentId}`);
+      await fetchInvoices();
+      fetchInvoiceDetail(selectedInvoiceData.invoice._id);
+    } catch (err) {
+      console.error(err);
+      alert(err.response?.data?.message || 'Failed to void payment');
     }
   };
 
@@ -845,7 +942,19 @@ export default function Invoices() {
                         <p className="font-bold text-slate-800">Paid via <span className="uppercase text-xs px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 font-bold">{p.method}</span></p>
                         <p className="text-xs text-slate-500 mt-1 font-medium">Clerk: {p.receivedBy?.name} | {formatNepaliDate(p.createdAt)}</p>
                       </div>
-                      <span className="font-mono text-emerald-600 font-bold text-base">+Rs. {p.amount.toFixed(2)}</span>
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-emerald-600 font-bold text-base">+Rs. {p.amount.toFixed(2)}</span>
+                        {user?.role === 'admin' && (
+                          <button
+                            type="button"
+                            onClick={() => handleVoidPayment(p._id)}
+                            className="p-1.5 rounded-md text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                            title="Void this payment"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -1316,19 +1425,32 @@ export default function Invoices() {
                 <div className="grid grid-cols-2 gap-3">
                   <button
                     type="button"
-                    onClick={() => setGenerateInvoiceType('vat')}
+                    onClick={() => handleGenerateInvoiceTypeChange('vat')}
                     className={`h-11 rounded-xl text-sm font-bold border transition-colors cursor-pointer ${generateInvoiceType === 'vat' ? 'bg-blue-600 border-blue-600 text-white' : 'bg-white border-slate-200 text-slate-500 hover:border-slate-300'}`}
                   >
                     VAT
                   </button>
                   <button
                     type="button"
-                    onClick={() => setGenerateInvoiceType('non-vat')}
+                    onClick={() => handleGenerateInvoiceTypeChange('non-vat')}
                     className={`h-11 rounded-xl text-sm font-bold border transition-colors cursor-pointer ${generateInvoiceType === 'non-vat' ? 'bg-slate-700 border-slate-700 text-white' : 'bg-white border-slate-200 text-slate-500 hover:border-slate-300'}`}
                   >
                     Non-VAT
                   </button>
                 </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-extrabold text-slate-500 uppercase tracking-wide">Invoice Number *</label>
+                <input
+                  type="text"
+                  value={generateInvoiceNo}
+                  onChange={(e) => setGenerateInvoiceNo(e.target.value)}
+                  placeholder="e.g. VAT-0001"
+                  className="block w-full h-11 rounded-xl border-slate-200 text-sm font-mono"
+                  required
+                />
+                <p className="text-[11px] text-slate-400">Auto-suggested as the next number in the series — edit it if you need to match a physical bill book or continue a different sequence.</p>
               </div>
 
               {selectedServicingId && (() => {
@@ -1429,18 +1551,67 @@ export default function Invoices() {
                   
                   {/* Customer Select */}
                   <div className="space-y-1">
-                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Customer *</label>
-                    <select
-                      required
-                      value={pcSelectedCustomerId}
-                      onChange={(e) => setPcSelectedCustomerId(e.target.value)}
-                      className="block w-full h-9 rounded-lg border-slate-200 text-xs font-semibold cursor-pointer focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                    >
-                      <option value="">-- Select Customer --</option>
-                      {pcCustomers.map(cust => (
-                        <option key={cust._id} value={cust._id}>{cust.name} ({cust.phone})</option>
-                      ))}
-                    </select>
+                    <div className="flex items-center justify-between">
+                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Customer *</label>
+                      <button
+                        type="button"
+                        onClick={() => setShowAddCustomerForm((prev) => !prev)}
+                        className="flex items-center gap-1 text-[10px] font-bold text-blue-600 hover:text-blue-700 cursor-pointer"
+                      >
+                        <UserPlus className="w-3 h-3" />
+                        <span>{showAddCustomerForm ? 'Cancel' : 'New Customer'}</span>
+                      </button>
+                    </div>
+
+                    {showAddCustomerForm ? (
+                      <div className="space-y-2 p-3 bg-blue-50/60 border border-blue-100 rounded-xl">
+                        {addCustomerError && (
+                          <p className="text-[10px] text-rose-600 font-bold">{addCustomerError}</p>
+                        )}
+                        <input
+                          type="text"
+                          placeholder="Full name *"
+                          value={newCustomerName}
+                          onChange={(e) => setNewCustomerName(e.target.value)}
+                          className="block w-full h-9 rounded-lg border-slate-200 text-xs font-semibold focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                        />
+                        <input
+                          type="tel"
+                          placeholder="Phone number *"
+                          value={newCustomerPhone}
+                          onChange={(e) => setNewCustomerPhone(e.target.value)}
+                          className="block w-full h-9 rounded-lg border-slate-200 text-xs font-semibold focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                        />
+                        <input
+                          type="email"
+                          placeholder="Email (optional)"
+                          value={newCustomerEmail}
+                          onChange={(e) => setNewCustomerEmail(e.target.value)}
+                          className="block w-full h-9 rounded-lg border-slate-200 text-xs font-semibold focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                        />
+                        <button
+                          type="button"
+                          onClick={handleAddCustomerInline}
+                          disabled={addCustomerLoading}
+                          className="flex items-center justify-center gap-1.5 w-full h-9 rounded-lg text-xs font-bold text-white bg-blue-600 hover:bg-blue-500 disabled:opacity-50 transition-colors cursor-pointer"
+                        >
+                          {addCustomerLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <UserPlus className="w-3.5 h-3.5" />}
+                          <span>Save &amp; Select Customer</span>
+                        </button>
+                      </div>
+                    ) : (
+                      <select
+                        required
+                        value={pcSelectedCustomerId}
+                        onChange={(e) => setPcSelectedCustomerId(e.target.value)}
+                        className="block w-full h-9 rounded-lg border-slate-200 text-xs font-semibold cursor-pointer focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                      >
+                        <option value="">-- Select Customer --</option>
+                        {pcCustomers.map(cust => (
+                          <option key={cust._id} value={cust._id}>{cust.name} ({cust.phone})</option>
+                        ))}
+                      </select>
+                    )}
                   </div>
 
                   {/* Vehicle Select */}
@@ -1493,19 +1664,32 @@ export default function Invoices() {
                     <div className="grid grid-cols-2 gap-2">
                       <button
                         type="button"
-                        onClick={() => setPcInvoiceType('vat')}
+                        onClick={() => handlePcInvoiceTypeChange('vat')}
                         className={`h-9 rounded-lg text-xs font-bold border transition-colors cursor-pointer ${pcInvoiceType === 'vat' ? 'bg-blue-600 border-blue-600 text-white shadow-sm' : 'bg-white border-slate-200 text-slate-700 hover:border-slate-350'}`}
                       >
                         VAT
                       </button>
                       <button
                         type="button"
-                        onClick={() => setPcInvoiceType('non-vat')}
+                        onClick={() => handlePcInvoiceTypeChange('non-vat')}
                         className={`h-9 rounded-lg text-xs font-bold border transition-colors cursor-pointer ${pcInvoiceType === 'non-vat' ? 'bg-slate-700 border-slate-700 text-white shadow-sm' : 'bg-white border-slate-200 text-slate-700 hover:border-slate-350'}`}
                       >
                         Non-VAT
                       </button>
                     </div>
+                  </div>
+
+                  {/* Invoice Number */}
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Invoice Number *</label>
+                    <input
+                      type="text"
+                      value={pcInvoiceNo}
+                      onChange={(e) => setPcInvoiceNo(e.target.value)}
+                      placeholder="e.g. VAT-0001"
+                      className="block w-full h-9 rounded-lg border-slate-200 text-xs font-mono font-semibold focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                      required
+                    />
                   </div>
 
                   {/* Discount */}

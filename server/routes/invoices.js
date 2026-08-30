@@ -28,6 +28,42 @@ function csvCell(value) {
   return str;
 }
 
+// Prefix used for each invoice series — kept separate per Nepali VAT
+// convention (VAT bills and non-VAT/cash memos are numbered independently).
+function invoiceSeriesPrefix(invoiceType) {
+  return invoiceType === 'vat' ? 'VAT-' : 'NV-';
+}
+
+// @route   GET /api/invoices/next-number
+// @desc    Suggest the next serial invoice number for a given series (VAT or
+//          Non-VAT), based on the highest existing number in that series.
+//          Purely a suggestion — the actual number is entered/edited by staff
+//          and validated for uniqueness on submit.
+// @access  Private (admin, receptionist, accountant)
+router.get('/next-number', authenticate, authorize('admin', 'receptionist', 'accountant'), async (req, res) => {
+  try {
+    const invoiceType = req.query.invoiceType === 'non-vat' ? 'non-vat' : 'vat';
+    const prefix = invoiceSeriesPrefix(invoiceType);
+
+    const existing = await Invoice.find({ invoiceNo: { $regex: `^${prefix}\\d+$` } })
+      .select('invoiceNo')
+      .lean();
+
+    let maxSeq = 0;
+    for (const inv of existing) {
+      const seq = parseInt(inv.invoiceNo.slice(prefix.length), 10);
+      if (seq > maxSeq) maxSeq = seq;
+    }
+
+    const nextSeq = maxSeq + 1;
+    const invoiceNo = prefix + String(nextSeq).padStart(4, '0');
+    res.json({ invoiceNo });
+  } catch (err) {
+    console.error('Next invoice number error:', err.message);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 // @route   POST /api/invoices/generate
 // @desc    Generate an invoice (VAT or Non-VAT) from a closed, unbilled servicing record
 // @access  Private (admin, receptionist, accountant)
@@ -38,6 +74,7 @@ router.post(
   [
     body('servicingId').notEmpty().withMessage('Servicing record ID is required'),
     body('invoiceType').isIn(['vat', 'non-vat']).withMessage('Invoice type must be vat or non-vat'),
+    body('invoiceNo').trim().notEmpty().withMessage('Invoice number is required'),
     body('nextServiceDate')
       .optional({ checkFalsy: true })
       .isISO8601().withMessage('Next service date must be a valid date')
@@ -51,7 +88,7 @@ router.post(
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { servicingId, invoiceType, nextServiceDate } = req.body;
+    const { servicingId, invoiceType, invoiceNo, nextServiceDate } = req.body;
 
     try {
       const servicing = await Servicing.findById(servicingId);
@@ -65,6 +102,11 @@ router.post(
 
       if (servicing.invoiceId) {
         return res.status(400).json({ message: 'This servicing record has already been invoiced' });
+      }
+
+      const duplicateNo = await Invoice.findOne({ invoiceNo }).lean();
+      if (duplicateNo) {
+        return res.status(400).json({ message: `Invoice number "${invoiceNo}" is already in use — choose a different number.` });
       }
 
       // VAT is a manually-entered amount set on the servicing record itself
@@ -82,6 +124,7 @@ router.post(
         customerId: servicing.customerId,
         vehicleId: servicing.vehicleId,
         invoiceType,
+        invoiceNo,
         subtotal,
         discount,
         vat,
@@ -92,7 +135,14 @@ router.post(
         odometer: servicing.mileageOut || 0,
         nextServiceDate: nextServiceDate ? new Date(nextServiceDate) : null
       });
-      await invoice.save();
+      try {
+        await invoice.save();
+      } catch (saveErr) {
+        if (saveErr.code === 11000) {
+          return res.status(400).json({ message: `Invoice number "${invoiceNo}" is already in use — choose a different number.` });
+        }
+        throw saveErr;
+      }
 
       servicing.invoiceId = invoice._id;
       await servicing.save();
@@ -137,6 +187,7 @@ router.post(
   [
     body('customerId').notEmpty().withMessage('Customer is required'),
     body('invoiceType').isIn(['vat', 'non-vat']).withMessage('Invoice type must be vat or non-vat'),
+    body('invoiceNo').trim().notEmpty().withMessage('Invoice number is required'),
     body('items').isArray({ min: 1 }).withMessage('Items list must contain at least 1 item'),
     body('items.*.name').notEmpty().withMessage('Item name is required'),
     body('items.*.qty').isInt({ min: 1 }).withMessage('Quantity must be 1 or more'),
@@ -157,7 +208,7 @@ router.post(
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { customerId, vehicleId, invoiceType, items, discount, vat: manualVat, odometer, nextServiceDate } = req.body;
+    const { customerId, vehicleId, invoiceType, invoiceNo, items, discount, vat: manualVat, odometer, nextServiceDate } = req.body;
 
     try {
       const customer = await Customer.findById(customerId).lean();
@@ -170,6 +221,13 @@ router.post(
         if (!vehicle) {
           return res.status(404).json({ message: 'Vehicle not found' });
         }
+      }
+
+      // Checked up front, before stock is touched, so a duplicate invoice
+      // number can't leave stock decremented with no invoice to show for it.
+      const duplicateNo = await Invoice.findOne({ invoiceNo }).lean();
+      if (duplicateNo) {
+        return res.status(400).json({ message: `Invoice number "${invoiceNo}" is already in use — choose a different number.` });
       }
 
       // Check stock levels and decrement before writing database transactions
@@ -225,6 +283,7 @@ router.post(
         customerId,
         vehicleId: vehicleId || null,
         invoiceType,
+        invoiceNo,
         subtotal: calculatedSubtotal,
         discount: disc,
         vat,
@@ -236,7 +295,21 @@ router.post(
         nextServiceDate: vehicleId && nextServiceDate ? new Date(nextServiceDate) : null
       });
 
-      await invoice.save();
+      try {
+        await invoice.save();
+      } catch (saveErr) {
+        if (saveErr.code === 11000) {
+          // Duplicate slipped in between the pre-check and save (race) — put
+          // the stock we already decremented back before reporting the error.
+          for (const item of items) {
+            if (item.partId && (item.itemType === 'part' || !item.itemType)) {
+              await InventoryStock.findByIdAndUpdate(item.partId, { $inc: { qty: Number(item.qty) } });
+            }
+          }
+          return res.status(400).json({ message: `Invoice number "${invoiceNo}" is already in use — choose a different number.` });
+        }
+        throw saveErr;
+      }
 
       await createNotification({
         recipientRoles: ['admin', 'accountant'],
@@ -631,6 +704,73 @@ router.post(
     }
   }
 );
+
+// @route   DELETE /api/invoices/:id/payments/:paymentId
+// @desc    Void a recorded payment: reverses the invoice's amountPaid/
+//          amountDue/status, and if that payment was the one that had
+//          pushed the invoice to "paid" (triggering loyalty points), also
+//          reverses those points — clamped at 0 rather than going negative,
+//          since some of that balance may have already been spent elsewhere.
+// @access  Private (admin)
+router.delete('/:id/payments/:paymentId', authenticate, authorize('admin'), async (req, res) => {
+  try {
+    const invoice = await Invoice.findById(req.params.id);
+    if (!invoice) {
+      return res.status(404).json({ message: 'Invoice not found' });
+    }
+
+    const payment = await Payment.findOne({ _id: req.params.paymentId, invoiceId: invoice._id });
+    if (!payment) {
+      return res.status(404).json({ message: 'Payment not found on this invoice' });
+    }
+
+    const wasPaid = invoice.status === 'paid';
+
+    invoice.amountPaid = Math.max(0, invoice.amountPaid - payment.amount);
+    const totalCredits = invoice.creditNotes.reduce((sum, note) => sum + note.amount, 0);
+    invoice.amountDue = Math.max(0, invoice.total - invoice.amountPaid - totalCredits);
+
+    if (invoice.amountDue === 0) {
+      invoice.status = invoice.amountPaid > 0 ? 'paid' : 'credited';
+    } else {
+      invoice.status = invoice.amountPaid > 0 ? 'partially-paid' : 'unpaid';
+    }
+
+    let reversedLoyaltyPoints = 0;
+    if (wasPaid && invoice.status !== 'paid') {
+      const earnedEntries = await LoyaltyLedger.find({ invoiceId: invoice._id, transactionType: 'earned' });
+      reversedLoyaltyPoints = earnedEntries.reduce((sum, entry) => sum + entry.points, 0);
+      if (reversedLoyaltyPoints > 0) {
+        await LoyaltyLedger.deleteMany({ invoiceId: invoice._id, transactionType: 'earned' });
+        const customer = await Customer.findById(invoice.customerId);
+        if (customer) {
+          customer.loyaltyPoints = Math.max(0, customer.loyaltyPoints - reversedLoyaltyPoints);
+          await customer.save();
+        }
+      }
+    }
+
+    await invoice.save();
+    await payment.deleteOne();
+
+    await logAction({
+      req,
+      action: 'payment_voided',
+      module: 'invoices',
+      details: `Voided a Rs. ${payment.amount.toFixed(2)} (${payment.method}) payment on Invoice #${invoice.invoiceNo}. New status: ${invoice.status.toUpperCase()}, Amount Due: Rs. ${invoice.amountDue.toFixed(2)}.${reversedLoyaltyPoints > 0 ? ` Reversed ${reversedLoyaltyPoints} loyalty point(s) that were earned from this invoice being fully paid.` : ''}`
+    });
+
+    const populated = await Invoice.findById(invoice._id)
+      .populate('customerId', 'name phone email')
+      .populate('vehicleId', 'plateNo make model')
+      .lean();
+
+    res.json({ message: 'Payment voided successfully', invoice: populated });
+  } catch (err) {
+    console.error('Void payment error:', err.message);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
 
 // @route   POST /api/invoices/:id/credit-note
 // @desc    Issue a credit note against an invoice

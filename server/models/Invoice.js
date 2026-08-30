@@ -1,5 +1,4 @@
 import mongoose from 'mongoose';
-import crypto from 'crypto';
 
 const creditNoteSchema = new mongoose.Schema({
   reason: {
@@ -59,8 +58,9 @@ const invoiceSchema = new mongoose.Schema(
     },
     invoiceNo: {
       type: String,
+      required: [true, 'Invoice number is required'],
       unique: true,
-      default: () => 'INV-' + crypto.randomBytes(4).toString('hex').toUpperCase()
+      trim: true
     },
     subtotal: {
       type: Number,

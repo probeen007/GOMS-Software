@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
+import { formatNepaliDate } from '../utils/nepaliDate';
 import {
   Search,
   Plus,
@@ -11,7 +12,8 @@ import {
   X,
   PlusCircle,
   Trash2,
-  Package
+  Package,
+  History
 } from 'lucide-react';
 
 export default function Inventory() {
@@ -75,6 +77,36 @@ export default function Inventory() {
   });
   const [purchaseError, setPurchaseError] = useState('');
   const [purchaseLoading, setPurchaseLoading] = useState(false);
+
+  // Modal: Purchase History
+  const [isPurchaseHistoryOpen, setIsPurchaseHistoryOpen] = useState(false);
+  const [purchaseHistory, setPurchaseHistory] = useState([]);
+  const [purchaseHistoryLoading, setPurchaseHistoryLoading] = useState(false);
+
+  const openPurchaseHistory = async () => {
+    setIsPurchaseHistoryOpen(true);
+    setPurchaseHistoryLoading(true);
+    try {
+      const response = await axios.get('/api/inventory/purchases');
+      setPurchaseHistory(response.data);
+    } catch (err) {
+      console.error('Fetch purchase history error:', err);
+    } finally {
+      setPurchaseHistoryLoading(false);
+    }
+  };
+
+  const handleDeletePurchase = async (purchase) => {
+    if (!window.confirm(`Delete this purchase from "${purchase.supplierName}" (Rs. ${purchase.totalCost.toFixed(2)})? This reverses the stock it added and cannot be undone.`)) return;
+    try {
+      await axios.delete(`/api/inventory/purchases/${purchase._id}`);
+      setPurchaseHistory((prev) => prev.filter((p) => p._id !== purchase._id));
+      fetchInventory();
+    } catch (err) {
+      console.error(err);
+      alert(err.response?.data?.message || 'Failed to delete purchase');
+    }
+  };
 
   // Fetch Inventory Items
   const fetchInventory = async () => {
@@ -254,17 +286,24 @@ export default function Inventory() {
         </div>
 
         {isAuthorized && (
-          <div className="flex items-center gap-3">
+          <div className="flex items-center flex-wrap gap-3">
+            <button
+              onClick={openPurchaseHistory}
+              className="flex items-center justify-center gap-2 px-4 h-10 rounded-xl text-xs font-bold text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 transition-colors shadow-sm cursor-pointer whitespace-nowrap"
+            >
+              <History className="w-4 h-4 text-slate-500" />
+              <span>Purchase History</span>
+            </button>
             <button
               onClick={() => setIsPurchaseModalOpen(true)}
-              className="flex items-center justify-center gap-2 px-4 h-10 rounded-xl text-xs font-bold text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 transition-colors shadow-sm cursor-pointer"
+              className="flex items-center justify-center gap-2 px-4 h-10 rounded-xl text-xs font-bold text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 transition-colors shadow-sm cursor-pointer whitespace-nowrap"
             >
               <ShoppingBag className="w-4 h-4 text-slate-500" />
               <span>Record Restock</span>
             </button>
             <button
               onClick={() => setIsAddModalOpen(true)}
-              className="flex items-center justify-center gap-2 px-4 h-10 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-500 transition-all duration-200 shadow-sm shadow-blue-500/10 cursor-pointer"
+              className="flex items-center justify-center gap-2 px-4 h-10 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-500 transition-all duration-200 shadow-sm shadow-blue-500/10 cursor-pointer whitespace-nowrap"
             >
               <Plus className="w-4 h-4" />
               <span>Add Part SKU</span>
@@ -932,6 +971,72 @@ export default function Inventory() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Purchase History */}
+      {isPurchaseHistoryOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/40 backdrop-blur-sm">
+          <div className="relative w-full max-w-3xl max-h-[85vh] flex flex-col bg-white rounded-3xl overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200 border border-slate-100">
+            <div className="flex items-center justify-between p-6 border-b border-slate-100 shrink-0">
+              <h2 className="text-lg font-bold text-slate-900">Purchase History</h2>
+              <button
+                onClick={() => setIsPurchaseHistoryOpen(false)}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-800 hover:bg-slate-50 transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-6 overflow-y-auto">
+              {purchaseHistoryLoading ? (
+                <div className="py-12 text-center"><Loader2 className="w-6 h-6 text-blue-600 animate-spin mx-auto" /></div>
+              ) : purchaseHistory.length === 0 ? (
+                <p className="text-sm text-slate-400 italic text-center py-8">No purchases recorded yet.</p>
+              ) : (
+                <div className="space-y-3">
+                  {purchaseHistory.map((p) => (
+                    <div key={p._id} className="p-4 bg-slate-50 rounded-xl border border-slate-100">
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="font-bold text-slate-800 text-sm">{p.supplierName}</span>
+                            <span className={p.purchaseType === 'vat' ? 'badge-indigo' : 'badge-slate'}>
+                              {p.purchaseType === 'vat' ? 'VAT' : 'Non-VAT'}
+                            </span>
+                          </div>
+                          <p className="text-xs text-slate-500 mt-1 font-medium">
+                            {formatNepaliDate(p.createdAt)} · {p.items.length} part(s)
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <span className="font-mono font-bold text-slate-800 text-sm">Rs. {p.totalCost.toFixed(2)}</span>
+                          {user?.role === 'admin' && (
+                            <button
+                              type="button"
+                              onClick={() => handleDeletePurchase(p)}
+                              className="p-1.5 rounded-md text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                              title="Delete this purchase (reverses stock added)"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                      <div className="mt-2 pt-2 border-t border-slate-200 space-y-1">
+                        {p.items.map((item, idx) => (
+                          <div key={idx} className="flex justify-between text-xs text-slate-600">
+                            <span>{item.partId?.name || 'Unknown Part'} × {item.qty}</span>
+                            <span className="font-mono">Rs. {(item.qty * item.unitCost).toFixed(2)}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}
