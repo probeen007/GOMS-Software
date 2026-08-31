@@ -34,7 +34,15 @@ const invoiceSchema = new mongoose.Schema(
         qty: { type: Number, required: true, default: 1 },
         unitPrice: { type: Number, required: true, default: 0 },
         total: { type: Number, required: true, default: 0 },
-        itemType: { type: String, default: 'part' }
+        itemType: { type: String, default: 'part' },
+        // Links a 'part' line item back to the InventoryStock record it
+        // decremented, so deleting the invoice can restock it. Null for
+        // labor/misc line items, which never touch inventory.
+        partId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'InventoryStock',
+          default: null
+        }
       }
     ],
     odometer: {

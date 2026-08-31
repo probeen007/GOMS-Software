@@ -518,6 +518,22 @@ export default function Invoices() {
     }
   };
 
+  // Permanently delete an invoice — reverses stock (PC Bill parts), loyalty
+  // points earned/redeemed, removes its payments (so it drops out of Cash
+  // Flow/DayBook too), and frees its Servicing record for re-invoicing.
+  const handleDeleteInvoice = async () => {
+    const invoiceNo = selectedInvoiceData.invoice.invoiceNo;
+    if (!window.confirm(`Permanently delete Invoice #${invoiceNo}? This cannot be undone — it will remove all its payments from Finance, reverse any loyalty points it caused, restock any parts it sold, and cannot be recovered.`)) return;
+    try {
+      await axios.delete(`/api/invoices/${selectedInvoiceData.invoice._id}`);
+      setSelectedInvoiceData(null);
+      await fetchInvoices();
+    } catch (err) {
+      console.error(err);
+      alert(err.response?.data?.message || 'Failed to delete invoice');
+    }
+  };
+
   // Handle Credit Note Submit
   const handleIssueCredit = async (e) => {
     e.preventDefault();
@@ -838,6 +854,16 @@ export default function Invoices() {
                   <span className={statusBadgeClass(selectedInvoiceData.invoice.status)}>
                     {selectedInvoiceData.invoice.status}
                   </span>
+                  {user?.role === 'admin' && (
+                    <button
+                      type="button"
+                      onClick={handleDeleteInvoice}
+                      title="Permanently delete this invoice"
+                      className="p-1.5 rounded-lg text-red-500 hover:bg-red-50 hover:text-red-700 transition-colors cursor-pointer"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  )}
                 </div>
               </div>
               <h3 className="text-lg font-bold text-slate-900 mt-2">{selectedInvoiceData.invoice.customerId?.name}</h3>

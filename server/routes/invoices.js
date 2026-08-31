@@ -265,7 +265,8 @@ router.post(
           qty: Number(item.qty),
           unitPrice: Number(item.unitPrice),
           total: lineTotal,
-          itemType: item.itemType || 'part'
+          itemType: item.itemType || 'part',
+          partId: item.partId || null
         };
       });
 
@@ -572,6 +573,77 @@ router.get('/:id', authenticate, authorize('admin', 'receptionist', 'accountant'
     res.json({ invoice, payments });
   } catch (err) {
     console.error('Fetch invoice by ID error:', err.message);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// @route   DELETE /api/invoices/:id
+// @desc    Permanently delete an invoice and unwind every side effect it
+//          caused: removes its Payment records (so it also disappears from
+//          Cash Flow / DayBook income), reverses any stock it consumed
+//          (PC Bill invoices only — Job Card invoices' parts are tracked on
+//          the Servicing record, not the invoice), reverses loyalty points
+//          it caused to be earned or spent, and frees up the linked
+//          Servicing record so it can be re-invoiced.
+// @access  Private (admin)
+router.delete('/:id', authenticate, authorize('admin'), async (req, res) => {
+  try {
+    const invoice = await Invoice.findById(req.params.id);
+    if (!invoice) {
+      return res.status(404).json({ message: 'Invoice not found' });
+    }
+
+    // 1. Reverse stock consumed by a PC Bill invoice's part line items.
+    //    (Job Card invoices carry no `items` — their parts are decremented
+    //    on the Servicing record itself, so nothing to reverse here.)
+    for (const item of invoice.items) {
+      if (item.partId && (item.itemType === 'part' || !item.itemType)) {
+        await InventoryStock.findByIdAndUpdate(item.partId, { $inc: { qty: Number(item.qty) || 0 } });
+      }
+    }
+
+    // 2. Reverse loyalty ledger entries this invoice produced.
+    const ledgerEntries = await LoyaltyLedger.find({ invoiceId: invoice._id });
+    if (ledgerEntries.length > 0) {
+      const customer = await Customer.findById(invoice.customerId);
+      if (customer) {
+        for (const entry of ledgerEntries) {
+          if (entry.transactionType === 'earned') {
+            // Customer may have already spent these points elsewhere since —
+            // clamp at 0 rather than letting the balance go negative.
+            customer.loyaltyPoints = Math.max(0, customer.loyaltyPoints - entry.points);
+          } else if (entry.transactionType === 'redeemed') {
+            // Stored as a negative value; give the spent points back.
+            customer.loyaltyPoints += Math.abs(entry.points);
+          }
+        }
+        await customer.save();
+      }
+      await LoyaltyLedger.deleteMany({ invoiceId: invoice._id });
+    }
+
+    // 3. Remove every payment recorded against this invoice — this is what
+    //    takes it out of Cash Flow / DayBook / Customer Dues income figures.
+    await Payment.deleteMany({ invoiceId: invoice._id });
+
+    // 4. Free the Servicing record it was generated from, if any, so it
+    //    reappears in the unbilled list and can be invoiced again.
+    if (invoice.servicingId) {
+      await Servicing.findByIdAndUpdate(invoice.servicingId, { invoiceId: null });
+    }
+
+    await invoice.deleteOne();
+
+    await logAction({
+      req,
+      action: 'invoice_deleted',
+      module: 'invoices',
+      details: `Permanently deleted Invoice #${invoice.invoiceNo} (Total: Rs. ${invoice.total.toFixed(2)}, Status: ${invoice.status.toUpperCase()}). Reversed ${ledgerEntries.length} loyalty ledger entr${ledgerEntries.length === 1 ? 'y' : 'ies'} and removed all linked payments.`
+    });
+
+    res.json({ message: 'Invoice deleted successfully' });
+  } catch (err) {
+    console.error('Delete invoice error:', err.message);
     res.status(500).json({ message: 'Server error' });
   }
 });
