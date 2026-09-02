@@ -1389,10 +1389,10 @@ export default function Invoices() {
       {/* Modal: Generate Invoice */}
       {isGenerateModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/40 backdrop-blur-sm">
-          <div className="relative w-full max-w-lg bg-white rounded-3xl overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200 border border-slate-100">
+          <div className="relative w-full max-w-lg max-h-[90vh] flex flex-col bg-white rounded-3xl overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200 border border-slate-100">
             <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-blue-500 to-indigo-500"></div>
 
-            <div className="flex items-center justify-between p-6 border-b border-slate-100">
+            <div className="flex items-center justify-between p-6 border-b border-slate-100 shrink-0">
               <h2 className="text-lg font-bold text-slate-900">Generate Invoice</h2>
               <button
                 type="button"
@@ -1403,7 +1403,7 @@ export default function Invoices() {
               </button>
             </div>
 
-            <form onSubmit={handleGenerateInvoice} className="p-6 space-y-4">
+            <form onSubmit={handleGenerateInvoice} className="p-6 space-y-4 overflow-y-auto flex-1 min-h-0">
               {generateError && (
                 <div className="p-3 rounded-xl bg-rose-50 border border-rose-100 flex items-start gap-2.5">
                   <AlertCircle className="w-4.5 h-4.5 text-rose-600 shrink-0 mt-0.5" />
@@ -1544,11 +1544,11 @@ export default function Invoices() {
         </div>
       )}      {/* Modal: Parts & Counter Direct Billing */}
       {isPCModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/40 backdrop-blur-sm overflow-y-auto">
-          <div className="relative w-full max-w-4xl bg-white rounded-xl overflow-hidden shadow-xl animate-in fade-in zoom-in-95 duration-200 border border-slate-200 my-8">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/40 backdrop-blur-sm">
+          <div className="relative w-full max-w-4xl max-h-[90vh] flex flex-col bg-white rounded-xl overflow-hidden shadow-xl animate-in fade-in zoom-in-95 duration-200 border border-slate-200 my-8">
             <div className="absolute top-0 inset-x-0 h-1 bg-blue-600"></div>
 
-            <div className="flex items-center justify-between p-5 border-b border-slate-200 bg-slate-50/50">
+            <div className="flex items-center justify-between p-5 border-b border-slate-200 bg-slate-50/50 shrink-0">
               <div>
                 <h2 className="text-base font-bold text-slate-900 uppercase tracking-wider">Direct PC Billing (Counter Sales)</h2>
                 <p className="text-[10px] text-slate-500 mt-0.5">Generate a direct counter sales invoice for parts or walk-in customers.</p>
@@ -1562,7 +1562,7 @@ export default function Invoices() {
               </button>
             </div>
 
-            <form onSubmit={handlePCSubmit} className="p-5 space-y-5">
+            <form onSubmit={handlePCSubmit} className="p-5 space-y-5 overflow-y-auto flex-1 min-h-0">
               {pcError && (
                 <div className="p-3 rounded-lg bg-rose-50 border border-rose-100 flex items-start gap-2">
                   <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
